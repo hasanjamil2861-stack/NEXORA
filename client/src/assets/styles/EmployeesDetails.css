@@ -1,0 +1,1123 @@
+/* =========================================================
+   EMPLOYEE DETAILS PAGE
+========================================================= */
+
+.employee-details-page {
+    width: 100%;
+    min-height: 100%;
+    padding: 28px;
+    box-sizing: border-box;
+    background: #f7f9fc;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.employee-details-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    min-height: 150px;
+    padding: 28px 30px;
+    margin-bottom: 22px;
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 85% 15%,
+            rgba(59, 130, 246, 0.16),
+            transparent 24%
+        ),
+        radial-gradient(
+            circle at 100% 100%,
+            rgba(99, 102, 241, 0.11),
+            transparent 32%
+        ),
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #f8fbff 50%,
+            #f2f6ff
+        );
+
+    border: 1px solid #dce5f1;
+    border-radius: 22px;
+
+    box-shadow:
+        0 18px 45px rgba(15, 23, 42, 0.07),
+        0 4px 12px rgba(15, 23, 42, 0.025);
+}
+
+.employee-details-header::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #2563eb,
+            #4f46e5,
+            #7c3aed
+        );
+}
+
+.employee-details-header::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 43%;
+    height: 100%;
+    opacity: 0.42;
+    pointer-events: none;
+
+    background-image:
+        linear-gradient(
+            rgba(59, 130, 246, 0.05) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(59, 130, 246, 0.05) 1px,
+            transparent 1px
+        );
+
+    background-size: 25px 25px;
+
+    mask-image:
+        linear-gradient(
+            to left,
+            black,
+            transparent
+        );
+
+    -webkit-mask-image:
+        linear-gradient(
+            to left,
+            black,
+            transparent
+        );
+}
+
+
+/* =========================================================
+   HEADER CONTENT
+========================================================= */
+
+.employee-details-header-content {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    min-width: 0;
+}
+
+.employee-details-header-icon {
+    width: 53px;
+    height: 53px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #2563eb;
+
+    background:
+        linear-gradient(
+            145deg,
+            #eff6ff,
+            #dbeafe
+        );
+
+    border: 1px solid #bfdbfe;
+    border-radius: 15px;
+
+    box-shadow:
+        0 10px 23px rgba(37, 99, 235, 0.13);
+}
+
+.employee-details-eyebrow {
+    display: block;
+    margin-bottom: 6px;
+
+    color: #4f46e5;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.employee-details-header h1 {
+    margin: 0;
+
+    color: #172554;
+
+    font-size: 32px;
+    line-height: 1.1;
+    font-weight: 850;
+    letter-spacing: -0.025em;
+}
+
+.employee-details-header p {
+    margin: 8px 0 0;
+
+    color: #64748b;
+
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.employee-back-btn {
+    position: relative;
+    z-index: 3;
+
+    min-height: 43px;
+    padding: 0 14px;
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border: 1px solid #dbe3ed;
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.88);
+    color: #334155;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 14px rgba(15, 23, 42, 0.05);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.employee-back-btn:hover {
+    transform: translateY(-1px);
+
+    background: #ffffff;
+    border-color: #bfdbfe;
+    color: #2563eb;
+
+    box-shadow:
+        0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.employee-back-btn:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.2);
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   PROFILE CARD
+========================================================= */
+
+.employee-details-profile {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(280px, 0.7fr);
+
+    gap: 20px;
+    align-items: stretch;
+
+    padding: 22px;
+    margin-bottom: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #e4eaf2;
+    border-radius: 18px;
+
+    box-shadow:
+        0 10px 28px rgba(15, 23, 42, 0.055);
+}
+
+.employee-profile-main {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+
+    min-width: 0;
+}
+
+.employee-details-avatar {
+    position: relative;
+
+    width: 78px;
+    height: 78px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #2563eb;
+
+    background:
+        linear-gradient(
+            145deg,
+            #eff6ff,
+            #dbeafe
+        );
+
+    border: 1px solid #bfdbfe;
+    border-radius: 20px;
+
+    font-size: 24px;
+    font-weight: 850;
+
+    box-shadow:
+        0 12px 24px rgba(37, 99, 235, 0.12);
+}
+
+.employee-details-avatar::after {
+    content: "";
+
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+
+    width: 14px;
+    height: 14px;
+
+    background: #22c55e;
+
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+
+    box-shadow:
+        0 3px 9px rgba(34, 197, 94, 0.3);
+}
+
+.employee-profile-content {
+    min-width: 0;
+}
+
+.employee-profile-name-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.employee-profile-label {
+    display: block;
+    margin-bottom: 4px;
+
+    color: #94a3b8;
+
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+}
+
+.employee-profile-content h2 {
+    margin: 0;
+
+    color: #172554;
+
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 800;
+}
+
+.employee-profile-position {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    margin: 7px 0 0;
+
+    color: #64748b;
+
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.employee-profile-position svg {
+    color: #2563eb;
+}
+
+.employee-profile-id {
+    display: inline-block;
+    margin-top: 6px;
+
+    color: #94a3b8;
+
+    font-size: 10px;
+    font-weight: 650;
+}
+
+
+/* =========================================================
+   PROFILE STATUS
+========================================================= */
+
+.employee-details-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    min-height: 27px;
+    padding: 0 9px;
+
+    border-radius: 999px;
+
+    font-size: 10px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.employee-details-status.active {
+    color: #047857;
+    background: #ecfdf5;
+    border: 1px solid #bbf7d0;
+}
+
+.employee-details-status.inactive {
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+
+/* =========================================================
+   PROFILE SUMMARY
+========================================================= */
+
+.employee-profile-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    align-items: center;
+    gap: 10px;
+
+    padding: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f8fafc,
+            #f5f8fc
+        );
+
+    border: 1px solid #edf1f5;
+    border-radius: 13px;
+}
+
+.employee-profile-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    min-width: 0;
+    padding: 8px;
+}
+
+.employee-profile-summary-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+}
+
+.employee-profile-summary-icon.salary {
+    color: #7c3aed;
+    background: #f5f3ff;
+}
+
+.employee-profile-summary-icon.department {
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+.employee-profile-summary-item span {
+    display: block;
+
+    color: #94a3b8;
+
+    font-size: 9px;
+    font-weight: 650;
+}
+
+.employee-profile-summary-item strong {
+    display: block;
+    margin-top: 3px;
+
+    overflow: hidden;
+
+    color: #334155;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   INFORMATION SECTION
+========================================================= */
+
+.employee-information-section {
+    padding: 22px;
+    margin-bottom: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #e4eaf2;
+    border-radius: 18px;
+
+    box-shadow:
+        0 10px 28px rgba(15, 23, 42, 0.05);
+}
+
+.employee-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    padding-bottom: 17px;
+    margin-bottom: 18px;
+
+    border-bottom: 1px solid #eef2f7;
+}
+
+.employee-section-icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #2563eb;
+    background: #eff6ff;
+
+    border-radius: 10px;
+}
+
+.employee-section-heading span {
+    display: block;
+    margin-bottom: 3px;
+
+    color: #64748b;
+
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+.employee-section-heading h2 {
+    margin: 0;
+
+    color: #172554;
+
+    font-size: 17px;
+    font-weight: 780;
+}
+
+
+/* =========================================================
+   INFORMATION GRID
+========================================================= */
+
+.employee-details-info {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.employee-details-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    min-width: 0;
+    padding: 14px;
+
+    background: #fbfcfe;
+
+    border: 1px solid #edf1f5;
+    border-radius: 12px;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.employee-details-item:hover {
+    transform: translateY(-1px);
+
+    border-color: #dce6f2;
+
+    box-shadow:
+        0 6px 16px rgba(15, 23, 42, 0.04);
+}
+
+.employee-details-item-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #2563eb;
+    background: #eff6ff;
+
+    border-radius: 9px;
+}
+
+.employee-details-item-icon.status {
+    color: #059669;
+    background: #ecfdf5;
+}
+
+.employee-details-item > div:last-child {
+    min-width: 0;
+}
+
+.employee-details-item span {
+    display: block;
+    margin-bottom: 3px;
+
+    color: #94a3b8;
+
+    font-size: 9px;
+    font-weight: 650;
+}
+
+.employee-details-item strong {
+    display: block;
+    overflow: hidden;
+
+    color: #334155;
+
+    font-size: 11px;
+    font-weight: 750;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.employee-details-email {
+    color: #2563eb !important;
+}
+
+.employee-details-status-text.active {
+    color: #059669 !important;
+}
+
+.employee-details-status-text.inactive {
+    color: #dc2626 !important;
+}
+
+
+/* =========================================================
+   DETAILS FOOTER
+========================================================= */
+
+.employee-details-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    padding: 14px 17px;
+
+    background: #ffffff;
+
+    border: 1px solid #e4eaf2;
+    border-radius: 14px;
+
+    box-shadow:
+        0 6px 20px rgba(15, 23, 42, 0.035);
+}
+
+.employee-details-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    min-width: 0;
+}
+
+.employee-footer-icon {
+    width: 31px;
+    height: 31px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #059669;
+    background: #ecfdf5;
+
+    border-radius: 8px;
+}
+
+.employee-details-footer-left strong,
+.employee-details-footer-left span {
+    display: block;
+}
+
+.employee-details-footer-left strong {
+    color: #334155;
+
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.employee-details-footer-left span {
+    margin-top: 2px;
+
+    color: #94a3b8;
+
+    font-size: 9px;
+}
+
+.employee-record-id {
+    color: #94a3b8;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   NOT FOUND STATE
+========================================================= */
+
+.employee-not-found {
+    position: relative;
+
+    min-height: 420px;
+    padding: 35px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(59, 130, 246, 0.09),
+            transparent 30%
+        ),
+        #ffffff;
+
+    border: 1px solid #e4eaf2;
+    border-radius: 20px;
+
+    text-align: center;
+
+    box-shadow:
+        0 12px 30px rgba(15, 23, 42, 0.055);
+}
+
+.employee-not-found-icon {
+    width: 62px;
+    height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #64748b;
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 17px;
+}
+
+.employee-not-found > span {
+    margin-top: 17px;
+
+    color: #4f46e5;
+
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+}
+
+.employee-not-found h1 {
+    margin: 7px 0 5px;
+
+    color: #172554;
+
+    font-size: 26px;
+    font-weight: 800;
+}
+
+.employee-not-found p {
+    max-width: 430px;
+    margin: 0 0 19px;
+
+    color: #94a3b8;
+
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+.employee-not-found .employee-back-btn {
+    background: #ffffff;
+}
+
+
+/* =========================================================
+   RESPONSIVE — 1200px
+========================================================= */
+
+@media (max-width: 1200px) {
+    .employee-details-profile {
+        grid-template-columns: 1fr;
+    }
+
+    .employee-details-info {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — 900px
+========================================================= */
+
+@media (max-width: 900px) {
+    .employee-details-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .employee-details-header .employee-back-btn {
+        align-self: flex-start;
+    }
+
+    .employee-profile-name-row {
+        flex-direction: column;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — 768px
+========================================================= */
+
+@media (max-width: 768px) {
+    .employee-details-page {
+        padding: 20px;
+    }
+
+    .employee-details-header {
+        padding: 23px;
+        border-radius: 19px;
+    }
+
+    .employee-details-header h1 {
+        font-size: 29px;
+    }
+
+    .employee-details-profile,
+    .employee-information-section {
+        padding: 18px;
+    }
+
+    .employee-profile-main {
+        align-items: flex-start;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — 600px
+========================================================= */
+
+@media (max-width: 600px) {
+    .employee-details-page {
+        padding: 15px;
+    }
+
+    .employee-details-header {
+        padding: 19px;
+        border-radius: 17px;
+    }
+
+    .employee-details-header-content {
+        align-items: flex-start;
+    }
+
+    .employee-details-header-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+    }
+
+    .employee-details-header h1 {
+        font-size: 25px;
+    }
+
+    .employee-details-header p {
+        font-size: 11px;
+    }
+
+    .employee-details-header .employee-back-btn {
+        width: 100%;
+    }
+
+    .employee-details-profile {
+        padding: 17px;
+    }
+
+    .employee-profile-main {
+        flex-direction: column;
+    }
+
+    .employee-details-avatar {
+        width: 70px;
+        height: 70px;
+    }
+
+    .employee-profile-content {
+        width: 100%;
+    }
+
+    .employee-profile-name-row {
+        align-items: flex-start;
+    }
+
+    .employee-profile-content h2 {
+        font-size: 21px;
+    }
+
+    .employee-profile-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .employee-information-section {
+        padding: 17px;
+    }
+
+    .employee-section-heading {
+        align-items: flex-start;
+    }
+
+    .employee-details-info {
+        grid-template-columns: 1fr;
+    }
+
+    .employee-details-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — 480px
+========================================================= */
+
+@media (max-width: 480px) {
+    .employee-details-page {
+        padding: 11px;
+    }
+
+    .employee-details-header {
+        padding: 16px;
+    }
+
+    .employee-details-header-content {
+        gap: 10px;
+    }
+
+    .employee-details-header-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .employee-details-eyebrow {
+        font-size: 8px;
+    }
+
+    .employee-details-header h1 {
+        font-size: 22px;
+    }
+
+    .employee-details-header p {
+        font-size: 10px;
+    }
+
+    .employee-details-profile,
+    .employee-information-section {
+        padding: 14px;
+    }
+
+    .employee-details-avatar {
+        width: 64px;
+        height: 64px;
+        font-size: 20px;
+    }
+
+    .employee-details-avatar::after {
+        width: 11px;
+        height: 11px;
+        border-width: 2px;
+    }
+
+    .employee-profile-content h2 {
+        font-size: 19px;
+    }
+
+    .employee-profile-position {
+        font-size: 11px;
+    }
+
+    .employee-section-heading h2 {
+        font-size: 15px;
+    }
+
+    .employee-details-item {
+        padding: 12px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — 390px
+========================================================= */
+
+@media (max-width: 390px) {
+    .employee-details-page {
+        padding: 9px;
+    }
+
+    .employee-details-header {
+        padding: 14px;
+    }
+
+    .employee-details-header h1 {
+        font-size: 20px;
+    }
+
+    .employee-details-header-icon {
+        width: 37px;
+        height: 37px;
+    }
+
+    .employee-details-profile,
+    .employee-information-section {
+        padding: 12px;
+    }
+
+    .employee-details-footer {
+        padding: 12px;
+    }
+
+    .employee-record-id {
+        align-self: flex-start;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — 340px
+========================================================= */
+
+@media (max-width: 340px) {
+    .employee-details-page {
+        padding: 7px;
+    }
+
+    .employee-details-header {
+        padding: 12px;
+    }
+
+    .employee-details-header h1 {
+        font-size: 18px;
+    }
+
+    .employee-details-eyebrow {
+        font-size: 7px;
+    }
+
+    .employee-details-header p {
+        font-size: 9px;
+    }
+
+    .employee-details-avatar {
+        width: 58px;
+        height: 58px;
+        border-radius: 15px;
+        font-size: 18px;
+    }
+
+    .employee-profile-content h2 {
+        font-size: 17px;
+    }
+
+    .employee-profile-summary {
+        padding: 9px;
+    }
+
+    .employee-information-section {
+        padding: 10px;
+    }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .employee-details-page *,
+    .employee-details-page *::before,
+    .employee-details-page *::after {
+        scroll-behavior: auto;
+        transition: none !important;
+        animation: none !important;
+    }
+}

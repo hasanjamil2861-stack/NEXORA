@@ -1,0 +1,749 @@
+/* =========================================================
+   NEXORA SIDEBAR
+   Professional / Scalable / Scrollable Navigation
+   ========================================================= */
+
+.sidebar {
+  position: sticky;
+  top: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  width: clamp(225px, 18vw, 275px);
+  height: 100vh;
+
+  flex-shrink: 0;
+  min-height: 0;
+
+  padding: 20px 13px;
+
+  box-sizing: border-box;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      180deg,
+      #0f172a 0%,
+      #111827 48%,
+      #0b1220 100%
+    );
+
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+
+  box-shadow:
+    8px 0 30px rgba(15, 23, 42, 0.09);
+
+  scrollbar-width: auto;
+  scrollbar-color: #475569 #111827;
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.sidebar::-webkit-scrollbar {
+  width: 9px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: #0b1220;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  min-height: 45px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #475569,
+      #64748b
+    );
+
+  border: 2px solid #0b1220;
+  border-radius: 999px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background:
+    linear-gradient(
+      180deg,
+      #64748b,
+      #94a3b8
+    );
+}
+
+.sidebar::-webkit-scrollbar-corner {
+  background: #0b1220;
+}
+
+/* =========================================================
+   BRAND
+   ========================================================= */
+
+.sidebar-brand {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-width: 0;
+
+  gap: 11px;
+
+  margin: 0 0 21px;
+  padding: 5px 7px 16px;
+
+  flex-shrink: 0;
+
+  box-sizing: border-box;
+
+  border-bottom: 1px solid rgba(148, 163, 184, 0.13);
+}
+
+.sidebar-brand::after {
+  content: "";
+
+  position: absolute;
+  left: 2px;
+  bottom: -1px;
+
+  width: 58px;
+  height: 2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #6366f1,
+      transparent
+    );
+
+  border-radius: 999px;
+}
+
+/* =========================================================
+   BRAND LOGO
+   ========================================================= */
+
+.sidebar-brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 45px;
+  height: 45px;
+
+  flex-shrink: 0;
+
+  padding: 2px;
+  box-sizing: border-box;
+
+  background: #1d1d1d;
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 12px;
+
+  box-shadow:
+    0 7px 18px rgba(0, 0, 0, 0.34),
+    0 0 0 4px rgba(59, 130, 246, 0.045);
+}
+
+.sidebar-brand-logo img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  border-radius: 10px;
+}
+
+/* =========================================================
+   BRAND TEXT
+   ========================================================= */
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+
+  gap: 4px;
+}
+
+.sidebar-brand-text h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: clamp(16px, 1.2vw, 19px);
+  font-weight: 850;
+  line-height: 1;
+
+  letter-spacing: 0.075em;
+
+  white-space: nowrap;
+}
+
+.sidebar-brand-text span {
+  display: block;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #64748b;
+
+  font-size: 7px;
+  font-weight: 650;
+  line-height: 1.3;
+
+  letter-spacing: 0.075em;
+
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+.sidebar-navigation {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  min-width: 0;
+
+  gap: 5px;
+
+  flex: 0 0 auto;
+}
+
+.sidebar a,
+.sidebar-logout {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: 45px;
+
+  flex-shrink: 0;
+
+  gap: 12px;
+
+  padding: 0 13px;
+
+  box-sizing: border-box;
+
+  color: #aeb8c8;
+
+  background: transparent;
+
+  border: 1px solid transparent;
+  border-radius: 9px;
+
+  font-family: inherit;
+  font-size: clamp(11px, 0.85vw, 13px);
+  font-weight: 600;
+
+  text-decoration: none;
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+/* =========================================================
+   SIDE INDICATOR
+   ========================================================= */
+
+.sidebar a::before,
+.sidebar-logout::before {
+  content: "";
+
+  position: absolute;
+  top: 50%;
+  left: 0;
+
+  width: 3px;
+  height: 0;
+
+  transform: translateY(-50%);
+
+  background: #60a5fa;
+
+  border-radius: 0 4px 4px 0;
+
+  transition: height 0.18s ease;
+}
+
+.sidebar a:hover,
+.sidebar-logout:hover {
+  color: #ffffff;
+
+  background: rgba(255, 255, 255, 0.055);
+
+  border-color: rgba(255, 255, 255, 0.045);
+
+  transform: translateX(1px);
+}
+
+.sidebar a:hover::before {
+  height: 18px;
+}
+
+/* =========================================================
+   ACTIVE ITEM
+   ========================================================= */
+
+.sidebar a.active {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(37, 99, 235, 0.25),
+      rgba(79, 70, 229, 0.15)
+    );
+
+  border-color: rgba(96, 165, 250, 0.10);
+
+  box-shadow:
+    inset 0 0 18px rgba(59, 130, 246, 0.025);
+}
+
+.sidebar a.active::before {
+  height: 23px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #60a5fa,
+      #4f46e5
+    );
+
+  box-shadow:
+    0 0 10px rgba(96, 165, 250, 0.38);
+}
+
+/* =========================================================
+   ICONS
+   ========================================================= */
+
+.sidebar-icon {
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+
+  flex-shrink: 0;
+
+  color: #8390a3;
+
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.sidebar a:hover .sidebar-icon,
+.sidebar-logout:hover .sidebar-icon {
+  color: #dbeafe;
+  transform: translateX(1px);
+}
+
+.sidebar a.active .sidebar-icon {
+  color: #93c5fd;
+}
+
+/* =========================================================
+   LOGOUT
+   ========================================================= */
+
+.sidebar-logout {
+  margin-top: 15px;
+}
+
+.sidebar-logout:hover {
+  color: #ffffff;
+
+  background: rgba(220, 38, 38, 0.16);
+
+  border-color: rgba(239, 68, 68, 0.09);
+}
+
+.sidebar-logout:hover::before {
+  height: 21px;
+
+  background: #ef4444;
+
+  box-shadow:
+    0 0 8px rgba(239, 68, 68, 0.25);
+}
+
+.sidebar-logout:hover .sidebar-icon {
+  color: #fca5a5;
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+.sidebar a:focus-visible,
+.sidebar-logout:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   LARGE DESKTOP
+   ========================================================= */
+
+@media (min-width: 1400px) {
+  .sidebar {
+    padding: 22px 15px;
+  }
+
+  .sidebar-brand {
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+  }
+
+  .sidebar-brand-logo {
+    width: 49px;
+    height: 49px;
+  }
+
+  .sidebar a,
+  .sidebar-logout {
+    min-height: 48px;
+    padding-inline: 14px;
+  }
+
+  .sidebar-icon {
+    width: 19px;
+    min-width: 19px;
+    height: 19px;
+  }
+}
+
+/* =========================================================
+   SMALL DESKTOP / TABLET
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .sidebar {
+    width: 220px;
+    padding: 18px 11px;
+  }
+
+  .sidebar-brand {
+    margin-inline: 3px;
+  }
+
+  .sidebar a,
+  .sidebar-logout {
+    padding-inline: 11px;
+    font-size: 11px;
+  }
+}
+
+/* =========================================================
+   COMPACT TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 82px;
+    padding: 16px 9px;
+
+    align-items: center;
+  }
+
+  .sidebar-brand {
+    width: 55px;
+
+    margin: 0 0 18px;
+    padding: 0 0 15px;
+
+    justify-content: center;
+
+    border-bottom-color: rgba(148, 163, 184, 0.11);
+  }
+
+  .sidebar-brand::after {
+    left: 50%;
+
+    width: 31px;
+
+    transform: translateX(-50%);
+  }
+
+  .sidebar-brand-logo {
+    width: 49px;
+    height: 49px;
+
+    border-radius: 13px;
+  }
+
+  .sidebar-brand-logo img {
+    border-radius: 11px;
+  }
+
+  .sidebar-brand-text {
+    display: none;
+  }
+
+  .sidebar-navigation {
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sidebar a,
+  .sidebar-logout {
+    width: 56px;
+    height: 49px;
+    min-height: 49px;
+
+    padding: 0;
+
+    justify-content: center;
+
+    gap: 0;
+
+    border-radius: 10px;
+
+    font-size: 0;
+  }
+
+  .sidebar a::before,
+  .sidebar-logout::before {
+    left: -1px;
+  }
+
+  .sidebar-icon {
+    width: 21px;
+    min-width: 21px;
+    height: 21px;
+  }
+
+  .sidebar-logout {
+    margin-top: auto;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .sidebar {
+    width: 70px;
+    padding: 13px 8px;
+  }
+
+  .sidebar-brand {
+    width: 49px;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+  }
+
+  .sidebar-brand-logo {
+    width: 43px;
+    height: 43px;
+    border-radius: 11px;
+  }
+
+  .sidebar-brand-logo img {
+    border-radius: 9px;
+  }
+
+  .sidebar a,
+  .sidebar-logout {
+    width: 50px;
+    height: 46px;
+    min-height: 46px;
+
+    border-radius: 9px;
+  }
+
+  .sidebar-icon {
+    width: 20px;
+    min-width: 20px;
+    height: 20px;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    width: 7px;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 64px;
+    padding: 11px 7px;
+  }
+
+  .sidebar-brand {
+    width: 46px;
+    margin-bottom: 13px;
+    padding-bottom: 10px;
+  }
+
+  .sidebar-brand-logo {
+    width: 39px;
+    height: 39px;
+    border-radius: 10px;
+  }
+
+  .sidebar-brand-logo img {
+    border-radius: 8px;
+  }
+
+  .sidebar a,
+  .sidebar-logout {
+    width: 48px;
+    height: 44px;
+    min-height: 44px;
+
+    border-radius: 8px;
+  }
+
+  .sidebar-icon {
+    width: 19px;
+    min-width: 19px;
+    height: 19px;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+}
+
+/* =========================================================
+   VERY SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 400px) {
+  .sidebar {
+    width: 60px;
+    padding: 10px 6px;
+  }
+
+  .sidebar-brand {
+    width: 43px;
+    margin-bottom: 12px;
+    padding-bottom: 9px;
+  }
+
+  .sidebar-brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+  }
+
+  .sidebar-brand-logo img {
+    border-radius: 7px;
+  }
+
+  .sidebar a,
+  .sidebar-logout {
+    width: 45px;
+    height: 43px;
+    min-height: 43px;
+
+    border-radius: 8px;
+  }
+
+  .sidebar-icon {
+    width: 18px;
+    min-width: 18px;
+    height: 18px;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    width: 5px;
+  }
+}
+
+/* =========================================================
+   EXTRA SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 340px) {
+  .sidebar {
+    width: 56px;
+    padding: 9px 5px;
+  }
+
+  .sidebar-brand {
+    width: 40px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  .sidebar-brand-logo {
+    width: 33px;
+    height: 33px;
+    border-radius: 8px;
+  }
+
+  .sidebar-brand-logo img {
+    border-radius: 6px;
+  }
+
+  .sidebar a,
+  .sidebar-logout {
+    width: 41px;
+    height: 40px;
+    min-height: 40px;
+
+    border-radius: 7px;
+  }
+
+  .sidebar-icon {
+    width: 17px;
+    min-width: 17px;
+    height: 17px;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    width: 5px;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar a,
+  .sidebar-logout,
+  .sidebar-icon,
+  .sidebar a::before,
+  .sidebar-logout::before {
+    transition: none;
+  }
+
+  .sidebar {
+    scroll-behavior: auto;
+  }
+}

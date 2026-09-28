@@ -1,0 +1,695 @@
+/* =========================================================
+   NEXORA - TRASH CARD
+   Premium Business Management UI
+========================================================= */
+
+.trash-card {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    border: 1px solid #e2e8f0;
+
+    border-radius: 17px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff,
+            #fcfdff
+        );
+
+    box-shadow:
+        0 5px 17px rgba(15, 23, 42, 0.05),
+        0 1px 3px rgba(15, 23, 42, 0.025);
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+
+    animation:
+        trashCardEnter 0.42s ease both;
+}
+
+.trash-card:nth-child(2) {
+    animation-delay: 0.04s;
+}
+
+.trash-card:nth-child(3) {
+    animation-delay: 0.08s;
+}
+
+.trash-card:nth-child(4) {
+    animation-delay: 0.12s;
+}
+
+.trash-card:nth-child(5) {
+    animation-delay: 0.16s;
+}
+
+.trash-card:nth-child(6) {
+    animation-delay: 0.2s;
+}
+
+.trash-card:hover {
+    transform: translateY(-6px);
+
+    border-color: #d4deeb;
+
+    box-shadow:
+        0 17px 34px rgba(15, 23, 42, 0.1),
+        0 4px 11px rgba(79, 70, 229, 0.04);
+}
+
+
+/* =========================================================
+   ACCENT
+========================================================= */
+
+.trash-card-accent {
+    width: 100%;
+    height: 4px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #dc2626,
+            #e11d48,
+            #7c3aed
+        );
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.trash-card-header {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 11px;
+
+    padding:
+        19px
+        19px
+        15px;
+}
+
+.trash-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 45px;
+    height: 45px;
+
+    border: 1px solid #fee2e2;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff1f2,
+            #fee2e2
+        );
+
+    color: #dc2626;
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.trash-card:hover .trash-card-icon {
+    transform:
+        rotate(-5deg)
+        scale(1.07);
+
+    box-shadow:
+        0 8px 16px rgba(220, 38, 38, 0.1);
+}
+
+
+/* =========================================================
+   TYPE
+========================================================= */
+
+.trash-card-type {
+    min-width: 0;
+
+    flex: 1;
+}
+
+.trash-card-type span {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #94a3b8;
+
+    font-size: 8px;
+    font-weight: 850;
+
+    letter-spacing: 1.4px;
+
+    text-transform: uppercase;
+}
+
+.trash-card-type strong {
+    display: block;
+
+    overflow-wrap: anywhere;
+
+    color: #172033;
+
+    font-size: 15px;
+    font-weight: 820;
+
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.trash-card-status {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 5px;
+
+    flex-shrink: 0;
+
+    padding: 6px 8px;
+
+    border-radius: 8px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f8fafc,
+            #f1f5f9
+        );
+
+    color: #64748b;
+
+    font-size: 9px;
+    font-weight: 750;
+}
+
+.trash-card-status svg {
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   BODY
+========================================================= */
+
+.trash-card-body {
+    padding:
+        0
+        19px
+        15px;
+}
+
+.trash-card-body h3 {
+    margin: 0 0 6px;
+
+    overflow-wrap: anywhere;
+
+    color: #172033;
+
+    font-size: 17px;
+    font-weight: 820;
+
+    line-height: 1.35;
+}
+
+.trash-card-body p {
+    min-height: 35px;
+
+    margin: 0;
+
+    overflow-wrap: anywhere;
+
+    color: #64748b;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   META
+========================================================= */
+
+.trash-card-meta {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr;
+
+    gap: 9px;
+
+    padding:
+        0
+        19px;
+}
+
+.trash-meta-item {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    min-width: 0;
+
+    padding: 10px;
+
+    border: 1px solid #e9edf4;
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #fbfdff,
+            #f8faff
+        );
+
+    color: #64748b;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.trash-meta-item:hover {
+    transform: translateY(-2px);
+
+    border-color: #dce5f1;
+}
+
+.trash-meta-item svg {
+    flex-shrink: 0;
+
+    color: #818cf8;
+}
+
+.trash-meta-item span {
+    min-width: 0;
+
+    overflow-wrap: anywhere;
+
+    color: #475569;
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.trash-card-footer {
+    display: flex;
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-top: 15px;
+
+    padding:
+        14px
+        19px
+        18px;
+
+    border-top: 1px solid #edf1f5;
+}
+
+
+/* =========================================================
+   RETENTION
+========================================================= */
+
+.trash-retention {
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+
+    flex-shrink: 0;
+
+    color: #059669;
+
+    font-size: 9px;
+    font-weight: 750;
+
+    letter-spacing: 0.4px;
+}
+
+.trash-retention svg {
+    color: #10b981;
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.trash-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    min-width: 0;
+}
+
+.trash-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    min-height: 34px;
+
+    padding: 0 10px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    font-size: 10px;
+    font-weight: 750;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+/* Restore */
+
+.trash-restore-btn {
+    background:
+        linear-gradient(
+            135deg,
+            #ecfdf5,
+            #d1fae5
+        );
+
+    color: #059669;
+}
+
+.trash-restore-btn:hover {
+    transform: translateY(-2px);
+
+    background:
+        linear-gradient(
+            135deg,
+            #d1fae5,
+            #bbf7d0
+        );
+
+    box-shadow:
+        0 7px 14px rgba(5, 150, 105, 0.1);
+}
+
+
+/* Delete */
+
+.trash-delete-btn {
+    background:
+        linear-gradient(
+            135deg,
+            #fff1f2,
+            #ffe4e6
+        );
+
+    color: #dc2626;
+}
+
+.trash-delete-btn:hover {
+    transform: translateY(-2px);
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffe4e6,
+            #fecdd3
+        );
+
+    box-shadow:
+        0 7px 14px rgba(220, 38, 38, 0.1);
+}
+
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+@keyframes trashCardEnter {
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+/* =========================================================
+   768px
+========================================================= */
+
+@media (max-width: 768px) {
+
+    .trash-card-footer {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .trash-actions {
+        width: 100%;
+    }
+
+    .trash-actions button {
+        flex: 1;
+    }
+}
+
+
+/* =========================================================
+   480px
+========================================================= */
+
+@media (max-width: 480px) {
+
+    .trash-card {
+        border-radius: 14px;
+    }
+
+    .trash-card-header {
+        padding:
+            16px
+            15px
+            13px;
+    }
+
+    .trash-card-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .trash-card-type strong {
+        font-size: 14px;
+    }
+
+    .trash-card-status {
+        padding: 6px;
+
+        font-size: 8px;
+    }
+
+    .trash-card-status span {
+        display: none;
+    }
+
+    .trash-card-body {
+        padding:
+            0
+            15px
+            13px;
+    }
+
+    .trash-card-body h3 {
+        font-size: 15px;
+    }
+
+    .trash-card-body p {
+        font-size: 10px;
+    }
+
+    .trash-card-meta {
+        padding:
+            0
+            15px;
+    }
+
+    .trash-meta-item {
+        padding: 8px;
+    }
+
+    .trash-meta-item span {
+        font-size: 9px;
+    }
+
+    .trash-card-footer {
+        padding:
+            13px
+            15px
+            15px;
+    }
+
+    .trash-actions button span {
+        display: none;
+    }
+
+    .trash-actions button {
+        width: 34px;
+
+        flex: 0 0 34px;
+
+        padding: 0;
+    }
+}
+
+
+/* =========================================================
+   400px
+========================================================= */
+
+@media (max-width: 400px) {
+
+    .trash-card-header {
+        gap: 8px;
+    }
+
+    .trash-card-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .trash-card-type strong {
+        font-size: 13px;
+    }
+
+    .trash-card-meta {
+        gap: 6px;
+    }
+
+    .trash-meta-item {
+        padding: 7px;
+    }
+}
+
+
+/* =========================================================
+   340px
+========================================================= */
+
+@media (max-width: 340px) {
+
+    .trash-card-header {
+        padding:
+            14px
+            12px
+            11px;
+    }
+
+    .trash-card-body {
+        padding:
+            0
+            12px
+            11px;
+    }
+
+    .trash-card-meta {
+        padding:
+            0
+            12px;
+    }
+
+    .trash-card-footer {
+        padding:
+            11px
+            12px
+            13px;
+    }
+
+    .trash-retention {
+        display: none;
+    }
+
+    .trash-actions {
+        width: 100%;
+
+        justify-content: flex-end;
+    }
+
+    .trash-actions button {
+        width: 34px;
+
+        flex: 0 0 34px;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .trash-card {
+        animation: none;
+
+        transition: none;
+    }
+
+    .trash-card-icon,
+    .trash-meta-item,
+    .trash-actions button {
+        transition: none;
+    }
+}

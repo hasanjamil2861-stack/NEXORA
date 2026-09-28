@@ -1,0 +1,104 @@
+/* =========================================================
+   NAVBAR
+========================================================= */
+
+.navbar {
+    width: 100%;
+    height: 70px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    box-sizing: border-box;
+    padding: 0 30px;
+
+    background: #111827;
+    color: #ffffff;
+}
+
+.navbar h2 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.navbar-links a {
+    color: #d1d5db;
+
+    font-size: 15px;
+    text-decoration: none;
+
+    transition:
+        color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.navbar-links a:hover,
+.navbar-links a.active {
+    color: #ffffff;
+}
+
+.navbar-links a.active {
+    font-weight: 700;
+}
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+.navbar-links a:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 600px) {
+    .navbar {
+        height: 64px;
+        padding: 0 18px;
+    }
+
+    .navbar h2 {
+        font-size: 19px;
+    }
+
+    .navbar-links {
+        gap: 16px;
+    }
+
+    .navbar-links a {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 400px) {
+    .navbar {
+        padding: 0 14px;
+    }
+
+    .navbar h2 {
+        font-size: 17px;
+    }
+
+    .navbar-links {
+        gap: 11px;
+    }
+
+    .navbar-links a {
+        font-size: 13px;
+    }
+}

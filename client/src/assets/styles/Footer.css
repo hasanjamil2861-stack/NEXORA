@@ -1,0 +1,549 @@
+/* =========================================================
+   NEXORA FOOTER
+   Professional Business Management Design
+========================================================= */
+
+.nexora-footer {
+    position: relative;
+    width: 100%;
+    margin-top: auto;
+
+    background:
+        radial-gradient(
+            circle at 8% 20%,
+            rgba(37, 99, 235, 0.08),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 90% 10%,
+            rgba(79, 70, 229, 0.07),
+            transparent 26%
+        ),
+        linear-gradient(
+            180deg,
+            #f8faff 0%,
+            #f3f6fb 100%
+        );
+
+    border-top: 1px solid #e3e9f2;
+    color: #172033;
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   TOP ACCENT
+========================================================= */
+
+.footer-top-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 3px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #2563eb 0%,
+            #4f46e5 38%,
+            #7c3aed 68%,
+            #06b6d4 100%
+        );
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
+
+.footer-container {
+    width: 100%;
+    max-width: 1500px;
+
+    margin: 0 auto;
+    padding: 52px 34px 42px;
+
+    box-sizing: border-box;
+
+    display: grid;
+    grid-template-columns:
+        minmax(260px, 1.7fr)
+        minmax(150px, 1fr)
+        minmax(160px, 1fr)
+        minmax(220px, 1.2fr);
+
+    gap: 48px;
+}
+
+
+/* =========================================================
+   BRAND
+========================================================= */
+
+.footer-brand-section {
+    min-width: 0;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.footer-logo {
+    width: 50px;
+    height: 50px;
+    padding: 5px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #ffffff;
+
+    border: 1px solid #dfe6f0;
+    border-radius: 15px;
+
+    box-shadow:
+        0 8px 22px rgba(15, 23, 42, 0.07);
+}
+
+.footer-logo img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+    border-radius: 9px;
+}
+
+.footer-brand-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-brand-content h2 {
+    margin: 0;
+
+    color: #172033;
+
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+}
+
+.footer-brand-content span {
+    margin-top: 4px;
+
+    color: #64748b;
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.footer-description {
+    max-width: 390px;
+    margin: 18px 0 20px;
+
+    color: #64748b;
+
+    font-size: 12px;
+    line-height: 1.75;
+}
+
+.footer-security {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 11px;
+
+    color: #047857;
+
+    background: #ecfdf5;
+
+    border: 1px solid #d1fae5;
+    border-radius: 10px;
+
+    font-size: 10px;
+    font-weight: 750;
+}
+
+.footer-security svg {
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   FOOTER COLUMNS
+========================================================= */
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.footer-column h3 {
+    margin: 4px 0 17px;
+
+    color: #172033;
+
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+
+.footer-column a {
+    width: fit-content;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    margin-bottom: 12px;
+
+    color: #64748b;
+
+    text-decoration: none;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.footer-column a svg {
+    opacity: 0;
+
+    transform: translate(-3px, 3px);
+
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+}
+
+.footer-column a:hover {
+    color: #2563eb;
+    transform: translateX(2px);
+}
+
+.footer-column a:hover svg {
+    opacity: 1;
+    transform: translate(0, 0);
+}
+
+.footer-column a:focus-visible,
+.footer-bottom-links a:focus-visible,
+.footer-contact-column a:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.18);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+
+/* =========================================================
+   CONTACT
+========================================================= */
+
+.footer-contact-column a,
+.footer-contact-item {
+    width: 100%;
+    margin-bottom: 14px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+
+    color: #64748b;
+
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.footer-contact-column a {
+    text-decoration: none;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.footer-contact-column a:hover {
+    color: #2563eb;
+    transform: none;
+}
+
+.footer-contact-column a svg,
+.footer-contact-item svg {
+    flex-shrink: 0;
+
+    margin-top: 2px;
+
+    color: #4f46e5;
+
+    opacity: 1;
+    transform: none;
+}
+
+
+/* =========================================================
+   BOTTOM BAR
+========================================================= */
+
+.footer-bottom {
+    border-top: 1px solid #e3e9f2;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.footer-bottom-container {
+    width: 100%;
+    max-width: 1500px;
+
+    margin: 0 auto;
+    padding: 17px 34px;
+
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.footer-bottom p {
+    margin: 0;
+
+    color: #94a3b8;
+
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.footer-bottom-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.footer-bottom-links a {
+    color: #64748b;
+
+    font-size: 10px;
+    font-weight: 650;
+
+    text-decoration: none;
+
+    transition: color 0.2s ease;
+}
+
+.footer-bottom-links a:hover {
+    color: #2563eb;
+}
+
+.footer-made-with {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.footer-made-with svg {
+    color: #ef4444;
+}
+
+
+/* =========================================================
+   RESPONSIVE — 1100px
+========================================================= */
+
+@media (max-width: 1100px) {
+    .footer-container {
+        grid-template-columns:
+            minmax(250px, 1.5fr)
+            repeat(2, minmax(150px, 1fr))
+            minmax(190px, 1fr);
+
+        gap: 34px;
+    }
+
+    .footer-description {
+        max-width: 340px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — 900px
+========================================================= */
+
+@media (max-width: 900px) {
+    .footer-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 34px 45px;
+        padding: 44px 28px 36px;
+    }
+
+    .footer-brand-section {
+        grid-column: 1 / -1;
+    }
+
+    .footer-description {
+        max-width: 650px;
+    }
+
+    .footer-bottom-container {
+        padding: 16px 28px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — 600px
+========================================================= */
+
+@media (max-width: 600px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 38px 20px 30px;
+    }
+
+    .footer-brand-section {
+        grid-column: auto;
+    }
+
+    .footer-description {
+        max-width: 100%;
+    }
+
+    .footer-column h3 {
+        margin-bottom: 13px;
+    }
+
+    .footer-column a {
+        margin-bottom: 10px;
+    }
+
+    .footer-bottom-container {
+        flex-direction: column;
+        align-items: center;
+
+        padding: 17px 20px;
+
+        gap: 11px;
+
+        text-align: center;
+    }
+
+    .footer-bottom-links {
+        gap: 15px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — 420px
+========================================================= */
+
+@media (max-width: 420px) {
+    .footer-container {
+        gap: 25px;
+        padding: 34px 16px 27px;
+    }
+
+    .footer-logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 13px;
+    }
+
+    .footer-brand-content h2 {
+        font-size: 18px;
+    }
+
+    .footer-brand-content span {
+        font-size: 9px;
+    }
+
+    .footer-description {
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+    .footer-security {
+        font-size: 9px;
+    }
+
+    .footer-bottom-container {
+        padding: 16px 14px;
+    }
+
+    .footer-bottom-links {
+        gap: 12px;
+    }
+
+    .footer-bottom p,
+    .footer-bottom-links a {
+        font-size: 9px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — 340px
+========================================================= */
+
+@media (max-width: 340px) {
+    .footer-container {
+        padding-right: 13px;
+        padding-left: 13px;
+    }
+
+    .footer-brand {
+        gap: 9px;
+    }
+
+    .footer-logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    .footer-brand-content h2 {
+        font-size: 16px;
+    }
+
+    .footer-brand-content span {
+        display: none;
+    }
+
+    .footer-security {
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: center;
+    }
+
+    .footer-bottom-links {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .footer-column a,
+    .footer-column a svg,
+    .footer-contact-column a,
+    .footer-bottom-links a {
+        transition: none;
+    }
+}
