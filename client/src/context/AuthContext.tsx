@@ -20,6 +20,11 @@ type AuthContextType = {
     email: string,
     password: string
   ) => Promise<boolean>
+  register: (
+    name: string,
+    email: string,
+    password: string
+  ) => Promise<boolean>
   logout: () => void
 }
 
@@ -35,7 +40,8 @@ export function AuthProvider({
   children,
 }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem("nexora-user")
+    const savedUser =
+      localStorage.getItem("nexora-user")
 
     return savedUser
       ? JSON.parse(savedUser)
@@ -91,6 +97,34 @@ export function AuthProvider({
     }
   }
 
+  // Register a new Employee account
+  const register = async (
+    name: string,
+    email: string,
+    password: string
+  ): Promise<boolean> => {
+    try {
+      const response = await fetch(
+        "https://nexora-3-v485.onrender.com/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+          }),
+        }
+      )
+
+      return response.ok
+    } catch {
+      return false
+    }
+  }
+
   const logout = () => {
     setUser(null)
     setToken(null)
@@ -107,6 +141,7 @@ export function AuthProvider({
         isAuthenticated:
           user !== null && token !== null,
         login,
+        register,
         logout,
       }}
     >

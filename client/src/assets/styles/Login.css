@@ -58,8 +58,6 @@
     z-index: 0;
 }
 
-/* Soft grid */
-
 .login-grid {
     position: absolute;
     inset: 0;
@@ -123,12 +121,6 @@
 
     user-select: none;
 }
-
-/*
-   Soft fade over the logo.
-   Keeps the logo visible but prevents it
-   from competing with the login card.
-*/
 
 .login-logo-overlay {
     position: absolute;
@@ -372,8 +364,6 @@
     animation: loginCardEnter 0.8s ease both;
 }
 
-/* Top premium gradient */
-
 .login-card-top-line {
     position: absolute;
 
@@ -392,8 +382,6 @@
             #06b6d4 100%
         );
 }
-
-/* Internal glow */
 
 .login-card-glow {
     position: absolute;
@@ -494,6 +482,46 @@
 
     font-size: 13px;
     line-height: 1.65;
+}
+
+/* =========================================================
+   SUCCESS MESSAGE
+========================================================= */
+
+.login-success {
+    position: relative;
+    z-index: 3;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 18px;
+    padding: 11px 13px;
+
+    border-radius: 12px;
+
+    border: 1px solid #bbf7d0;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f0fdf4,
+            #ecfdf5
+        );
+
+    color: #047857;
+
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.5;
+
+    text-align: center;
+
+    box-shadow:
+        0 7px 18px rgba(16, 185, 129, 0.06);
+
+    animation: loginSuccessIn 0.3s ease both;
 }
 
 /* =========================================================
@@ -608,7 +636,8 @@
     transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease,
-        background 0.2s ease;
+        background 0.2s ease,
+        transform 0.2s ease;
 }
 
 .login-input-wrapper input::placeholder {
@@ -675,13 +704,18 @@
 
     transition:
         background 0.2s ease,
-        color 0.2s ease;
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .login-password-toggle:hover {
     background: #eef2ff;
 
     color: #4f46e5;
+}
+
+.login-password-toggle:active {
+    transform: translateY(-50%) scale(0.94);
 }
 
 /* =========================================================
@@ -816,6 +850,50 @@
 }
 
 /* =========================================================
+   REGISTER LINK
+========================================================= */
+
+.login-register-link {
+    position: relative;
+    z-index: 3;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    margin-top: 21px;
+
+    color: #94a3b8;
+
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.login-register-link span {
+    color: #94a3b8;
+}
+
+.login-register-link a {
+    color: #4f46e5;
+
+    font-weight: 800;
+
+    text-decoration: none;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.login-register-link a:hover {
+    color: #2563eb;
+
+    text-decoration: underline;
+}
+
+/* =========================================================
    SECURITY
 ========================================================= */
 
@@ -912,12 +990,16 @@
     font-size: 10px;
     font-weight: 650;
 
+    text-align: center;
+
     animation: loginFadeUp 0.9s ease both;
 }
 
 .login-footer-divider {
     width: 4px;
     height: 4px;
+
+    flex-shrink: 0;
 
     border-radius: 50%;
 
@@ -1046,6 +1128,18 @@
     }
 }
 
+@keyframes loginSuccessIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* =========================================================
    RESPONSIVE
 ========================================================= */
@@ -1134,6 +1228,18 @@
         font-size: 12px;
     }
 
+    .login-success {
+        font-size: 11px;
+
+        padding: 10px 11px;
+    }
+
+    .login-register-link {
+        margin-top: 18px;
+
+        font-size: 10.5px;
+    }
+
     .login-logo-background {
         width: 470px;
         height: 470px;
@@ -1185,6 +1291,14 @@
         height: 51px;
     }
 
+    .login-register-link {
+        flex-wrap: wrap;
+
+        gap: 4px;
+
+        text-align: center;
+    }
+
     .login-security {
         margin-top: 20px;
         padding-top: 17px;
@@ -1234,6 +1348,10 @@
         gap: 4px;
     }
 
+    .login-register-link {
+        font-size: 10px;
+    }
+
     .login-footer {
         flex-wrap: wrap;
 
@@ -1257,20 +1375,36 @@
    ACCESSIBILITY
 ========================================================= */
 
+.login-forgot-btn:focus-visible,
+.login-password-toggle:focus-visible,
+.login-submit-btn:focus-visible,
+.login-register-link a:focus-visible {
+    outline: 3px solid rgba(99, 102, 241, 0.25);
+
+    outline-offset: 3px;
+}
+
+.login-input-wrapper input:focus-visible {
+    outline: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .login-brand,
     .login-card,
     .login-footer,
     .login-logo-background,
     .login-orb,
-    .login-light {
+    .login-light,
+    .login-error,
+    .login-success {
         animation: none;
     }
 
     .login-submit-btn,
     .login-input-wrapper input,
     .login-password-toggle,
-    .login-forgot-btn {
+    .login-forgot-btn,
+    .login-register-link a {
         transition: none;
     }
 }

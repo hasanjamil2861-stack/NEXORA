@@ -1,22 +1,20 @@
 const jwt = require("jsonwebtoken")
 
-const authMiddleware = (req, res, next) => {
+// Verify that the user is logged in
+const protect = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization
 
-    if (!authHeader) {
+    if (
+      !authHeader ||
+      !authHeader.startsWith("Bearer ")
+    ) {
       return res.status(401).json({
-        message: "Access denied. No token provided."
+        message: "Authentication required.",
       })
     }
 
     const token = authHeader.split(" ")[1]
-
-    if (!token) {
-      return res.status(401).json({
-        message: "Access denied. Invalid token."
-      })
-    }
 
     const decoded = jwt.verify(
       token,
@@ -28,9 +26,24 @@ const authMiddleware = (req, res, next) => {
     next()
   } catch (error) {
     return res.status(401).json({
-      message: "Invalid or expired token"
+      message: "Invalid or expired token.",
     })
   }
 }
 
-module.exports = authMiddleware
+// Allow only Admin users
+const adminOnly = (req, res, next) => {
+  if (req.user?.role !== "Admin") {
+    return res.status(403).json({
+      message:
+        "Access denied. Admin permission required.",
+    })
+  }
+
+  next()
+}
+
+module.exports = {
+  protect,
+  adminOnly,
+}

@@ -2,28 +2,45 @@ const User = require("../models/User")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 
-// Register a new user
+// Register a new Employee
 const registerUser = async (req, res) => {
   try {
     const {
       name,
       email,
       password,
-      role,
     } = req.body
 
+    // Check if email already exists
+    const existingUser = await User.findOne({
+      email,
+    })
+
+    if (existingUser) {
+      return res.status(409).json({
+        message: "An account with this email already exists.",
+      })
+    }
+
+    // New registered accounts are always Employees
     const newUser = new User({
       name,
       email,
       password,
-      role,
+      role: "Employee",
     })
 
     await newUser.save()
 
+    // Never return the hashed password
     res.status(201).json({
       message: "User registered successfully",
-      user: newUser,
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      },
     })
   } catch (error) {
     console.error("Register error:", error)

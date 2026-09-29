@@ -22,10 +22,12 @@ import "@assets/styles/TaskCard.css"
 import "@assets/styles/Toast.css"
 import "@assets/styles/Trash.css"
 import "@assets/styles/TrashCard.css"
+import "@assets/styles/Register.css"
 
 import { TrashProvider } from "./context/TrashContext"
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute"
 import MainLayout from "./layouts/MainLayout/MainLayout"
+
 import Attendance from "./pages/Attendance/Attendance"
 import Clients from "./pages/Clients/Clients"
 import Contracts from "./pages/Contracts/Contracts"
@@ -41,17 +43,25 @@ import Projects from "./pages/Projects/Projects"
 import Reports from "./pages/Reports/Reports"
 import Tasks from "./pages/Tasks/Tasks"
 import Trash from "./pages/Trash/Trash"
+import Register from "./pages/Register/Register"
 
 export default function App() {
   return (
     <BrowserRouter>
       <TrashProvider>
         <Routes>
+          {/* Public Routes */}
           <Route
             path="/login"
             element={<Login />}
           />
 
+          <Route
+            path="/register"
+            element={<Register />}
+          />
+
+          {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
               <Route

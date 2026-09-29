@@ -1,7 +1,9 @@
 const express = require("express")
 
-const authMiddleware = require("../middleware/authMiddleware")
-const roleMiddleware = require("../middleware/roleMiddleware")
+const {
+  protect,
+  adminOnly,
+} = require("../middleware/authMiddleware")
 
 const {
   getEmployees,
@@ -12,27 +14,34 @@ const {
 
 const router = express.Router()
 
-// Create employee
-router.post("/employees", postEmployee)
+// Create employee - Admin only
+router.post(
+  "/employees",
+  protect,
+  adminOnly,
+  postEmployee
+)
 
-// Get all employees
+// Get all employees - Admin + Employee
 router.get(
   "/employees",
-  authMiddleware,
+  protect,
   getEmployees
 )
 
-// Update employee
+// Update employee - Admin only
 router.put(
   "/employees/:id",
+  protect,
+  adminOnly,
   updateEmployee
 )
 
-// Delete employee
+// Delete employee - Admin only
 router.delete(
   "/employees/:id",
-  authMiddleware,
-  roleMiddleware("Admin"),
+  protect,
+  adminOnly,
   deleteEmployee
 )
 

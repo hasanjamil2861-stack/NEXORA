@@ -1,5 +1,7 @@
-import { useState, type FormEvent } from "react"
-import { useNavigate } from "react-router-dom"
+import {
+    useState,
+    type FormEvent,
+} from "react"
 
 import {
     Mail,
@@ -12,18 +14,31 @@ import {
     CircleAlert,
 } from "lucide-react"
 
+import {
+    Link,
+    useLocation,
+    useNavigate,
+} from "react-router-dom"
+
 import { useAuth } from "../../context/AuthContext"
 import "../../assets/styles/Login.css"
 
 export default function Login() {
     const navigate = useNavigate()
+    const location = useLocation()
+
     const { login } = useAuth()
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
-    const [showPassword, setShowPassword] = useState(false)
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [showPassword, setShowPassword] =
+        useState(false)
+    const [isSubmitting, setIsSubmitting] =
+        useState(false)
+
+    const successMessage =
+        location.state?.message || ""
 
     async function handleSubmit(
         event: FormEvent<HTMLFormElement>
@@ -40,7 +55,9 @@ export default function Login() {
         }
 
         if (!cleanEmail.includes("@")) {
-            setError("Please enter a valid email address.")
+            setError(
+                "Please enter a valid email address."
+            )
             return
         }
 
@@ -61,14 +78,20 @@ export default function Login() {
             return
         }
 
-        setError("Invalid email or password.")
+        setError(
+            "Invalid email or password."
+        )
+
         setIsSubmitting(false)
     }
 
     return (
         <main className="login-page">
             {/* Background */}
-            <div className="login-background" aria-hidden="true">
+            <div
+                className="login-background"
+                aria-hidden="true"
+            >
                 <div className="login-grid" />
 
                 <div className="login-orb login-orb-one" />
@@ -100,7 +123,9 @@ export default function Login() {
 
                     <div className="login-brand-text">
                         <strong>NEXORA</strong>
-                        <span>Business Management</span>
+                        <span>
+                            Business Management
+                        </span>
                     </div>
                 </div>
 
@@ -112,16 +137,31 @@ export default function Login() {
                     <div className="login-header">
                         <div className="login-badge">
                             <Sparkles size={14} />
-                            <span>Secure Workspace</span>
+                            <span>
+                                Secure Workspace
+                            </span>
                         </div>
 
                         <h1>Welcome Back</h1>
 
                         <p>
-                            Sign in to your NEXORA business management
+                            Sign in to your NEXORA
+                            business management
                             workspace.
                         </p>
                     </div>
+
+                    {/* Registration Success */}
+                    {successMessage && (
+                        <div
+                            className="login-success"
+                            role="status"
+                        >
+                            <span>
+                                {successMessage}
+                            </span>
+                        </div>
+                    )}
 
                     <form
                         className="login-form"
@@ -149,7 +189,9 @@ export default function Login() {
                                     placeholder="admin@nexora.com"
                                     value={email}
                                     onChange={(event) => {
-                                        setEmail(event.target.value)
+                                        setEmail(
+                                            event.target.value
+                                        )
 
                                         if (error) {
                                             setError("")
@@ -197,7 +239,9 @@ export default function Login() {
                                     placeholder="Enter your password"
                                     value={password}
                                     onChange={(event) => {
-                                        setPassword(event.target.value)
+                                        setPassword(
+                                            event.target.value
+                                        )
 
                                         if (error) {
                                             setError("")
@@ -215,7 +259,8 @@ export default function Login() {
                                     }
                                     onClick={() =>
                                         setShowPassword(
-                                            (current) => !current
+                                            (current) =>
+                                                !current
                                         )
                                     }
                                 >
@@ -235,7 +280,9 @@ export default function Login() {
                                 role="alert"
                             >
                                 <CircleAlert size={18} />
-                                <span>{error}</span>
+                                <span>
+                                    {error}
+                                </span>
                             </div>
                         )}
 
@@ -255,6 +302,17 @@ export default function Login() {
                         </button>
                     </form>
 
+                    {/* Register Link */}
+                    <div className="login-register-link">
+                        <span>
+                            Don't have an account?
+                        </span>
+
+                        <Link to="/register">
+                            Create one
+                        </Link>
+                    </div>
+
                     {/* Security */}
                     <div className="login-security">
                         <div className="login-security-icon">
@@ -262,10 +320,13 @@ export default function Login() {
                         </div>
 
                         <div className="login-security-content">
-                            <strong>Secure Access</strong>
+                            <strong>
+                                Secure Access
+                            </strong>
 
                             <span>
-                                Your NEXORA workspace is protected.
+                                Your NEXORA workspace
+                                is protected.
                             </span>
                         </div>
 
@@ -277,9 +338,15 @@ export default function Login() {
 
                 {/* Footer */}
                 <footer className="login-footer">
-                    <span>© 2026 NEXORA</span>
+                    <span>
+                        © 2026 NEXORA
+                    </span>
+
                     <span className="login-footer-divider" />
-                    <span>Business Management System</span>
+
+                    <span>
+                        Business Management System
+                    </span>
                 </footer>
             </div>
         </main>
