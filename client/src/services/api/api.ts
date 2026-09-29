@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000"
+const API_URL = "https://nexora-3-v485.onrender.com"
 
 export async function apiRequest(
   endpoint: string,

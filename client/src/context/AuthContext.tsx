@@ -52,7 +52,7 @@ export function AuthProvider({
   ): Promise<boolean> => {
     try {
       const response = await fetch(
-        "http://localhost:5000/auth/login",
+        "https://nexora-3-v485.onrender.com/auth/login",
         {
           method: "POST",
           headers: {
