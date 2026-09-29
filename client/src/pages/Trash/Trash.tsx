@@ -19,17 +19,20 @@ import { useTrash } from "../../context/TrashContext"
 
 import Modal from "../../components/Modal/Modal"
 
+const API_URL =
+  "https://nexora-3-v485.onrender.com"
+
 const restoreEndpoints: Record<string, string> = {
-  Employee: "http://localhost:5000/employees",
-  Department: "http://localhost:5000/departments",
-  Project: "http://localhost:5000/projects",
-  Task: "http://localhost:5000/tasks",
-  Client: "http://localhost:5000/clients",
-  "Leave Request": "http://localhost:5000/leaveRequests",
-  Attendance: "http://localhost:5000/attendance",
-  Contract: "http://localhost:5000/contracts",
-  Invoice: "http://localhost:5000/invoices",
-  Document: "http://localhost:5000/documents",
+  Employee: `${API_URL}/employees`,
+  Department: `${API_URL}/departments`,
+  Project: `${API_URL}/projects`,
+  Task: `${API_URL}/tasks`,
+  Client: `${API_URL}/clients`,
+  "Leave Request": `${API_URL}/leaveRequests`,
+  Attendance: `${API_URL}/attendance`,
+  Contract: `${API_URL}/contracts`,
+  Invoice: `${API_URL}/invoices`,
+  Document: `${API_URL}/documents`,
 }
 
 type TrashFilter = "All" | string
@@ -161,14 +164,26 @@ export default function Trash() {
       const restoreData =
         prepareRestoreData(item.data)
 
+      const token =
+        localStorage.getItem(
+          "nexora-token"
+        )
+
+      const headers: HeadersInit = {
+        "Content-Type":
+          "application/json",
+      }
+
+      if (token) {
+        headers.Authorization =
+          `Bearer ${token}`
+      }
+
       const response = await fetch(
         endpoint,
         {
           method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+          headers,
           body: JSON.stringify(
             restoreData
           ),
