@@ -1,44 +1,48 @@
 const express = require("express")
 
-const authMiddleware = require("../middleware/authMiddleware")
-const roleMiddleware = require("../middleware/roleMiddleware")
+const {
+    protect,
+    adminOnly,
+} = require("../middleware/authMiddleware")
 
 const {
-  getTasks,
-  postTask,
-  updateTask,
-  deleteTask,
+    getTasks,
+    postTask,
+    updateTask,
+    deleteTask,
 } = require("../controllers/taskController")
 
 const router = express.Router()
 
-// Create a task
+// Create a task - Admin only
 router.post(
-  "/tasks",
-  authMiddleware,
-  postTask
+    "/tasks",
+    protect,
+    adminOnly,
+    postTask
 )
 
-// Get all tasks
+// Get all tasks - Admin + Employee
 router.get(
-  "/tasks",
-  authMiddleware,
-  getTasks
+    "/tasks",
+    protect,
+    getTasks
 )
 
-// Update a task
+// Update a task - Admin only
 router.put(
-  "/tasks/:id",
-  authMiddleware,
-  updateTask
+    "/tasks/:id",
+    protect,
+    adminOnly,
+    updateTask
 )
 
-// Delete a task
+// Delete a task - Admin only
 router.delete(
-  "/tasks/:id",
-  authMiddleware,
-  roleMiddleware("Admin"),
-  deleteTask
+    "/tasks/:id",
+    protect,
+    adminOnly,
+    deleteTask
 )
 
 module.exports = router

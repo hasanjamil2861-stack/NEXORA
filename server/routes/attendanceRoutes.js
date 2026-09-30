@@ -1,44 +1,48 @@
 const express = require("express")
 
-const authMiddleware = require("../middleware/authMiddleware")
-const roleMiddleware = require("../middleware/roleMiddleware")
+const {
+    protect,
+    adminOnly,
+} = require("../middleware/authMiddleware")
 
 const {
-  getAttendance,
-  postAttendance,
-  updateAttendance,
-  deleteAttendance,
+    getAttendance,
+    postAttendance,
+    updateAttendance,
+    deleteAttendance,
 } = require("../controllers/attendancesController")
 
 const router = express.Router()
 
-// Create attendance record
+// Create attendance record - Admin only
 router.post(
-  "/attendance",
-  authMiddleware,
-  postAttendance
+    "/attendance",
+    protect,
+    adminOnly,
+    postAttendance
 )
 
-// Get all attendance records
+// Get all attendance records - Admin + Employee
 router.get(
-  "/attendance",
-  authMiddleware,
-  getAttendance
+    "/attendance",
+    protect,
+    getAttendance
 )
 
-// Update attendance record
+// Update attendance record - Admin only
 router.put(
-  "/attendance/:id",
-  authMiddleware,
-  updateAttendance
+    "/attendance/:id",
+    protect,
+    adminOnly,
+    updateAttendance
 )
 
-// Delete attendance record
+// Delete attendance record - Admin only
 router.delete(
-  "/attendance/:id",
-  authMiddleware,
-  roleMiddleware("Admin"),
-  deleteAttendance
+    "/attendance/:id",
+    protect,
+    adminOnly,
+    deleteAttendance
 )
 
 module.exports = router

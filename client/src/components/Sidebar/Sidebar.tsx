@@ -1,4 +1,8 @@
-import { NavLink, useNavigate } from "react-router-dom"
+import { useState } from "react"
+import {
+  NavLink,
+  useNavigate,
+} from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 
 import {
@@ -17,121 +21,226 @@ import {
   LogIn,
   LogOut,
   Trash2,
+  Menu,
+  X,
 } from "lucide-react"
 
 export default function Sidebar() {
   const navigate = useNavigate()
   const { logout } = useAuth()
 
-  // Handle user logout
+  const [isMobileMenuOpen, setIsMobileMenuOpen] =
+    useState(false)
+
   const handleLogout = () => {
+    setIsMobileMenuOpen(false)
     logout()
     navigate("/login")
   }
 
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false)
+  }
+
   return (
-    <aside className="sidebar">
-      {/* NEXORA brand */}
-      <div className="sidebar-brand">
-        <div className="sidebar-brand-logo">
-          <img
-            src="/images/Logo.jpg"
-            alt="NEXORA Logo"
-          />
-        </div>
-
-        <div className="sidebar-brand-text">
-          <h2>NEXORA</h2>
-          <span>Business Management</span>
-        </div>
-      </div>
-
-      {/* Main navigation */}
-      <nav className="sidebar-navigation">
-        <NavLink to="/" title="Dashboard">
-          <LayoutDashboard className="sidebar-icon" />
-          <span>Dashboard</span>
-        </NavLink>
-
-        <NavLink to="/employees" title="Employees">
-          <Users className="sidebar-icon" />
-          <span>Employees</span>
-        </NavLink>
-
-        <NavLink to="/departments" title="Departments">
-          <Building2 className="sidebar-icon" />
-          <span>Departments</span>
-        </NavLink>
-
-        <NavLink to="/projects" title="Projects">
-          <FolderKanban className="sidebar-icon" />
-          <span>Projects</span>
-        </NavLink>
-
-        <NavLink to="/tasks" title="Tasks">
-          <ClipboardList className="sidebar-icon" />
-          <span>Tasks</span>
-        </NavLink>
-
-        <NavLink to="/clients" title="Clients">
-          <UsersRound className="sidebar-icon" />
-          <span>Clients</span>
-        </NavLink>
-
-        <NavLink
-          to="/leave-requests"
-          title="Leave Requests"
-        >
-          <CalendarDays className="sidebar-icon" />
-          <span>Leave Requests</span>
-        </NavLink>
-
-        <NavLink to="/attendance" title="Attendance">
-          <CalendarCheck className="sidebar-icon" />
-          <span>Attendance</span>
-        </NavLink>
-
-        <NavLink to="/contracts" title="Contracts">
-          <FileSignature className="sidebar-icon" />
-          <span>Contracts</span>
-        </NavLink>
-
-        <NavLink to="/invoices" title="Invoices">
-          <Receipt className="sidebar-icon" />
-          <span>Invoices</span>
-        </NavLink>
-
-        <NavLink to="/documents" title="Documents">
-          <FileText className="sidebar-icon" />
-          <span>Documents</span>
-        </NavLink>
-
-        <NavLink to="/reports" title="Reports">
-          <BarChart3 className="sidebar-icon" />
-          <span>Reports</span>
-        </NavLink>
-
-        <NavLink to="/trash" title="Trash">
-          <Trash2 className="sidebar-icon" />
-          <span>Trash</span>
-        </NavLink>
-
-        <NavLink to="/login" title="Login">
-          <LogIn className="sidebar-icon" />
-          <span>Login</span>
-        </NavLink>
-      </nav>
-
-      {/* Logout action */}
+    <>
+      {/* Mobile menu trigger */}
       <button
         type="button"
-        className="sidebar-logout"
-        onClick={handleLogout}
-        title="Logout"
+        className="sidebar-mobile-trigger"
+        onClick={() =>
+          setIsMobileMenuOpen(
+            (current) => !current
+          )
+        }
+        aria-label={
+          isMobileMenuOpen
+            ? "Close navigation menu"
+            : "Open navigation menu"
+        }
+        aria-expanded={isMobileMenuOpen}
       >
-        <LogOut className="sidebar-icon" />
-        <span>Logout</span>
+        {isMobileMenuOpen ? (
+          <X size={22} />
+        ) : (
+          <Menu size={22} />
+        )}
       </button>
-    </aside>
+
+      {/* Mobile overlay */}
+      {isMobileMenuOpen && (
+        <button
+          type="button"
+          className="sidebar-mobile-overlay"
+          onClick={closeMobileMenu}
+          aria-label="Close navigation menu"
+        />
+      )}
+
+      <aside
+        className={`sidebar ${
+          isMobileMenuOpen
+            ? "sidebar-mobile-open"
+            : ""
+        }`}
+      >
+        {/* NEXORA brand */}
+        <div className="sidebar-brand">
+          <div className="sidebar-brand-logo">
+            <img
+              src="/images/Logo.jpg"
+              alt="NEXORA Logo"
+            />
+          </div>
+
+          <div className="sidebar-brand-text">
+            <h2>NEXORA</h2>
+            <span>
+              Business Management
+            </span>
+          </div>
+        </div>
+
+        {/* Main navigation */}
+        <nav className="sidebar-navigation">
+          <NavLink
+            to="/"
+            title="Dashboard"
+            onClick={closeMobileMenu}
+          >
+            <LayoutDashboard className="sidebar-icon" />
+            <span>Dashboard</span>
+          </NavLink>
+
+          <NavLink
+            to="/employees"
+            title="Employees"
+            onClick={closeMobileMenu}
+          >
+            <Users className="sidebar-icon" />
+            <span>Employees</span>
+          </NavLink>
+
+          <NavLink
+            to="/departments"
+            title="Departments"
+            onClick={closeMobileMenu}
+          >
+            <Building2 className="sidebar-icon" />
+            <span>Departments</span>
+          </NavLink>
+
+          <NavLink
+            to="/projects"
+            title="Projects"
+            onClick={closeMobileMenu}
+          >
+            <FolderKanban className="sidebar-icon" />
+            <span>Projects</span>
+          </NavLink>
+
+          <NavLink
+            to="/tasks"
+            title="Tasks"
+            onClick={closeMobileMenu}
+          >
+            <ClipboardList className="sidebar-icon" />
+            <span>Tasks</span>
+          </NavLink>
+
+          <NavLink
+            to="/clients"
+            title="Clients"
+            onClick={closeMobileMenu}
+          >
+            <UsersRound className="sidebar-icon" />
+            <span>Clients</span>
+          </NavLink>
+
+          <NavLink
+            to="/leave-requests"
+            title="Leave Requests"
+            onClick={closeMobileMenu}
+          >
+            <CalendarDays className="sidebar-icon" />
+            <span>Leave Requests</span>
+          </NavLink>
+
+          <NavLink
+            to="/attendance"
+            title="Attendance"
+            onClick={closeMobileMenu}
+          >
+            <CalendarCheck className="sidebar-icon" />
+            <span>Attendance</span>
+          </NavLink>
+
+          <NavLink
+            to="/contracts"
+            title="Contracts"
+            onClick={closeMobileMenu}
+          >
+            <FileSignature className="sidebar-icon" />
+            <span>Contracts</span>
+          </NavLink>
+
+          <NavLink
+            to="/invoices"
+            title="Invoices"
+            onClick={closeMobileMenu}
+          >
+            <Receipt className="sidebar-icon" />
+            <span>Invoices</span>
+          </NavLink>
+
+          <NavLink
+            to="/documents"
+            title="Documents"
+            onClick={closeMobileMenu}
+          >
+            <FileText className="sidebar-icon" />
+            <span>Documents</span>
+          </NavLink>
+
+          <NavLink
+            to="/reports"
+            title="Reports"
+            onClick={closeMobileMenu}
+          >
+            <BarChart3 className="sidebar-icon" />
+            <span>Reports</span>
+          </NavLink>
+
+          <NavLink
+            to="/trash"
+            title="Trash"
+            onClick={closeMobileMenu}
+          >
+            <Trash2 className="sidebar-icon" />
+            <span>Trash</span>
+          </NavLink>
+
+          <NavLink
+            to="/login"
+            title="Login"
+            onClick={closeMobileMenu}
+          >
+            <LogIn className="sidebar-icon" />
+            <span>Login</span>
+          </NavLink>
+        </nav>
+
+        {/* Logout action */}
+        <button
+          type="button"
+          className="sidebar-logout"
+          onClick={handleLogout}
+          title="Logout"
+        >
+          <LogOut className="sidebar-icon" />
+          <span>Logout</span>
+        </button>
+      </aside>
+    </>
   )
 }

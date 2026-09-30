@@ -1,44 +1,48 @@
 const express = require("express")
 
-const authMiddleware = require("../middleware/authMiddleware")
-const roleMiddleware = require("../middleware/roleMiddleware")
+const {
+    protect,
+    adminOnly,
+} = require("../middleware/authMiddleware")
 
 const {
-  getProjects,
-  postProject,
-  updateProject,
-  deleteProject,
+    getProjects,
+    postProject,
+    updateProject,
+    deleteProject,
 } = require("../controllers/projectController")
 
 const router = express.Router()
 
-// Create a project
+// Create a project - Admin only
 router.post(
-  "/projects",
-  authMiddleware,
-  postProject
+    "/projects",
+    protect,
+    adminOnly,
+    postProject
 )
 
-// Get all projects
+// Get all projects - Admin + Employee
 router.get(
-  "/projects",
-  authMiddleware,
-  getProjects
+    "/projects",
+    protect,
+    getProjects
 )
 
-// Update a project
+// Update a project - Admin only
 router.put(
-  "/projects/:id",
-  authMiddleware,
-  updateProject
+    "/projects/:id",
+    protect,
+    adminOnly,
+    updateProject
 )
 
-// Delete a project
+// Delete a project - Admin only
 router.delete(
-  "/projects/:id",
-  authMiddleware,
-  roleMiddleware("Admin"),
-  deleteProject
+    "/projects/:id",
+    protect,
+    adminOnly,
+    deleteProject
 )
 
 module.exports = router

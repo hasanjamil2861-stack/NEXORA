@@ -1,44 +1,48 @@
 const express = require("express")
 
-const authMiddleware = require("../middleware/authMiddleware")
-const roleMiddleware = require("../middleware/roleMiddleware")
+const {
+    protect,
+    adminOnly,
+} = require("../middleware/authMiddleware")
 
 const {
-  getClients,
-  postClient,
-  updateClient,
-  deleteClient,
+    getClients,
+    postClient,
+    updateClient,
+    deleteClient,
 } = require("../controllers/clientController")
 
 const router = express.Router()
 
-// Create a client
+// Create a client - Admin only
 router.post(
-  "/clients",
-  authMiddleware,
-  postClient
+    "/clients",
+    protect,
+    adminOnly,
+    postClient
 )
 
-// Get all clients
+// Get all clients - Admin + Employee
 router.get(
-  "/clients",
-  authMiddleware,
-  getClients
+    "/clients",
+    protect,
+    getClients
 )
 
-// Update a client
+// Update a client - Admin only
 router.put(
-  "/clients/:id",
-  authMiddleware,
-  updateClient
+    "/clients/:id",
+    protect,
+    adminOnly,
+    updateClient
 )
 
-// Delete a client
+// Delete a client - Admin only
 router.delete(
-  "/clients/:id",
-  authMiddleware,
-  roleMiddleware("Admin"),
-  deleteClient
+    "/clients/:id",
+    protect,
+    adminOnly,
+    deleteClient
 )
 
 module.exports = router

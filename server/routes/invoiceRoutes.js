@@ -1,44 +1,48 @@
 const express = require("express")
 
-const authMiddleware = require("../middleware/authMiddleware")
-const roleMiddleware = require("../middleware/roleMiddleware")
+const {
+    protect,
+    adminOnly,
+} = require("../middleware/authMiddleware")
 
 const {
-  getInvoices,
-  postInvoice,
-  updateInvoice,
-  deleteInvoice,
+    getInvoices,
+    postInvoice,
+    updateInvoice,
+    deleteInvoice,
 } = require("../controllers/invoiceController")
 
 const router = express.Router()
 
-// Create an invoice
+// Create an invoice - Admin only
 router.post(
-  "/invoices",
-  authMiddleware,
-  postInvoice
+    "/invoices",
+    protect,
+    adminOnly,
+    postInvoice
 )
 
-// Get all invoices
+// Get all invoices - Admin + Employee
 router.get(
-  "/invoices",
-  authMiddleware,
-  getInvoices
+    "/invoices",
+    protect,
+    getInvoices
 )
 
-// Update an invoice
+// Update an invoice - Admin only
 router.put(
-  "/invoices/:id",
-  authMiddleware,
-  updateInvoice
+    "/invoices/:id",
+    protect,
+    adminOnly,
+    updateInvoice
 )
 
-// Delete an invoice
+// Delete an invoice - Admin only
 router.delete(
-  "/invoices/:id",
-  authMiddleware,
-  roleMiddleware("Admin"),
-  deleteInvoice
+    "/invoices/:id",
+    protect,
+    adminOnly,
+    deleteInvoice
 )
 
 module.exports = router

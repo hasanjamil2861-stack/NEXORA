@@ -1,44 +1,48 @@
 const express = require("express")
 
-const authMiddleware = require("../middleware/authMiddleware")
-const roleMiddleware = require("../middleware/roleMiddleware")
+const {
+    protect,
+    adminOnly,
+} = require("../middleware/authMiddleware")
 
 const {
-  getDocuments,
-  postDocument,
-  updateDocument,
-  deleteDocument,
+    getDocuments,
+    postDocument,
+    updateDocument,
+    deleteDocument,
 } = require("../controllers/documentController")
 
 const router = express.Router()
 
-// Create a document
+// Create a document - Admin only
 router.post(
-  "/documents",
-  authMiddleware,
-  postDocument
+    "/documents",
+    protect,
+    adminOnly,
+    postDocument
 )
 
-// Get all documents
+// Get all documents - Admin + Employee
 router.get(
-  "/documents",
-  authMiddleware,
-  getDocuments
+    "/documents",
+    protect,
+    getDocuments
 )
 
-// Update a document
+// Update a document - Admin only
 router.put(
-  "/documents/:id",
-  authMiddleware,
-  updateDocument
+    "/documents/:id",
+    protect,
+    adminOnly,
+    updateDocument
 )
 
-// Delete a document
+// Delete a document - Admin only
 router.delete(
-  "/documents/:id",
-  authMiddleware,
-  roleMiddleware("Admin"),
-  deleteDocument
+    "/documents/:id",
+    protect,
+    adminOnly,
+    deleteDocument
 )
 
 module.exports = router

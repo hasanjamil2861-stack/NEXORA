@@ -1,17 +1,20 @@
 const express = require("express")
 
-const authMiddleware = require("../middleware/authMiddleware")
 const {
-  getReportOverview,
+    protect,
+} = require("../middleware/authMiddleware")
+
+const {
+    getReportOverview,
 } = require("../controllers/reportController")
 
 const router = express.Router()
 
-// Get report overview
+// Get report overview - Admin + Employee
 router.get(
-  "/reports/overview",
-  authMiddleware,
-  getReportOverview
+    "/reports/overview",
+    protect,
+    getReportOverview
 )
 
 module.exports = router
