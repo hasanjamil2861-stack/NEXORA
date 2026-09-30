@@ -19,6 +19,8 @@ import Modal from "../../components/Modal/Modal"
 
 import { useToast } from "../../context/ToastContext"
 import { useTrash } from "../../context/TrashContext"
+import { useAuth } from "../../context/AuthContext"
+
 import type { Employee } from "../../types/Employee"
 
 import {
@@ -61,6 +63,10 @@ function formatEmployee(
 }
 
 export default function Employees() {
+    const { user } = useAuth()
+
+    const isAdmin = user?.role === "Admin"
+
     const [showForm, setShowForm] =
         useState(false)
 
@@ -95,7 +101,9 @@ export default function Employees() {
         useState("")
 
     const [statusFilter, setStatusFilter] =
-        useState<"All" | Employee["status"]>("All")
+        useState<
+            "All" | Employee["status"]
+        >("All")
 
     const [departmentFilter, setDepartmentFilter] =
         useState("All")
@@ -217,6 +225,10 @@ export default function Employees() {
 
     // Open employee form
     function openEmployeeForm() {
+        if (!isAdmin) {
+            return
+        }
+
         setShowForm(true)
         setFormError("")
 
@@ -302,11 +314,19 @@ export default function Employees() {
     function handleDeleteEmployee(
         id: string
     ) {
+        if (!isAdmin) {
+            return
+        }
+
         setEmployeeToDelete(id)
     }
 
     // Delete employee from MongoDB
     async function confirmDeleteEmployee() {
+        if (!isAdmin) {
+            return
+        }
+
         if (employeeToDelete === null) {
             return
         }
@@ -364,6 +384,10 @@ export default function Employees() {
     function handleEditEmployee(
         id: string
     ) {
+        if (!isAdmin) {
+            return
+        }
+
         const employee =
             employeeList.find(
                 (employee) =>
@@ -423,6 +447,10 @@ export default function Employees() {
 
     // Create or update employee
     async function handleCreateEmployee() {
+        if (!isAdmin) {
+            return
+        }
+
         if (!validateForm()) {
             return
         }
@@ -599,6 +627,7 @@ export default function Employees() {
 
             {/* Header */}
             <header className="employees-header">
+
                 <div>
                     <h1>
                         Employees
@@ -611,21 +640,24 @@ export default function Employees() {
                     </p>
                 </div>
 
-                <button
-                    type="button"
-                    className="add-employee-btn"
-                    onClick={() => {
-                        if (showForm) {
-                            resetForm()
-                        } else {
-                            openEmployeeForm()
-                        }
-                    }}
-                >
-                    {showForm
-                        ? "Close Form"
-                        : "Add Employee"}
-                </button>
+                {isAdmin && (
+                    <button
+                        type="button"
+                        className="add-employee-btn"
+                        onClick={() => {
+                            if (showForm) {
+                                resetForm()
+                            } else {
+                                openEmployeeForm()
+                            }
+                        }}
+                    >
+                        {showForm
+                            ? "Close Form"
+                            : "Add Employee"}
+                    </button>
+                )}
+
             </header>
 
             {/* Statistics */}
@@ -725,6 +757,7 @@ export default function Employees() {
             <section className="employee-controls">
 
                 <div className="employee-search">
+
                     <Search
                         className="employee-search-icon"
                         size={20}
@@ -740,9 +773,11 @@ export default function Employees() {
                             )
                         }
                     />
+
                 </div>
 
                 <div className="employee-filter">
+
                     <select
                         value={statusFilter}
                         onChange={(e) =>
@@ -753,6 +788,7 @@ export default function Employees() {
                             )
                         }
                     >
+
                         <option value="All">
                             All Status
                         </option>
@@ -764,10 +800,13 @@ export default function Employees() {
                         <option value="Inactive">
                             Inactive
                         </option>
+
                     </select>
+
                 </div>
 
                 <div className="employee-filter">
+
                     <select
                         value={
                             departmentFilter
@@ -778,6 +817,7 @@ export default function Employees() {
                             )
                         }
                     >
+
                         <option value="All">
                             All Departments
                         </option>
@@ -798,10 +838,13 @@ export default function Employees() {
                                 </option>
                             )
                         )}
+
                     </select>
+
                 </div>
 
                 <div className="employee-filter">
+
                     <select
                         value={sortBy}
                         onChange={(e) =>
@@ -810,6 +853,7 @@ export default function Employees() {
                             )
                         }
                     >
+
                         <option value="None">
                             No Sort
                         </option>
@@ -825,13 +869,16 @@ export default function Employees() {
                         <option value="Hire Date">
                             Hire Date
                         </option>
+
                     </select>
+
                 </div>
 
             </section>
 
             {/* Results information */}
             <div className="employee-results-info">
+
                 <span>
                     Showing{" "}
                     <strong>
@@ -845,16 +892,20 @@ export default function Employees() {
                             : "employees"
                     }
                 </span>
+
             </div>
 
             {/* Add / edit employee form */}
-            {showForm && (
+            {showForm && isAdmin && (
                 <section
                     ref={employeeFormRef}
                     className="employee-form"
                 >
+
                     <div className="employee-form-header">
+
                         <div>
+
                             <h2>
                                 {
                                     editingEmployee !==
@@ -868,20 +919,25 @@ export default function Employees() {
                                 Enter the employee
                                 information below.
                             </p>
+
                         </div>
+
                     </div>
 
                     <div className="form-error-container">
+
                         {formError && (
                             <p className="form-error">
                                 {formError}
                             </p>
                         )}
+
                     </div>
 
                     <div className="employee-form-grid">
 
                         <div className="employee-form-field">
+
                             <label htmlFor="employee-first-name">
                                 First Name
                             </label>
@@ -899,9 +955,11 @@ export default function Employees() {
                                 }}
                                 required
                             />
+
                         </div>
 
                         <div className="employee-form-field">
+
                             <label htmlFor="employee-last-name">
                                 Last Name
                             </label>
@@ -919,9 +977,11 @@ export default function Employees() {
                                 }}
                                 required
                             />
+
                         </div>
 
                         <div className="employee-form-field">
+
                             <label htmlFor="employee-email">
                                 Email
                             </label>
@@ -939,9 +999,11 @@ export default function Employees() {
                                 }}
                                 required
                             />
+
                         </div>
 
                         <div className="employee-form-field">
+
                             <label htmlFor="employee-phone">
                                 Phone
                             </label>
@@ -959,9 +1021,11 @@ export default function Employees() {
                                 }}
                                 required
                             />
+
                         </div>
 
                         <div className="employee-form-field">
+
                             <label htmlFor="employee-position">
                                 Position
                             </label>
@@ -979,9 +1043,11 @@ export default function Employees() {
                                 }}
                                 required
                             />
+
                         </div>
 
                         <div className="employee-form-field">
+
                             <label htmlFor="employee-salary">
                                 Salary
                             </label>
@@ -1000,9 +1066,11 @@ export default function Employees() {
                                 }}
                                 required
                             />
+
                         </div>
 
                         <div className="employee-form-field">
+
                             <label htmlFor="employee-hire-date">
                                 Hire Date
                             </label>
@@ -1019,9 +1087,11 @@ export default function Employees() {
                                 }}
                                 required
                             />
+
                         </div>
 
                         <div className="employee-form-field">
+
                             <label htmlFor="employee-status">
                                 Status
                             </label>
@@ -1038,6 +1108,7 @@ export default function Employees() {
                                 }}
                                 required
                             >
+
                                 <option value="Active">
                                     Active
                                 </option>
@@ -1045,12 +1116,15 @@ export default function Employees() {
                                 <option value="Inactive">
                                     Inactive
                                 </option>
+
                             </select>
+
                         </div>
 
                     </div>
 
                     <div className="employee-form-actions">
+
                         <button
                             type="button"
                             className="create-employee-btn"
@@ -1075,7 +1149,9 @@ export default function Employees() {
                         >
                             Cancel
                         </button>
+
                     </div>
+
                 </section>
             )}
 
@@ -1083,12 +1159,15 @@ export default function Employees() {
             <section className="employees-grid">
 
                 {sortedEmployees.length > 0 ? (
+
                     sortedEmployees.map(
                         (employee) => (
+
                             <div
                                 key={employee.id}
                                 id={`employee-${employee.id}`}
                             >
+
                                 <EmployeeCard
                                     employee={
                                         employee
@@ -1100,10 +1179,14 @@ export default function Employees() {
                                         handleEditEmployee
                                     }
                                 />
+
                             </div>
+
                         )
                     )
+
                 ) : (
+
                     <div className="employee-empty-state">
 
                         <div className="employee-empty-icon">
@@ -1139,25 +1222,27 @@ export default function Employees() {
                         </button>
 
                     </div>
+
                 )}
 
             </section>
 
             {/* Delete confirmation */}
-            {employeeToDelete !== null && (
-                <Modal
-                    title="Delete Employee"
-                    message="Are you sure you want to delete this employee?"
-                    onCancel={() =>
-                        setEmployeeToDelete(
-                            null
-                        )
-                    }
-                    onConfirm={
-                        confirmDeleteEmployee
-                    }
-                />
-            )}
+            {employeeToDelete !== null &&
+                isAdmin && (
+                    <Modal
+                        title="Delete Employee"
+                        message="Are you sure you want to delete this employee?"
+                        onCancel={() =>
+                            setEmployeeToDelete(
+                                null
+                            )
+                        }
+                        onConfirm={
+                            confirmDeleteEmployee
+                        }
+                    />
+                )}
 
         </main>
     )

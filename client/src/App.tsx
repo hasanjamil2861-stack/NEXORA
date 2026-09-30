@@ -1,4 +1,8 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+} from "react-router-dom"
 
 import "@assets/styles/Attendance.css"
 import "@assets/styles/Client.css"
@@ -50,7 +54,9 @@ export default function App() {
     <BrowserRouter>
       <TrashProvider>
         <Routes>
+
           {/* Public Routes */}
+
           <Route
             path="/login"
             element={<Login />}
@@ -61,42 +67,17 @@ export default function App() {
             element={<Register />}
           />
 
-          {/* Protected Routes */}
+          {/* All authenticated users */}
+
           <Route element={<ProtectedRoute />}>
+
             <Route element={<MainLayout />}>
-              <Route
-                path="/"
-                element={<Dashboard />}
-              />
 
-              <Route
-                path="/employees"
-                element={<Employees />}
-              />
-
-              <Route
-                path="/employees/:id"
-                element={<EmployeeDetails />}
-              />
-
-              <Route
-                path="/departments"
-                element={<Departments />}
-              />
-
-              <Route
-                path="/projects"
-                element={<Projects />}
-              />
+              {/* Employee + Admin */}
 
               <Route
                 path="/tasks"
                 element={<Tasks />}
-              />
-
-              <Route
-                path="/clients"
-                element={<Clients />}
               />
 
               <Route
@@ -105,36 +86,79 @@ export default function App() {
               />
 
               <Route
-                path="/attendance"
-                element={<Attendance />}
-              />
-
-              <Route
-                path="/contracts"
-                element={<Contracts />}
-              />
-
-              <Route
-                path="/invoices"
-                element={<Invoices />}
-              />
-
-              <Route
                 path="/documents"
                 element={<Documents />}
               />
 
-              <Route
-                path="/reports"
-                element={<Reports />}
-              />
+              {/* Admin Only */}
 
               <Route
-                path="/trash"
-                element={<Trash />}
-              />
+                element={
+                  <ProtectedRoute adminOnly />
+                }
+              >
+
+                <Route
+                  path="/"
+                  element={<Dashboard />}
+                />
+
+                <Route
+                  path="/employees"
+                  element={<Employees />}
+                />
+
+                <Route
+                  path="/employees/:id"
+                  element={<EmployeeDetails />}
+                />
+
+                <Route
+                  path="/departments"
+                  element={<Departments />}
+                />
+
+                <Route
+                  path="/projects"
+                  element={<Projects />}
+                />
+
+                <Route
+                  path="/clients"
+                  element={<Clients />}
+                />
+
+                <Route
+                  path="/attendance"
+                  element={<Attendance />}
+                />
+
+                <Route
+                  path="/contracts"
+                  element={<Contracts />}
+                />
+
+                <Route
+                  path="/invoices"
+                  element={<Invoices />}
+                />
+
+                <Route
+                  path="/reports"
+                  element={<Reports />}
+                />
+
+                <Route
+                  path="/trash"
+                  element={<Trash />}
+                />
+
+              </Route>
+
             </Route>
+
           </Route>
+
         </Routes>
       </TrashProvider>
     </BrowserRouter>

@@ -102,7 +102,9 @@ export default function EmployeeDetails() {
   if (loading) {
     return (
       <main className="employee-details-page">
+
         <div className="employee-not-found">
+
           <div className="employee-not-found-icon">
             <UserRound size={28} />
           </div>
@@ -119,7 +121,9 @@ export default function EmployeeDetails() {
             Please wait while we load the
             employee information.
           </p>
+
         </div>
+
       </main>
     )
   }
@@ -128,7 +132,9 @@ export default function EmployeeDetails() {
   if (!employee) {
     return (
       <main className="employee-details-page">
+
         <div className="employee-not-found">
+
           <div className="employee-not-found-icon">
             <UserRound size={28} />
           </div>
@@ -156,12 +162,14 @@ export default function EmployeeDetails() {
             <ArrowLeft size={17} />
             Back to Employees
           </button>
+
         </div>
+
       </main>
     )
   }
 
-  // Find department from the current department data
+  // Find department from current department data
   const department =
     departments.find(
       (item) =>
@@ -181,12 +189,15 @@ export default function EmployeeDetails() {
 
       {/* Page header */}
       <header className="employee-details-header">
+
         <div className="employee-details-header-content">
+
           <div className="employee-details-header-icon">
             <UserRound size={25} />
           </div>
 
           <div>
+
             <span className="employee-details-eyebrow">
               WORKFORCE MANAGEMENT
             </span>
@@ -199,7 +210,9 @@ export default function EmployeeDetails() {
               View detailed information and
               employment data for this team member.
             </p>
+
           </div>
+
         </div>
 
         <button
@@ -212,18 +225,24 @@ export default function EmployeeDetails() {
           <ArrowLeft size={17} />
           Back to Employees
         </button>
+
       </header>
 
       {/* Employee profile */}
       <section className="employee-details-profile">
+
         <div className="employee-profile-main">
+
           <div className="employee-details-avatar">
             {initials}
           </div>
 
           <div className="employee-profile-content">
+
             <div className="employee-profile-name-row">
+
               <div>
+
                 <span className="employee-profile-label">
                   EMPLOYEE PROFILE
                 </span>
@@ -232,6 +251,7 @@ export default function EmployeeDetails() {
                   {employee.firstName}{" "}
                   {employee.lastName}
                 </h2>
+
               </div>
 
               <span
@@ -249,26 +269,35 @@ export default function EmployeeDetails() {
 
                 {employee.status}
               </span>
+
             </div>
 
             <p className="employee-profile-position">
+
               <BriefcaseBusiness size={15} />
+
               {employee.position}
+
             </p>
 
             <span className="employee-profile-id">
               Employee #{employee.id}
             </span>
+
           </div>
+
         </div>
 
         <div className="employee-profile-summary">
+
           <div className="employee-profile-summary-item">
+
             <div className="employee-profile-summary-icon salary">
               <WalletCards size={17} />
             </div>
 
             <div>
+
               <span>
                 Monthly Salary
               </span>
@@ -277,15 +306,19 @@ export default function EmployeeDetails() {
                 $
                 {employee.salary.toLocaleString()}
               </strong>
+
             </div>
+
           </div>
 
           <div className="employee-profile-summary-item">
+
             <div className="employee-profile-summary-icon department">
               <Building2 size={17} />
             </div>
 
             <div>
+
               <span>
                 Department
               </span>
@@ -294,19 +327,26 @@ export default function EmployeeDetails() {
                 {department?.name ||
                   "Not Assigned"}
               </strong>
+
             </div>
+
           </div>
+
         </div>
+
       </section>
 
       {/* Employee information */}
       <section className="employee-information-section">
+
         <div className="employee-section-heading">
+
           <div className="employee-section-icon">
             <UserRound size={18} />
           </div>
 
           <div>
+
             <span>
               EMPLOYEE INFORMATION
             </span>
@@ -314,16 +354,21 @@ export default function EmployeeDetails() {
             <h2>
               Personal & Employment Details
             </h2>
+
           </div>
+
         </div>
 
         <div className="employee-details-info">
+
           <div className="employee-details-item">
+
             <div className="employee-details-item-icon">
               <Mail size={17} />
             </div>
 
             <div>
+
               <span>
                 Email Address
               </span>
@@ -331,15 +376,19 @@ export default function EmployeeDetails() {
               <strong className="employee-details-email">
                 {employee.email}
               </strong>
+
             </div>
+
           </div>
 
           <div className="employee-details-item">
+
             <div className="employee-details-item-icon">
               <Phone size={17} />
             </div>
 
             <div>
+
               <span>
                 Phone Number
               </span>
@@ -347,15 +396,19 @@ export default function EmployeeDetails() {
               <strong>
                 {employee.phone}
               </strong>
+
             </div>
+
           </div>
 
           <div className="employee-details-item">
+
             <div className="employee-details-item-icon">
               <BriefcaseBusiness size={17} />
             </div>
 
             <div>
+
               <span>
                 Position
               </span>
@@ -363,15 +416,19 @@ export default function EmployeeDetails() {
               <strong>
                 {employee.position}
               </strong>
+
             </div>
+
           </div>
 
           <div className="employee-details-item">
+
             <div className="employee-details-item-icon">
               <Building2 size={17} />
             </div>
 
             <div>
+
               <span>
                 Department
               </span>
@@ -380,15 +437,19 @@ export default function EmployeeDetails() {
                 {department?.name ||
                   "Not Assigned"}
               </strong>
+
             </div>
+
           </div>
 
           <div className="employee-details-item">
+
             <div className="employee-details-item-icon">
               <WalletCards size={17} />
             </div>
 
             <div>
+
               <span>
                 Salary
               </span>
@@ -397,15 +458,19 @@ export default function EmployeeDetails() {
                 $
                 {employee.salary.toLocaleString()}
               </strong>
+
             </div>
+
           </div>
 
           <div className="employee-details-item">
+
             <div className="employee-details-item-icon">
               <CalendarDays size={17} />
             </div>
 
             <div>
+
               <span>
                 Hire Date
               </span>
@@ -413,19 +478,25 @@ export default function EmployeeDetails() {
               <strong>
                 {employee.hireDate}
               </strong>
+
             </div>
+
           </div>
 
           <div className="employee-details-item">
+
             <div className="employee-details-item-icon status">
+
               {isActive ? (
                 <CircleCheck size={17} />
               ) : (
                 <CircleX size={17} />
               )}
+
             </div>
 
             <div>
+
               <span>
                 Employment Status
               </span>
@@ -439,19 +510,26 @@ export default function EmployeeDetails() {
               >
                 {employee.status}
               </strong>
+
             </div>
+
           </div>
+
         </div>
+
       </section>
 
       {/* Employee record footer */}
       <div className="employee-details-footer">
+
         <div className="employee-details-footer-left">
+
           <div className="employee-footer-icon">
             <CircleCheck size={16} />
           </div>
 
           <div>
+
             <strong>
               Employee Record
             </strong>
@@ -460,13 +538,17 @@ export default function EmployeeDetails() {
               Information shown from the current
               NEXORA employee workspace.
             </span>
+
           </div>
+
         </div>
 
         <span className="employee-record-id">
           ID #{employee.id}
         </span>
+
       </div>
+
     </main>
   )
 }

@@ -36,6 +36,24 @@ const AuthContext = createContext<
   AuthContextType | undefined
 >(undefined)
 
+const isValidUser = (
+  value: unknown
+): value is User => {
+  if (!value || typeof value !== "object") {
+    return false
+  }
+
+  const user = value as User
+
+  return (
+    typeof user.id === "string" &&
+    typeof user.name === "string" &&
+    typeof user.email === "string" &&
+    (user.role === "Admin" ||
+      user.role === "Employee")
+  )
+}
+
 export function AuthProvider({
   children,
 }: AuthProviderProps) {
@@ -43,9 +61,20 @@ export function AuthProvider({
     const savedUser =
       localStorage.getItem("nexora-user")
 
-    return savedUser
-      ? JSON.parse(savedUser)
-      : null
+    if (!savedUser) {
+      return null
+    }
+
+    try {
+      const parsedUser = JSON.parse(savedUser)
+
+      return isValidUser(parsedUser)
+        ? parsedUser
+        : null
+    } catch {
+      localStorage.removeItem("nexora-user")
+      return null
+    }
   })
 
   const [token, setToken] = useState<string | null>(() => {
@@ -76,6 +105,15 @@ export function AuthProvider({
       }
 
       const data = await response.json()
+
+      if (
+        !data.user ||
+        !data.token ||
+        !isValidUser(data.user)
+      ) {
+        return false
+      }
+
       const loggedUser: User = data.user
 
       setUser(loggedUser)
@@ -92,7 +130,12 @@ export function AuthProvider({
       )
 
       return true
-    } catch {
+    } catch (error) {
+      console.error(
+        "Login error:",
+        error
+      )
+
       return false
     }
   }
@@ -120,7 +163,12 @@ export function AuthProvider({
       )
 
       return response.ok
-    } catch {
+    } catch (error) {
+      console.error(
+        "Register error:",
+        error
+      )
+
       return false
     }
   }
@@ -139,7 +187,8 @@ export function AuthProvider({
         user,
         token,
         isAuthenticated:
-          user !== null && token !== null,
+          user !== null &&
+          token !== null,
         login,
         register,
         logout,
