@@ -27,7 +27,7 @@ import {
 
 export default function Sidebar() {
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { logout , user } = useAuth()
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] =
     useState(false)

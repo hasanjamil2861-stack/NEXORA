@@ -2,6 +2,7 @@ import type { Employee } from "../../types/Employee"
 import { departments } from "../../data/departments"
 
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "../../context/AuthContext"
 
 import {
     Mail,
@@ -30,6 +31,9 @@ export default function EmployeeCard({
 }: EmployeeCardProps) {
 
     const navigate = useNavigate()
+    const { user } = useAuth()
+
+    const isAdmin = user?.role === "Admin"
 
     /* =========================================================
        FIND EMPLOYEE DEPARTMENT
@@ -246,29 +250,31 @@ export default function EmployeeCard({
                     View Details
                 </button>
 
+                {isAdmin && (
+                    <>
+                        <button
+                            type="button"
+                            className="edit-btn"
+                            onClick={() =>
+                                onEdit(employee.id)
+                            }
+                        >
+                            <Pencil size={14} />
+                            Edit
+                        </button>
 
-                <button
-                    type="button"
-                    className="edit-btn"
-                    onClick={() =>
-                        onEdit(employee.id)
-                    }
-                >
-                    <Pencil size={14} />
-                    Edit
-                </button>
-
-
-                <button
-                    type="button"
-                    className="delete-btn"
-                    onClick={() =>
-                        onDelete(employee.id)
-                    }
-                >
-                    <Trash2 size={14} />
-                    Delete
-                </button>
+                        <button
+                            type="button"
+                            className="delete-btn"
+                            onClick={() =>
+                                onDelete(employee.id)
+                            }
+                        >
+                            <Trash2 size={14} />
+                            Delete
+                        </button>
+                    </>
+                )}
 
             </div>
 
