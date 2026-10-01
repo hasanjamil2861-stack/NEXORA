@@ -1,31 +1,31 @@
 import { apiRequest } from "./api"
 
-// Get all leave requests
+// Get leave requests
 export function getLeaveRequests() {
-  return apiRequest("/leaveRequests")
+  return apiRequest("/leave-requests")
 }
 
 // Get one leave request by ID
 export function getLeaveRequest(id: string) {
-  return apiRequest(`/leaveRequests/${id}`)
+  return apiRequest(`/leave-requests/${id}`)
 }
 
 // Create a new leave request
 export function createLeaveRequest(
   request: unknown
 ) {
-  return apiRequest("/leaveRequests", {
+  return apiRequest("/leave-requests", {
     method: "POST",
     body: JSON.stringify(request),
   })
 }
 
-// Update an existing leave request
+// Update a leave request
 export function updateLeaveRequest(
   id: string,
   request: unknown
 ) {
-  return apiRequest(`/leaveRequests/${id}`, {
+  return apiRequest(`/leave-requests/${id}`, {
     method: "PUT",
     body: JSON.stringify(request),
   })
@@ -35,7 +35,7 @@ export function updateLeaveRequest(
 export function deleteLeaveRequest(
   id: string
 ) {
-  return apiRequest(`/leaveRequests/${id}`, {
+  return apiRequest(`/leave-requests/${id}`, {
     method: "DELETE",
   })
 }

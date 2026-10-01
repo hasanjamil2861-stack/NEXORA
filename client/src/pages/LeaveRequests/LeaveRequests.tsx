@@ -15,7 +15,6 @@ import {
   Plus,
   X,
   Save,
-  UserRound,
   FileText,
   BriefcaseBusiness,
   Activity,
@@ -28,6 +27,7 @@ import Modal from "../../components/Modal/Modal"
 
 import { useToast } from "../../context/ToastContext"
 import { useTrash } from "../../context/TrashContext"
+import { useAuth } from "../../context/AuthContext"
 
 import {
   getLeaveRequests,
@@ -47,7 +47,6 @@ type LeaveStatus =
   | "Rejected"
 
 type LeaveForm = {
-  employeeName: string
   leaveType: LeaveType
   startDate: string
   endDate: string
@@ -57,7 +56,13 @@ type LeaveForm = {
 
 type LeaveApiRecord = {
   _id: string
-  employeeName?: string
+  employeeId?: {
+    _id: string
+    firstName: string
+    lastName: string
+    email: string
+    position: string
+  }
   leaveType?: LeaveType
   startDate?: string
   endDate?: string
@@ -73,7 +78,6 @@ type SortOption =
   | "date-desc"
 
 const initialLeaveForm: LeaveForm = {
-  employeeName: "",
   leaveType: "Annual",
   startDate: "",
   endDate: "",
@@ -84,6 +88,10 @@ const initialLeaveForm: LeaveForm = {
 export default function LeaveRequests() {
   const { showToast } = useToast()
   const { moveToTrash } = useTrash()
+  const { user } = useAuth()
+
+  const isAdmin =
+    user?.role === "Admin"
 
   const [leaveList, setLeaveList] =
     useState<LeaveRequest[]>([])
@@ -127,7 +135,9 @@ export default function LeaveRequests() {
   const [addForm, setAddForm] =
     useState<LeaveForm>(initialLeaveForm)
 
-  // Scroll to the newly created request.
+  /*
+   * Scroll to newly created request
+   */
   useEffect(() => {
     if (!newLeaveId) {
       return
@@ -154,31 +164,56 @@ export default function LeaveRequests() {
     }
   }, [newLeaveId])
 
-  // Load leave requests from MongoDB.
+  /*
+   * Load leave requests
+   *
+   * Backend:
+   * Admin    -> all requests
+   * Employee -> own requests
+   */
   useEffect(() => {
     async function fetchLeaveRequests() {
       try {
         const data =
           (await getLeaveRequests()) as LeaveApiRecord[]
 
-        const formattedLeaveRequests: LeaveRequest[] =
-          data.map((leave) => ({
-            id: leave._id,
-            employeeName:
-              leave.employeeName ?? "",
-            leaveType:
-              leave.leaveType ?? "Annual",
-            startDate:
-              leave.startDate ?? "",
-            endDate:
-              leave.endDate ?? "",
-            reason:
-              leave.reason ?? "",
-            status:
-              leave.status ?? "Pending",
-          }))
+        const formattedLeaveRequests:
+          LeaveRequest[] =
+          data
+            .filter(
+              (leave) =>
+                Boolean(leave.employeeId)
+            )
+            .map((leave) => ({
+              id: leave._id,
 
-        setLeaveList(formattedLeaveRequests)
+              employeeId:
+                leave.employeeId!,
+
+              leaveType:
+                leave.leaveType ??
+                "Annual",
+
+              startDate:
+                leave.startDate ??
+                "",
+
+              endDate:
+                leave.endDate ??
+                "",
+
+              reason:
+                leave.reason ??
+                "",
+
+              status:
+                leave.status ??
+                "Pending",
+            }))
+
+        setLeaveList(
+          formattedLeaveRequests
+        )
       } catch (error) {
         console.error(
           "Fetch leave requests error:",
@@ -195,11 +230,21 @@ export default function LeaveRequests() {
     fetchLeaveRequests()
   }, [showToast])
 
-  function validateForm(form: LeaveForm) {
-    if (!form.employeeName.trim()) {
-      return "Employee name is required."
-    }
+  /*
+   * Helper for employee name
+   */
+  function getEmployeeName(
+    leave: LeaveRequest
+  ) {
+    return `${leave.employeeId.firstName} ${leave.employeeId.lastName}`
+  }
 
+  /*
+   * Validate Add/Edit form
+   */
+  function validateForm(
+    form: LeaveForm
+  ) {
     if (!form.leaveType) {
       return "Leave type is required."
     }
@@ -216,25 +261,29 @@ export default function LeaveRequests() {
       new Date(form.endDate).getTime() <
       new Date(form.startDate).getTime()
     ) {
-      return "End date cannot be before start date."
+      return (
+        "End date cannot be before " +
+        "start date."
+      )
     }
 
     if (!form.reason.trim()) {
       return "Reason is required."
     }
 
-    if (!form.status) {
-      return "Leave status is required."
-    }
-
     return ""
   }
 
+  /*
+   * Delete request
+   */
   function handleDelete(id: string) {
     setLeaveToDelete(id)
   }
 
-  // Delete from MongoDB, then move the record to local Trash.
+  /*
+   * Confirm delete
+   */
   async function confirmDelete() {
     if (leaveToDelete === null) {
       return
@@ -257,17 +306,21 @@ export default function LeaveRequests() {
       moveToTrash(
         "Leave Request",
         leave.id,
-        leave.employeeName,
+        getEmployeeName(leave),
         `${leave.leaveType} Leave Request`,
-        leave as unknown as Record<string, unknown>
+        leave as unknown as Record<
+          string,
+          unknown
+        >
       )
 
-      setLeaveList((currentLeaves) =>
-        currentLeaves.filter(
-          (currentLeave) =>
-            currentLeave.id !==
-            leaveToDelete
-        )
+      setLeaveList(
+        (currentLeaves) =>
+          currentLeaves.filter(
+            (currentLeave) =>
+              currentLeave.id !==
+              leaveToDelete
+          )
       )
 
       setLeaveToDelete(null)
@@ -289,7 +342,16 @@ export default function LeaveRequests() {
     }
   }
 
+  /*
+   * Open edit form
+   *
+   * Admin uses this for approving/rejecting.
+   */
   function handleEdit(id: string) {
+    if (!isAdmin) {
+      return
+    }
+
     const leave = leaveList.find(
       (item) => item.id === id
     )
@@ -301,16 +363,18 @@ export default function LeaveRequests() {
     setEditingLeaveId(id)
 
     setEditForm({
-      employeeName:
-        leave.employeeName,
       leaveType:
         leave.leaveType,
+
       startDate:
         leave.startDate,
+
       endDate:
         leave.endDate,
+
       reason:
         leave.reason,
+
       status:
         leave.status,
     })
@@ -325,20 +389,26 @@ export default function LeaveRequests() {
     })
   }
 
-  // Update the request in MongoDB.
+  /*
+   * Admin updates request status
+   */
   async function handleSave(
     event: FormEvent
   ) {
     event.preventDefault()
 
-    if (editingLeaveId === null) {
+    if (
+      editingLeaveId === null ||
+      !isAdmin
+    ) {
       return
     }
 
-    const error = validateForm(editForm)
+    if (!editForm.status) {
+      setEditError(
+        "Leave status is required."
+      )
 
-    if (error) {
-      setEditError(error)
       return
     }
 
@@ -347,16 +417,6 @@ export default function LeaveRequests() {
         (await updateLeaveRequest(
           editingLeaveId,
           {
-            employeeName:
-              editForm.employeeName.trim(),
-            leaveType:
-              editForm.leaveType,
-            startDate:
-              editForm.startDate,
-            endDate:
-              editForm.endDate,
-            reason:
-              editForm.reason.trim(),
             status:
               editForm.status,
           }
@@ -368,33 +428,58 @@ export default function LeaveRequests() {
         )
       }
 
-      const formattedLeave: LeaveRequest = {
-        id: updatedLeave._id,
-        employeeName:
-          updatedLeave.employeeName ?? "",
-        leaveType:
-          updatedLeave.leaveType ?? "Annual",
-        startDate:
-          updatedLeave.startDate ?? "",
-        endDate:
-          updatedLeave.endDate ?? "",
-        reason:
-          updatedLeave.reason ?? "",
-        status:
-          updatedLeave.status ?? "Pending",
+      if (!updatedLeave.employeeId) {
+        throw new Error(
+          "Updated leave request is missing employee information."
+        )
       }
 
-      setLeaveList((currentLeaves) =>
-        currentLeaves.map((leave) =>
-          leave.id === editingLeaveId
-            ? formattedLeave
-            : leave
-        )
+      const formattedLeave:
+        LeaveRequest = {
+          id: updatedLeave._id,
+
+          employeeId:
+            updatedLeave.employeeId,
+
+          leaveType:
+            updatedLeave.leaveType ??
+            "Annual",
+
+          startDate:
+            updatedLeave.startDate ??
+            "",
+
+          endDate:
+            updatedLeave.endDate ??
+            "",
+
+          reason:
+            updatedLeave.reason ??
+            "",
+
+          status:
+            updatedLeave.status ??
+            "Pending",
+        }
+
+      setLeaveList(
+        (currentLeaves) =>
+          currentLeaves.map(
+            (leave) =>
+              leave.id ===
+              editingLeaveId
+                ? formattedLeave
+                : leave
+          )
       )
 
       setEditingLeaveId(null)
+
       setEditError("")
-      setEditForm(initialLeaveForm)
+
+      setEditForm(
+        initialLeaveForm
+      )
 
       showToast(
         "Leave request updated successfully",
@@ -416,12 +501,20 @@ export default function LeaveRequests() {
 
   function handleCancel() {
     setEditingLeaveId(null)
+
     setEditError("")
-    setEditForm(initialLeaveForm)
+
+    setEditForm(
+      initialLeaveForm
+    )
   }
 
+  /*
+   * Open Add form
+   */
   function openAddForm() {
     setIsAdding(true)
+
     setAddError("")
 
     requestAnimationFrame(() => {
@@ -432,13 +525,21 @@ export default function LeaveRequests() {
     })
   }
 
-  // Create the request in MongoDB.
+  /*
+   * Employee creates request
+   *
+   * Backend automatically determines
+   * employeeId from authenticated user.
+   *
+   * Status is NOT sent by Employee.
+   */
   async function handleAdd(
     event: FormEvent
   ) {
     event.preventDefault()
 
-    const error = validateForm(addForm)
+    const error =
+      validateForm(addForm)
 
     if (error) {
       setAddError(error)
@@ -447,18 +548,17 @@ export default function LeaveRequests() {
 
     try {
       const requestBody = {
-        employeeName:
-          addForm.employeeName.trim(),
         leaveType:
           addForm.leaveType,
+
         startDate:
           addForm.startDate,
+
         endDate:
           addForm.endDate,
+
         reason:
           addForm.reason.trim(),
-        status:
-          addForm.status,
       }
 
       const responseData =
@@ -468,34 +568,61 @@ export default function LeaveRequests() {
 
       if (!responseData._id) {
         throw new Error(
-          "Leave request was not saved correctly. MongoDB did not return an _id."
+          "Leave request was not saved correctly."
         )
       }
 
-      const newLeave: LeaveRequest = {
-        id: responseData._id,
-        employeeName:
-          responseData.employeeName ?? "",
-        leaveType:
-          responseData.leaveType ?? "Annual",
-        startDate:
-          responseData.startDate ?? "",
-        endDate:
-          responseData.endDate ?? "",
-        reason:
-          responseData.reason ?? "",
-        status:
-          responseData.status ?? "Pending",
+      if (!responseData.employeeId) {
+        throw new Error(
+          "Leave request is missing employee information."
+        )
       }
 
-      setLeaveList((currentLeaves) => [
-        ...currentLeaves,
-        newLeave,
-      ])
+      const newLeave:
+        LeaveRequest = {
+          id: responseData._id,
 
-      setNewLeaveId(newLeave.id)
-      setAddForm(initialLeaveForm)
+          employeeId:
+            responseData.employeeId,
+
+          leaveType:
+            responseData.leaveType ??
+            "Annual",
+
+          startDate:
+            responseData.startDate ??
+            "",
+
+          endDate:
+            responseData.endDate ??
+            "",
+
+          reason:
+            responseData.reason ??
+            "",
+
+          status:
+            responseData.status ??
+            "Pending",
+        }
+
+      setLeaveList(
+        (currentLeaves) => [
+          ...currentLeaves,
+          newLeave,
+        ]
+      )
+
+      setNewLeaveId(
+        newLeave.id
+      )
+
+      setAddForm(
+        initialLeaveForm
+      )
+
       setAddError("")
+
       setIsAdding(false)
 
       showToast(
@@ -518,30 +645,39 @@ export default function LeaveRequests() {
 
   function handleCancelAdd() {
     setIsAdding(false)
-    setAddForm(initialLeaveForm)
+
+    setAddForm(
+      initialLeaveForm
+    )
+
     setAddError("")
   }
 
-  // Leave request statistics.
+  /*
+   * Statistics
+   */
   const totalRequests =
     leaveList.length
 
   const pendingRequests =
     leaveList.filter(
       (leave) =>
-        leave.status === "Pending"
+        leave.status ===
+        "Pending"
     ).length
 
   const approvedRequests =
     leaveList.filter(
       (leave) =>
-        leave.status === "Approved"
+        leave.status ===
+        "Approved"
     ).length
 
   const rejectedRequests =
     leaveList.filter(
       (leave) =>
-        leave.status === "Rejected"
+        leave.status ===
+        "Rejected"
     ).length
 
   const approvalPercentage =
@@ -553,11 +689,15 @@ export default function LeaveRequests() {
         )
       : 0
 
-  // Search, filter, and sort requests.
+  /*
+   * Search / filter / sort
+   */
   const filteredLeaves =
     [...leaveList]
       .filter((leave) =>
-        leave.employeeName
+        getEmployeeName(
+          leave
+        )
           .toLowerCase()
           .includes(
             searchTerm.toLowerCase()
@@ -566,30 +706,43 @@ export default function LeaveRequests() {
       .filter((leave) =>
         statusFilter === "All"
           ? true
-          : leave.status === statusFilter
+          : leave.status ===
+            statusFilter
       )
       .sort((a, b) => {
         switch (sortOption) {
           case "employee-asc":
-            return a.employeeName.localeCompare(
-              b.employeeName
+            return getEmployeeName(
+              a
+            ).localeCompare(
+              getEmployeeName(b)
             )
 
           case "employee-desc":
-            return b.employeeName.localeCompare(
-              a.employeeName
+            return getEmployeeName(
+              b
+            ).localeCompare(
+              getEmployeeName(a)
             )
 
           case "date-asc":
             return (
-              new Date(a.startDate).getTime() -
-              new Date(b.startDate).getTime()
+              new Date(
+                a.startDate
+              ).getTime() -
+              new Date(
+                b.startDate
+              ).getTime()
             )
 
           case "date-desc":
             return (
-              new Date(b.startDate).getTime() -
-              new Date(a.startDate).getTime()
+              new Date(
+                b.startDate
+              ).getTime() -
+              new Date(
+                a.startDate
+              ).getTime()
             )
 
           default:
@@ -602,7 +755,9 @@ export default function LeaveRequests() {
       <header className="leave-hero">
         <div className="leave-hero-main">
           <div className="leave-hero-icon">
-            <CalendarDays size={25} />
+            <CalendarDays
+              size={25}
+            />
           </div>
 
           <div className="leave-hero-content">
@@ -612,13 +767,14 @@ export default function LeaveRequests() {
             </span>
 
             <h1>
-              Leave <span>Requests</span>
+              Leave{" "}
+              <span>Requests</span>
             </h1>
 
             <p>
-              Manage employee leave requests,
-              approvals, dates, and statuses
-              from one central workspace.
+              {isAdmin
+                ? "Review and manage employee leave requests, approvals, dates, and statuses."
+                : "Submit and track your leave requests from one central workspace."}
             </p>
           </div>
         </div>
@@ -635,7 +791,9 @@ export default function LeaveRequests() {
                   {pendingRequests}
                 </strong>
 
-                <span>Pending</span>
+                <span>
+                  Pending
+                </span>
               </div>
             </div>
 
@@ -643,7 +801,9 @@ export default function LeaveRequests() {
 
             <div className="leave-mini-stat">
               <div className="leave-mini-icon approved">
-                <CircleCheck size={16} />
+                <CircleCheck
+                  size={16}
+                />
               </div>
 
               <div>
@@ -651,7 +811,9 @@ export default function LeaveRequests() {
                   {approvedRequests}
                 </strong>
 
-                <span>Approved</span>
+                <span>
+                  Approved
+                </span>
               </div>
             </div>
           </div>
@@ -670,14 +832,24 @@ export default function LeaveRequests() {
       <section className="leave-stats">
         <article className="leave-stat-card">
           <div className="leave-stat-icon total">
-            <ClipboardList size={20} />
+            <ClipboardList
+              size={20}
+            />
           </div>
 
           <div>
-            <span>Total Requests</span>
-            <strong>{totalRequests}</strong>
+            <span>
+              Total Requests
+            </span>
+
+            <strong>
+              {totalRequests}
+            </strong>
+
             <small>
-              All submitted requests
+              {isAdmin
+                ? "All submitted requests"
+                : "Your submitted requests"}
             </small>
           </div>
         </article>
@@ -689,7 +861,11 @@ export default function LeaveRequests() {
 
           <div>
             <span>Pending</span>
-            <strong>{pendingRequests}</strong>
+
+            <strong>
+              {pendingRequests}
+            </strong>
+
             <small>
               Waiting for review
             </small>
@@ -698,12 +874,20 @@ export default function LeaveRequests() {
 
         <article className="leave-stat-card">
           <div className="leave-stat-icon approved">
-            <CircleCheck size={20} />
+            <CircleCheck
+              size={20}
+            />
           </div>
 
           <div>
-            <span>Approved</span>
-            <strong>{approvedRequests}</strong>
+            <span>
+              Approved
+            </span>
+
+            <strong>
+              {approvedRequests}
+            </strong>
+
             <small>
               Approved requests
             </small>
@@ -716,8 +900,14 @@ export default function LeaveRequests() {
           </div>
 
           <div>
-            <span>Rejected</span>
-            <strong>{rejectedRequests}</strong>
+            <span>
+              Rejected
+            </span>
+
+            <strong>
+              {rejectedRequests}
+            </strong>
+
             <small>
               Rejected requests
             </small>
@@ -729,13 +919,19 @@ export default function LeaveRequests() {
         <div className="leave-overview-header">
           <div className="leave-overview-title">
             <div className="leave-overview-icon">
-              <Activity size={18} />
+              <Activity
+                size={18}
+              />
             </div>
 
             <div>
-              <span>REQUEST OVERVIEW</span>
+              <span>
+                REQUEST OVERVIEW
+              </span>
 
-              <h2>Approval Progress</h2>
+              <h2>
+                Approval Progress
+              </h2>
             </div>
           </div>
 
@@ -757,16 +953,18 @@ export default function LeaveRequests() {
         <div className="leave-overview-footer">
           <span>
             {approvedRequests} of{" "}
-            {totalRequests} requests approved
+            {totalRequests} requests
+            approved
           </span>
 
           <span>
-            {pendingRequests} pending review
+            {pendingRequests} pending
+            review
           </span>
         </div>
       </section>
 
-      {/* Add leave request form */}
+      {/* Add leave request */}
       {isAdding && (
         <form
           ref={addFormRef}
@@ -779,7 +977,9 @@ export default function LeaveRequests() {
                 NEW REQUEST
               </span>
 
-              <h2>Add Leave Request</h2>
+              <h2>
+                Add Leave Request
+              </h2>
             </div>
 
             <div className="leave-form-icon">
@@ -789,43 +989,26 @@ export default function LeaveRequests() {
 
           <div className="leave-form-grid">
             <div className="leave-field">
-              <label>Employee Name</label>
+              <label>
+                Leave Type
+              </label>
 
               <div className="leave-input-wrapper">
-                <UserRound size={16} />
-
-                <input
-                  type="text"
-                  placeholder="Employee Name"
-                  value={addForm.employeeName}
-                  required
-                  onChange={(event) => {
-                    setAddForm({
-                      ...addForm,
-                      employeeName:
-                        event.target.value,
-                    })
-
-                    setAddError("")
-                  }}
+                <BriefcaseBusiness
+                  size={16}
                 />
-              </div>
-            </div>
-
-            <div className="leave-field">
-              <label>Leave Type</label>
-
-              <div className="leave-input-wrapper">
-                <BriefcaseBusiness size={16} />
 
                 <select
-                  value={addForm.leaveType}
+                  value={
+                    addForm.leaveType
+                  }
                   required
                   onChange={(event) => {
                     setAddForm({
                       ...addForm,
                       leaveType:
-                        event.target.value as LeaveType,
+                        event.target
+                          .value as LeaveType,
                     })
 
                     setAddError("")
@@ -847,20 +1030,27 @@ export default function LeaveRequests() {
             </div>
 
             <div className="leave-field">
-              <label>Start Date</label>
+              <label>
+                Start Date
+              </label>
 
               <div className="leave-input-wrapper">
-                <CalendarDays size={16} />
+                <CalendarDays
+                  size={16}
+                />
 
                 <input
                   type="date"
-                  value={addForm.startDate}
+                  value={
+                    addForm.startDate
+                  }
                   required
                   onChange={(event) => {
                     setAddForm({
                       ...addForm,
                       startDate:
-                        event.target.value,
+                        event.target
+                          .value,
                     })
 
                     setAddError("")
@@ -870,14 +1060,20 @@ export default function LeaveRequests() {
             </div>
 
             <div className="leave-field">
-              <label>End Date</label>
+              <label>
+                End Date
+              </label>
 
               <div className="leave-input-wrapper">
-                <CalendarDays size={16} />
+                <CalendarDays
+                  size={16}
+                />
 
                 <input
                   type="date"
-                  value={addForm.endDate}
+                  value={
+                    addForm.endDate
+                  }
                   min={
                     addForm.startDate ||
                     undefined
@@ -887,7 +1083,8 @@ export default function LeaveRequests() {
                     setAddForm({
                       ...addForm,
                       endDate:
-                        event.target.value,
+                        event.target
+                          .value,
                     })
 
                     setAddError("")
@@ -897,21 +1094,28 @@ export default function LeaveRequests() {
             </div>
 
             <div className="leave-field">
-              <label>Reason</label>
+              <label>
+                Reason
+              </label>
 
               <div className="leave-input-wrapper">
-                <FileText size={16} />
+                <FileText
+                  size={16}
+                />
 
                 <input
                   type="text"
                   placeholder="Reason"
-                  value={addForm.reason}
+                  value={
+                    addForm.reason
+                  }
                   required
                   onChange={(event) => {
                     setAddForm({
                       ...addForm,
                       reason:
-                        event.target.value,
+                        event.target
+                          .value,
                     })
 
                     setAddError("")
@@ -921,36 +1125,20 @@ export default function LeaveRequests() {
             </div>
 
             <div className="leave-field">
-              <label>Status</label>
+              <label>
+                Status
+              </label>
 
               <div className="leave-input-wrapper">
-                <Activity size={16} />
+                <Activity
+                  size={16}
+                />
 
-                <select
-                  value={addForm.status}
-                  required
-                  onChange={(event) => {
-                    setAddForm({
-                      ...addForm,
-                      status:
-                        event.target.value as LeaveStatus,
-                    })
-
-                    setAddError("")
-                  }}
-                >
-                  <option value="Pending">
-                    Pending
-                  </option>
-
-                  <option value="Approved">
-                    Approved
-                  </option>
-
-                  <option value="Rejected">
-                    Rejected
-                  </option>
-                </select>
+                <input
+                  type="text"
+                  value="Pending"
+                  disabled
+                />
               </div>
             </div>
           </div>
@@ -965,7 +1153,9 @@ export default function LeaveRequests() {
             <button
               type="button"
               className="leave-form-cancel-btn"
-              onClick={handleCancelAdd}
+              onClick={
+                handleCancelAdd
+              }
             >
               <X size={15} />
               Cancel
@@ -976,240 +1166,207 @@ export default function LeaveRequests() {
               className="leave-save-btn"
             >
               <Save size={15} />
-              Save Request
+              Submit Request
             </button>
           </div>
         </form>
       )}
 
-      {/* Edit leave request form */}
-      {editingLeaveId !== null && (
-        <form
-          ref={editFormRef}
-          className="leave-form edit"
-          onSubmit={handleSave}
-        >
-          <div className="leave-form-header">
-            <div>
-              <span className="leave-form-eyebrow">
-                REQUEST UPDATE
-              </span>
+      {/* Admin edit / approval form */}
+      {editingLeaveId !== null &&
+        isAdmin && (
+          <form
+            ref={editFormRef}
+            className="leave-form edit"
+            onSubmit={handleSave}
+          >
+            <div className="leave-form-header">
+              <div>
+                <span className="leave-form-eyebrow">
+                  REQUEST REVIEW
+                </span>
 
-              <h2>Edit Leave Request</h2>
-            </div>
+                <h2>
+                  Review Leave Request
+                </h2>
+              </div>
 
-            <div className="leave-form-icon edit">
-              <Save size={19} />
-            </div>
-          </div>
-
-          <div className="leave-form-grid">
-            <div className="leave-field">
-              <label>Employee Name</label>
-
-              <div className="leave-input-wrapper">
-                <UserRound size={16} />
-
-                <input
-                  type="text"
-                  placeholder="Employee Name"
-                  value={editForm.employeeName}
-                  required
-                  onChange={(event) => {
-                    setEditForm({
-                      ...editForm,
-                      employeeName:
-                        event.target.value,
-                    })
-
-                    setEditError("")
-                  }}
-                />
+              <div className="leave-form-icon edit">
+                <Save size={19} />
               </div>
             </div>
 
-            <div className="leave-field">
-              <label>Leave Type</label>
+            <div className="leave-form-grid">
+              <div className="leave-field">
+                <label>
+                  Leave Type
+                </label>
 
-              <div className="leave-input-wrapper">
-                <BriefcaseBusiness size={16} />
+                <div className="leave-input-wrapper">
+                  <BriefcaseBusiness
+                    size={16}
+                  />
 
-                <select
-                  value={editForm.leaveType}
-                  required
-                  onChange={(event) => {
-                    setEditForm({
-                      ...editForm,
-                      leaveType:
-                        event.target.value as LeaveType,
-                    })
+                  <input
+                    type="text"
+                    value={
+                      editForm.leaveType
+                    }
+                    disabled
+                  />
+                </div>
+              </div>
 
-                    setEditError("")
-                  }}
-                >
-                  <option value="Annual">
-                    Annual
-                  </option>
+              <div className="leave-field">
+                <label>
+                  Start Date
+                </label>
 
-                  <option value="Sick">
-                    Sick
-                  </option>
+                <div className="leave-input-wrapper">
+                  <CalendarDays
+                    size={16}
+                  />
 
-                  <option value="Personal">
-                    Personal
-                  </option>
-                </select>
+                  <input
+                    type="date"
+                    value={
+                      editForm.startDate
+                    }
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <div className="leave-field">
+                <label>
+                  End Date
+                </label>
+
+                <div className="leave-input-wrapper">
+                  <CalendarDays
+                    size={16}
+                  />
+
+                  <input
+                    type="date"
+                    value={
+                      editForm.endDate
+                    }
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <div className="leave-field">
+                <label>
+                  Reason
+                </label>
+
+                <div className="leave-input-wrapper">
+                  <FileText
+                    size={16}
+                  />
+
+                  <input
+                    type="text"
+                    value={
+                      editForm.reason
+                    }
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <div className="leave-field">
+                <label>
+                  Status
+                </label>
+
+                <div className="leave-input-wrapper">
+                  <Activity
+                    size={16}
+                  />
+
+                  <select
+                    value={
+                      editForm.status
+                    }
+                    required
+                    onChange={(event) => {
+                      setEditForm({
+                        ...editForm,
+                        status:
+                          event.target
+                            .value as LeaveStatus,
+                      })
+
+                      setEditError("")
+                    }}
+                  >
+                    <option value="Pending">
+                      Pending
+                    </option>
+
+                    <option value="Approved">
+                      Approved
+                    </option>
+
+                    <option value="Rejected">
+                      Rejected
+                    </option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <div className="leave-field">
-              <label>Start Date</label>
+            {editError && (
+              <p className="form-error">
+                {editError}
+              </p>
+            )}
 
-              <div className="leave-input-wrapper">
-                <CalendarDays size={16} />
+            <div className="leave-form-actions">
+              <button
+                type="button"
+                className="leave-form-cancel-btn"
+                onClick={
+                  handleCancel
+                }
+              >
+                <X size={15} />
+                Cancel
+              </button>
 
-                <input
-                  type="date"
-                  value={editForm.startDate}
-                  required
-                  onChange={(event) => {
-                    setEditForm({
-                      ...editForm,
-                      startDate:
-                        event.target.value,
-                    })
-
-                    setEditError("")
-                  }}
-                />
-              </div>
+              <button
+                type="submit"
+                className="leave-save-btn"
+              >
+                <Save size={15} />
+                Update Status
+              </button>
             </div>
+          </form>
+        )}
 
-            <div className="leave-field">
-              <label>End Date</label>
-
-              <div className="leave-input-wrapper">
-                <CalendarDays size={16} />
-
-                <input
-                  type="date"
-                  value={editForm.endDate}
-                  min={
-                    editForm.startDate ||
-                    undefined
-                  }
-                  required
-                  onChange={(event) => {
-                    setEditForm({
-                      ...editForm,
-                      endDate:
-                        event.target.value,
-                    })
-
-                    setEditError("")
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="leave-field">
-              <label>Reason</label>
-
-              <div className="leave-input-wrapper">
-                <FileText size={16} />
-
-                <input
-                  type="text"
-                  placeholder="Reason"
-                  value={editForm.reason}
-                  required
-                  onChange={(event) => {
-                    setEditForm({
-                      ...editForm,
-                      reason:
-                        event.target.value,
-                    })
-
-                    setEditError("")
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="leave-field">
-              <label>Status</label>
-
-              <div className="leave-input-wrapper">
-                <Activity size={16} />
-
-                <select
-                  value={editForm.status}
-                  required
-                  onChange={(event) => {
-                    setEditForm({
-                      ...editForm,
-                      status:
-                        event.target.value as LeaveStatus,
-                    })
-
-                    setEditError("")
-                  }}
-                >
-                  <option value="Pending">
-                    Pending
-                  </option>
-
-                  <option value="Approved">
-                    Approved
-                  </option>
-
-                  <option value="Rejected">
-                    Rejected
-                  </option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {editError && (
-            <p className="form-error">
-              {editError}
-            </p>
-          )}
-
-          <div className="leave-form-actions">
-            <button
-              type="button"
-              className="leave-form-cancel-btn"
-              onClick={handleCancel}
-            >
-              <X size={15} />
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              className="leave-save-btn"
-            >
-              <Save size={15} />
-              Update Request
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* Search, filters, and sorting */}
+      {/* Search / filters */}
       <div className="leave-toolbar">
         <div className="leave-search">
           <Search size={17} />
 
           <input
             type="text"
-            placeholder="Search employee..."
-            value={searchTerm}
+            placeholder={
+              isAdmin
+                ? "Search employee..."
+                : "Search your requests..."
+            }
+            value={
+              searchTerm
+            }
             onChange={(event) =>
               setSearchTerm(
-                event.target.value
+                event.target
+                  .value
               )
             }
           />
@@ -1217,10 +1374,13 @@ export default function LeaveRequests() {
 
         <div className="leave-filter">
           <select
-            value={statusFilter}
+            value={
+              statusFilter
+            }
             onChange={(event) =>
               setStatusFilter(
-                event.target.value as
+                event.target
+                  .value as
                   | "All"
                   | LeaveStatus
               )
@@ -1244,10 +1404,13 @@ export default function LeaveRequests() {
           </select>
 
           <select
-            value={sortOption}
+            value={
+              sortOption
+            }
             onChange={(event) =>
               setSortOption(
-                event.target.value as SortOption
+                event.target
+                  .value as SortOption
               )
             }
           >
@@ -1276,32 +1439,47 @@ export default function LeaveRequests() {
 
       <div className="leave-section-header">
         <div>
-          <h2>Leave Requests</h2>
+          <h2>
+            Leave Requests
+          </h2>
 
           <p>
-            Review and manage employee
-            leave activity.
+            {isAdmin
+              ? "Review and manage employee leave activity."
+              : "Track your submitted leave requests."}
           </p>
         </div>
 
         <span className="leave-results-count">
-          {filteredLeaves.length} requests
+          {
+            filteredLeaves.length
+          }{" "}
+          requests
         </span>
       </div>
 
       {/* Leave request list */}
       <section className="leave-requests-grid">
-        {filteredLeaves.length > 0 ? (
+        {filteredLeaves.length >
+        0 ? (
           filteredLeaves.map(
             (leaveRequest) => (
               <div
-                key={leaveRequest.id}
+                key={
+                  leaveRequest.id
+                }
                 id={`leave-${leaveRequest.id}`}
               >
                 <LeaveRequestCard
-                  leaveRequest={leaveRequest}
-                  onDelete={handleDelete}
-                  onEdit={handleEdit}
+                  leaveRequest={
+                    leaveRequest
+                  }
+                  onDelete={
+                    handleDelete
+                  }
+                  onEdit={
+                    handleEdit
+                  }
                 />
               </div>
             )
@@ -1309,30 +1487,38 @@ export default function LeaveRequests() {
         ) : (
           <div className="leave-empty-state">
             <div className="leave-empty-icon">
-              <CalendarDays size={27} />
+              <CalendarDays
+                size={27}
+              />
             </div>
 
             <h2>
-              No leave requests found
+              No leave requests
+              found
             </h2>
 
             <p>
-              Try changing your search
-              or filter.
+              Try changing your
+              search or filter.
             </p>
           </div>
         )}
       </section>
 
       {/* Delete confirmation */}
-      {leaveToDelete !== null && (
+      {leaveToDelete !==
+        null && (
         <Modal
           title="Delete Leave Request"
           message="Are you sure you want to move this leave request to Trash? You can recover it later from the Trash page."
           onCancel={() =>
-            setLeaveToDelete(null)
+            setLeaveToDelete(
+              null
+            )
           }
-          onConfirm={confirmDelete}
+          onConfirm={
+            confirmDelete
+          }
         />
       )}
     </main>

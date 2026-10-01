@@ -1,9 +1,23 @@
+export interface LeaveEmployee {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  position: string
+}
+
 export interface LeaveRequest {
   id: string
-  employeeName: string
-  leaveType: "Annual" | "Sick" | "Personal"
+  employeeId: LeaveEmployee
+  leaveType:
+    | "Annual"
+    | "Sick"
+    | "Personal"
   startDate: string
   endDate: string
   reason: string
-  status: "Pending" | "Approved" | "Rejected"
+  status:
+    | "Pending"
+    | "Approved"
+    | "Rejected"
 }

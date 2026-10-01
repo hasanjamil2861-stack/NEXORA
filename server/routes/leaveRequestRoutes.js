@@ -1,47 +1,50 @@
 const express = require("express")
 
 const {
-    protect,
-    adminOnly,
+  protect,
+  adminOnly,
 } = require("../middleware/authMiddleware")
 
 const {
-    getLeaveRequests,
-    postLeaveRequest,
-    updateLeaveRequest,
-    deleteLeaveRequest,
+  getLeaveRequests,
+  postLeaveRequest,
+  updateLeaveRequest,
+  deleteLeaveRequest,
 } = require("../controllers/leaveRequestController")
 
 const router = express.Router()
 
-// Create a leave request - Admin + Employee
+// Employee + Admin
+// Create a leave request
 router.post(
-    "/leaveRequests",
-    protect,
-    postLeaveRequest
+  "/leave-requests",
+  protect,
+  postLeaveRequest
 )
 
-// Get all leave requests - Admin + Employee
+// Employee → own requests
+// Admin → all requests
 router.get(
-    "/leaveRequests",
-    protect,
-    getLeaveRequests
+  "/leave-requests",
+  protect,
+  getLeaveRequests
 )
 
-// Update a leave request - Admin only
+// Admin only
+// Approve / Reject a leave request
 router.put(
-    "/leaveRequests/:id",
-    protect,
-    adminOnly,
-    updateLeaveRequest
+  "/leave-requests/:id",
+  protect,
+  adminOnly,
+  updateLeaveRequest
 )
 
-// Delete a leave request - Admin only
+// Admin only
 router.delete(
-    "/leaveRequests/:id",
-    protect,
-    adminOnly,
-    deleteLeaveRequest
+  "/leave-requests/:id",
+  protect,
+  adminOnly,
+  deleteLeaveRequest
 )
 
 module.exports = router

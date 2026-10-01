@@ -12,6 +12,8 @@ import {
 
 import type { LeaveRequest } from "../../types/LeaveRequest"
 
+import { useAuth } from "../../context/AuthContext"
+
 type LeaveRequestCardProps = {
   leaveRequest: LeaveRequest
   onDelete: (id: string) => void
@@ -23,18 +25,27 @@ export default function LeaveRequestCard({
   onDelete,
   onEdit,
 }: LeaveRequestCardProps) {
-  // Determine leave request status
+  const { user } = useAuth()
+
+  const isAdmin =
+    user?.role === "Admin"
+
   const isApproved =
-    leaveRequest.status === "Approved"
+    leaveRequest.status ===
+    "Approved"
 
   const isRejected =
-    leaveRequest.status === "Rejected"
+    leaveRequest.status ===
+    "Rejected"
 
   const statusClass = isApproved
     ? "approved"
     : isRejected
       ? "rejected"
       : "pending"
+
+  const employeeName =
+    `${leaveRequest.employeeId.firstName} ${leaveRequest.employeeId.lastName}`
 
   return (
     <article className="leave-request-card">
@@ -65,23 +76,52 @@ export default function LeaveRequestCard({
 
       {/* Employee request information */}
       <div className="leave-card-title">
-        <span>EMPLOYEE REQUEST</span>
+        <span>
+          EMPLOYEE REQUEST
+        </span>
 
-        <h2>{leaveRequest.employeeName}</h2>
+        <h2>
+          {employeeName}
+        </h2>
 
         <small>
           Request #{leaveRequest.id}
         </small>
       </div>
 
-      {/* Leave type */}
-      <div className="leave-type-box">
-        <div className="leave-type-icon">
-          <BriefcaseBusiness size={15} />
+      {/* Employee information */}
+      <div className="leave-reason-box">
+        <div className="leave-reason-icon">
+          <UserRound size={14} />
         </div>
 
         <div>
-          <span>Leave Type</span>
+          <span>
+            Employee
+          </span>
+
+          <p>
+            {leaveRequest.employeeId.email}
+          </p>
+
+          <small>
+            {leaveRequest.employeeId.position}
+          </small>
+        </div>
+      </div>
+
+      {/* Leave type */}
+      <div className="leave-type-box">
+        <div className="leave-type-icon">
+          <BriefcaseBusiness
+            size={15}
+          />
+        </div>
+
+        <div>
+          <span>
+            Leave Type
+          </span>
 
           <strong>
             {leaveRequest.leaveType}
@@ -97,7 +137,9 @@ export default function LeaveRequestCard({
           </div>
 
           <div>
-            <span>Start Date</span>
+            <span>
+              Start Date
+            </span>
 
             <strong>
               {leaveRequest.startDate}
@@ -111,7 +153,9 @@ export default function LeaveRequestCard({
           </div>
 
           <div>
-            <span>End Date</span>
+            <span>
+              End Date
+            </span>
 
             <strong>
               {leaveRequest.endDate}
@@ -127,34 +171,46 @@ export default function LeaveRequestCard({
         </div>
 
         <div>
-          <span>Reason</span>
+          <span>
+            Reason
+          </span>
 
-          <p>{leaveRequest.reason}</p>
+          <p>
+            {leaveRequest.reason}
+          </p>
         </div>
       </div>
 
-      {/* Edit and delete actions */}
-      <div className="leave-card-actions">
-        <button
-          type="button"
-          className="leave-edit-btn"
-          onClick={() => onEdit(leaveRequest.id)}
-        >
-          <Pencil size={14} />
-          Edit
-        </button>
+      {/* Admin actions only */}
+      {isAdmin && (
+        <div className="leave-card-actions">
+          <button
+            type="button"
+            className="leave-edit-btn"
+            onClick={() =>
+              onEdit(
+                leaveRequest.id
+              )
+            }
+          >
+            <Pencil size={14} />
+            Edit
+          </button>
 
-        <button
-          type="button"
-          className="leave-delete-btn"
-          onClick={() =>
-            onDelete(leaveRequest.id)
-          }
-        >
-          <Trash2 size={14} />
-          Delete
-        </button>
-      </div>
+          <button
+            type="button"
+            className="leave-delete-btn"
+            onClick={() =>
+              onDelete(
+                leaveRequest.id
+              )
+            }
+          >
+            <Trash2 size={14} />
+            Delete
+          </button>
+        </div>
+      )}
     </article>
   )
 }
