@@ -100,19 +100,29 @@ export default function LeaveRequests() {
     useState("")
 
   const [statusFilter, setStatusFilter] =
-    useState<"All" | LeaveStatus>("All")
+    useState<
+      "All" | LeaveStatus
+    >("All")
 
   const [sortOption, setSortOption] =
-    useState<SortOption>("default")
+    useState<SortOption>(
+      "default"
+    )
 
-  const [editingLeaveId, setEditingLeaveId] =
-    useState<string | null>(null)
+  const [
+    editingLeaveId,
+    setEditingLeaveId,
+  ] = useState<string | null>(null)
 
-  const [leaveToDelete, setLeaveToDelete] =
-    useState<string | null>(null)
+  const [
+    leaveToDelete,
+    setLeaveToDelete,
+  ] = useState<string | null>(null)
 
-  const [newLeaveId, setNewLeaveId] =
-    useState<string | null>(null)
+  const [
+    newLeaveId,
+    setNewLeaveId,
+  ] = useState<string | null>(null)
 
   const [isAdding, setIsAdding] =
     useState(false)
@@ -124,53 +134,52 @@ export default function LeaveRequests() {
     useState("")
 
   const addFormRef =
-    useRef<HTMLFormElement | null>(null)
+    useRef<HTMLFormElement | null>(
+      null
+    )
 
   const editFormRef =
-    useRef<HTMLFormElement | null>(null)
+    useRef<HTMLFormElement | null>(
+      null
+    )
 
   const [editForm, setEditForm] =
-    useState<LeaveForm>(initialLeaveForm)
+    useState<LeaveForm>(
+      initialLeaveForm
+    )
 
   const [addForm, setAddForm] =
-    useState<LeaveForm>(initialLeaveForm)
+    useState<LeaveForm>(
+      initialLeaveForm
+    )
 
-  /*
-   * Scroll to newly created request
-   */
   useEffect(() => {
     if (!newLeaveId) {
       return
     }
 
-    const frame = requestAnimationFrame(() => {
-      const newLeave =
-        document.getElementById(
-          `leave-${newLeaveId}`
-        )
+    const frame =
+      requestAnimationFrame(() => {
+        const newLeave =
+          document.getElementById(
+            `leave-${newLeaveId}`
+          )
 
-      if (newLeave) {
-        newLeave.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        })
-      }
+        if (newLeave) {
+          newLeave.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          })
+        }
 
-      setNewLeaveId(null)
-    })
+        setNewLeaveId(null)
+      })
 
     return () => {
       cancelAnimationFrame(frame)
     }
   }, [newLeaveId])
 
-  /*
-   * Load leave requests
-   *
-   * Backend:
-   * Admin    -> all requests
-   * Employee -> own requests
-   */
   useEffect(() => {
     async function fetchLeaveRequests() {
       try {
@@ -182,30 +191,26 @@ export default function LeaveRequests() {
           data
             .filter(
               (leave) =>
-                Boolean(leave.employeeId)
+                Boolean(
+                  leave.employeeId
+                )
             )
             .map((leave) => ({
               id: leave._id,
-
               employeeId:
                 leave.employeeId!,
-
               leaveType:
                 leave.leaveType ??
                 "Annual",
-
               startDate:
                 leave.startDate ??
                 "",
-
               endDate:
                 leave.endDate ??
                 "",
-
               reason:
                 leave.reason ??
                 "",
-
               status:
                 leave.status ??
                 "Pending",
@@ -230,18 +235,12 @@ export default function LeaveRequests() {
     fetchLeaveRequests()
   }, [showToast])
 
-  /*
-   * Helper for employee name
-   */
   function getEmployeeName(
     leave: LeaveRequest
   ) {
     return `${leave.employeeId.firstName} ${leave.employeeId.lastName}`
   }
 
-  /*
-   * Validate Add/Edit form
-   */
   function validateForm(
     form: LeaveForm
   ) {
@@ -258,8 +257,12 @@ export default function LeaveRequests() {
     }
 
     if (
-      new Date(form.endDate).getTime() <
-      new Date(form.startDate).getTime()
+      new Date(
+        form.endDate
+      ).getTime() <
+      new Date(
+        form.startDate
+      ).getTime()
     ) {
       return (
         "End date cannot be before " +
@@ -274,25 +277,30 @@ export default function LeaveRequests() {
     return ""
   }
 
-  /*
-   * Delete request
-   */
-  function handleDelete(id: string) {
-    setLeaveToDelete(id)
-  }
-
-  /*
-   * Confirm delete
-   */
-  async function confirmDelete() {
-    if (leaveToDelete === null) {
+  function handleDelete(
+    id: string
+  ) {
+    if (!isAdmin) {
       return
     }
 
-    const leave = leaveList.find(
-      (item) =>
-        item.id === leaveToDelete
-    )
+    setLeaveToDelete(id)
+  }
+
+  async function confirmDelete() {
+    if (
+      leaveToDelete === null ||
+      !isAdmin
+    ) {
+      return
+    }
+
+    const leave =
+      leaveList.find(
+        (item) =>
+          item.id ===
+          leaveToDelete
+      )
 
     if (!leave) {
       return
@@ -306,7 +314,9 @@ export default function LeaveRequests() {
       moveToTrash(
         "Leave Request",
         leave.id,
-        getEmployeeName(leave),
+        getEmployeeName(
+          leave
+        ),
         `${leave.leaveType} Leave Request`,
         leave as unknown as Record<
           string,
@@ -342,19 +352,18 @@ export default function LeaveRequests() {
     }
   }
 
-  /*
-   * Open edit form
-   *
-   * Admin uses this for approving/rejecting.
-   */
-  function handleEdit(id: string) {
+  function handleEdit(
+    id: string
+  ) {
     if (!isAdmin) {
       return
     }
 
-    const leave = leaveList.find(
-      (item) => item.id === id
-    )
+    const leave =
+      leaveList.find(
+        (item) =>
+          item.id === id
+      )
 
     if (!leave) {
       return
@@ -365,16 +374,12 @@ export default function LeaveRequests() {
     setEditForm({
       leaveType:
         leave.leaveType,
-
       startDate:
         leave.startDate,
-
       endDate:
         leave.endDate,
-
       reason:
         leave.reason,
-
       status:
         leave.status,
     })
@@ -382,16 +387,15 @@ export default function LeaveRequests() {
     setEditError("")
 
     requestAnimationFrame(() => {
-      editFormRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      })
+      editFormRef.current?.scrollIntoView(
+        {
+          behavior: "smooth",
+          block: "start",
+        }
+      )
     })
   }
 
-  /*
-   * Admin updates request status
-   */
   async function handleSave(
     event: FormEvent
   ) {
@@ -428,7 +432,9 @@ export default function LeaveRequests() {
         )
       }
 
-      if (!updatedLeave.employeeId) {
+      if (
+        !updatedLeave.employeeId
+      ) {
         throw new Error(
           "Updated leave request is missing employee information."
         )
@@ -436,31 +442,25 @@ export default function LeaveRequests() {
 
       const formattedLeave:
         LeaveRequest = {
-          id: updatedLeave._id,
-
-          employeeId:
-            updatedLeave.employeeId,
-
-          leaveType:
-            updatedLeave.leaveType ??
-            "Annual",
-
-          startDate:
-            updatedLeave.startDate ??
-            "",
-
-          endDate:
-            updatedLeave.endDate ??
-            "",
-
-          reason:
-            updatedLeave.reason ??
-            "",
-
-          status:
-            updatedLeave.status ??
-            "Pending",
-        }
+        id: updatedLeave._id,
+        employeeId:
+          updatedLeave.employeeId,
+        leaveType:
+          updatedLeave.leaveType ??
+          "Annual",
+        startDate:
+          updatedLeave.startDate ??
+          "",
+        endDate:
+          updatedLeave.endDate ??
+          "",
+        reason:
+          updatedLeave.reason ??
+          "",
+        status:
+          updatedLeave.status ??
+          "Pending",
+      }
 
       setLeaveList(
         (currentLeaves) =>
@@ -474,9 +474,7 @@ export default function LeaveRequests() {
       )
 
       setEditingLeaveId(null)
-
       setEditError("")
-
       setEditForm(
         initialLeaveForm
       )
@@ -501,42 +499,34 @@ export default function LeaveRequests() {
 
   function handleCancel() {
     setEditingLeaveId(null)
-
     setEditError("")
-
     setEditForm(
       initialLeaveForm
     )
   }
 
-  /*
-   * Open Add form
-   */
   function openAddForm() {
     setIsAdding(true)
-
     setAddError("")
 
     requestAnimationFrame(() => {
-      addFormRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      })
+      addFormRef.current?.scrollIntoView(
+        {
+          behavior: "smooth",
+          block: "start",
+        }
+      )
     })
   }
 
-  /*
-   * Employee creates request
-   *
-   * Backend automatically determines
-   * employeeId from authenticated user.
-   *
-   * Status is NOT sent by Employee.
-   */
   async function handleAdd(
     event: FormEvent
   ) {
     event.preventDefault()
+
+    if (isAdmin) {
+      return
+    }
 
     const error =
       validateForm(addForm)
@@ -550,13 +540,10 @@ export default function LeaveRequests() {
       const requestBody = {
         leaveType:
           addForm.leaveType,
-
         startDate:
           addForm.startDate,
-
         endDate:
           addForm.endDate,
-
         reason:
           addForm.reason.trim(),
       }
@@ -572,7 +559,9 @@ export default function LeaveRequests() {
         )
       }
 
-      if (!responseData.employeeId) {
+      if (
+        !responseData.employeeId
+      ) {
         throw new Error(
           "Leave request is missing employee information."
         )
@@ -580,31 +569,25 @@ export default function LeaveRequests() {
 
       const newLeave:
         LeaveRequest = {
-          id: responseData._id,
-
-          employeeId:
-            responseData.employeeId,
-
-          leaveType:
-            responseData.leaveType ??
-            "Annual",
-
-          startDate:
-            responseData.startDate ??
-            "",
-
-          endDate:
-            responseData.endDate ??
-            "",
-
-          reason:
-            responseData.reason ??
-            "",
-
-          status:
-            responseData.status ??
-            "Pending",
-        }
+        id: responseData._id,
+        employeeId:
+          responseData.employeeId,
+        leaveType:
+          responseData.leaveType ??
+          "Annual",
+        startDate:
+          responseData.startDate ??
+          "",
+        endDate:
+          responseData.endDate ??
+          "",
+        reason:
+          responseData.reason ??
+          "",
+        status:
+          responseData.status ??
+          "Pending",
+      }
 
       setLeaveList(
         (currentLeaves) => [
@@ -622,7 +605,6 @@ export default function LeaveRequests() {
       )
 
       setAddError("")
-
       setIsAdding(false)
 
       showToast(
@@ -645,17 +627,12 @@ export default function LeaveRequests() {
 
   function handleCancelAdd() {
     setIsAdding(false)
-
     setAddForm(
       initialLeaveForm
     )
-
     setAddError("")
   }
 
-  /*
-   * Statistics
-   */
   const totalRequests =
     leaveList.length
 
@@ -689,9 +666,6 @@ export default function LeaveRequests() {
         )
       : 0
 
-  /*
-   * Search / filter / sort
-   */
   const filteredLeaves =
     [...leaveList]
       .filter((leave) =>
@@ -704,13 +678,16 @@ export default function LeaveRequests() {
           )
       )
       .filter((leave) =>
-        statusFilter === "All"
+        statusFilter ===
+        "All"
           ? true
           : leave.status ===
             statusFilter
       )
       .sort((a, b) => {
-        switch (sortOption) {
+        switch (
+          sortOption
+        ) {
           case "employee-asc":
             return getEmployeeName(
               a
@@ -818,14 +795,18 @@ export default function LeaveRequests() {
             </div>
           </div>
 
-          <button
-            type="button"
-            className="add-leave-btn"
-            onClick={openAddForm}
-          >
-            <Plus size={16} />
-            Add Request
-          </button>
+          {!isAdmin && (
+            <button
+              type="button"
+              className="add-leave-btn"
+              onClick={
+                openAddForm
+              }
+            >
+              <Plus size={16} />
+              Add Request
+            </button>
+          )}
         </div>
       </header>
 
@@ -860,7 +841,9 @@ export default function LeaveRequests() {
           </div>
 
           <div>
-            <span>Pending</span>
+            <span>
+              Pending
+            </span>
 
             <strong>
               {pendingRequests}
@@ -953,232 +936,234 @@ export default function LeaveRequests() {
         <div className="leave-overview-footer">
           <span>
             {approvedRequests} of{" "}
-            {totalRequests} requests
-            approved
+            {totalRequests}{" "}
+            requests approved
           </span>
 
           <span>
-            {pendingRequests} pending
-            review
+            {pendingRequests}{" "}
+            pending review
           </span>
         </div>
       </section>
 
-      {/* Add leave request */}
-      {isAdding && (
-        <form
-          ref={addFormRef}
-          className="leave-form"
-          onSubmit={handleAdd}
-        >
-          <div className="leave-form-header">
-            <div>
-              <span className="leave-form-eyebrow">
-                NEW REQUEST
-              </span>
+      {!isAdmin &&
+        isAdding && (
+          <form
+            ref={addFormRef}
+            className="leave-form"
+            onSubmit={handleAdd}
+          >
+            <div className="leave-form-header">
+              <div>
+                <span className="leave-form-eyebrow">
+                  NEW REQUEST
+                </span>
 
-              <h2>
-                Add Leave Request
-              </h2>
-            </div>
+                <h2>
+                  Add Leave Request
+                </h2>
+              </div>
 
-            <div className="leave-form-icon">
-              <Plus size={19} />
-            </div>
-          </div>
-
-          <div className="leave-form-grid">
-            <div className="leave-field">
-              <label>
-                Leave Type
-              </label>
-
-              <div className="leave-input-wrapper">
-                <BriefcaseBusiness
-                  size={16}
-                />
-
-                <select
-                  value={
-                    addForm.leaveType
-                  }
-                  required
-                  onChange={(event) => {
-                    setAddForm({
-                      ...addForm,
-                      leaveType:
-                        event.target
-                          .value as LeaveType,
-                    })
-
-                    setAddError("")
-                  }}
-                >
-                  <option value="Annual">
-                    Annual
-                  </option>
-
-                  <option value="Sick">
-                    Sick
-                  </option>
-
-                  <option value="Personal">
-                    Personal
-                  </option>
-                </select>
+              <div className="leave-form-icon">
+                <Plus size={19} />
               </div>
             </div>
 
-            <div className="leave-field">
-              <label>
-                Start Date
-              </label>
+            <div className="leave-form-grid">
+              <div className="leave-field">
+                <label>
+                  Leave Type
+                </label>
 
-              <div className="leave-input-wrapper">
-                <CalendarDays
-                  size={16}
-                />
+                <div className="leave-input-wrapper">
+                  <BriefcaseBusiness
+                    size={16}
+                  />
 
-                <input
-                  type="date"
-                  value={
-                    addForm.startDate
-                  }
-                  required
-                  onChange={(event) => {
-                    setAddForm({
-                      ...addForm,
-                      startDate:
-                        event.target
-                          .value,
-                    })
+                  <select
+                    value={
+                      addForm.leaveType
+                    }
+                    required
+                    onChange={(event) => {
+                      setAddForm({
+                        ...addForm,
+                        leaveType:
+                          event.target
+                            .value as LeaveType,
+                      })
 
-                    setAddError("")
-                  }}
-                />
+                      setAddError("")
+                    }}
+                  >
+                    <option value="Annual">
+                      Annual
+                    </option>
+
+                    <option value="Sick">
+                      Sick
+                    </option>
+
+                    <option value="Personal">
+                      Personal
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="leave-field">
+                <label>
+                  Start Date
+                </label>
+
+                <div className="leave-input-wrapper">
+                  <CalendarDays
+                    size={16}
+                  />
+
+                  <input
+                    type="date"
+                    value={
+                      addForm.startDate
+                    }
+                    required
+                    onChange={(event) => {
+                      setAddForm({
+                        ...addForm,
+                        startDate:
+                          event.target
+                            .value,
+                      })
+
+                      setAddError("")
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="leave-field">
+                <label>
+                  End Date
+                </label>
+
+                <div className="leave-input-wrapper">
+                  <CalendarDays
+                    size={16}
+                  />
+
+                  <input
+                    type="date"
+                    value={
+                      addForm.endDate
+                    }
+                    min={
+                      addForm.startDate ||
+                      undefined
+                    }
+                    required
+                    onChange={(event) => {
+                      setAddForm({
+                        ...addForm,
+                        endDate:
+                          event.target
+                            .value,
+                      })
+
+                      setAddError("")
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="leave-field">
+                <label>
+                  Reason
+                </label>
+
+                <div className="leave-input-wrapper">
+                  <FileText
+                    size={16}
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Reason"
+                    value={
+                      addForm.reason
+                    }
+                    required
+                    onChange={(event) => {
+                      setAddForm({
+                        ...addForm,
+                        reason:
+                          event.target
+                            .value,
+                      })
+
+                      setAddError("")
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="leave-field">
+                <label>
+                  Status
+                </label>
+
+                <div className="leave-input-wrapper">
+                  <Activity
+                    size={16}
+                  />
+
+                  <input
+                    type="text"
+                    value="Pending"
+                    disabled
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="leave-field">
-              <label>
-                End Date
-              </label>
+            {addError && (
+              <p className="form-error">
+                {addError}
+              </p>
+            )}
 
-              <div className="leave-input-wrapper">
-                <CalendarDays
-                  size={16}
-                />
+            <div className="leave-form-actions">
+              <button
+                type="button"
+                className="leave-form-cancel-btn"
+                onClick={
+                  handleCancelAdd
+                }
+              >
+                <X size={15} />
+                Cancel
+              </button>
 
-                <input
-                  type="date"
-                  value={
-                    addForm.endDate
-                  }
-                  min={
-                    addForm.startDate ||
-                    undefined
-                  }
-                  required
-                  onChange={(event) => {
-                    setAddForm({
-                      ...addForm,
-                      endDate:
-                        event.target
-                          .value,
-                    })
-
-                    setAddError("")
-                  }}
-                />
-              </div>
+              <button
+                type="submit"
+                className="leave-save-btn"
+              >
+                <Save size={15} />
+                Submit Request
+              </button>
             </div>
+          </form>
+        )}
 
-            <div className="leave-field">
-              <label>
-                Reason
-              </label>
-
-              <div className="leave-input-wrapper">
-                <FileText
-                  size={16}
-                />
-
-                <input
-                  type="text"
-                  placeholder="Reason"
-                  value={
-                    addForm.reason
-                  }
-                  required
-                  onChange={(event) => {
-                    setAddForm({
-                      ...addForm,
-                      reason:
-                        event.target
-                          .value,
-                    })
-
-                    setAddError("")
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="leave-field">
-              <label>
-                Status
-              </label>
-
-              <div className="leave-input-wrapper">
-                <Activity
-                  size={16}
-                />
-
-                <input
-                  type="text"
-                  value="Pending"
-                  disabled
-                />
-              </div>
-            </div>
-          </div>
-
-          {addError && (
-            <p className="form-error">
-              {addError}
-            </p>
-          )}
-
-          <div className="leave-form-actions">
-            <button
-              type="button"
-              className="leave-form-cancel-btn"
-              onClick={
-                handleCancelAdd
-              }
-            >
-              <X size={15} />
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              className="leave-save-btn"
-            >
-              <Save size={15} />
-              Submit Request
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* Admin edit / approval form */}
-      {editingLeaveId !== null &&
+      {editingLeaveId !==
+        null &&
         isAdmin && (
           <form
             ref={editFormRef}
             className="leave-form edit"
-            onSubmit={handleSave}
+            onSubmit={
+              handleSave
+            }
           >
             <div className="leave-form-header">
               <div>
@@ -1348,7 +1333,6 @@ export default function LeaveRequests() {
           </form>
         )}
 
-      {/* Search / filters */}
       <div className="leave-toolbar">
         <div className="leave-search">
           <Search size={17} />
@@ -1365,8 +1349,7 @@ export default function LeaveRequests() {
             }
             onChange={(event) =>
               setSearchTerm(
-                event.target
-                  .value
+                event.target.value
               )
             }
           />
@@ -1458,7 +1441,6 @@ export default function LeaveRequests() {
         </span>
       </div>
 
-      {/* Leave request list */}
       <section className="leave-requests-grid">
         {filteredLeaves.length >
         0 ? (
@@ -1505,22 +1487,22 @@ export default function LeaveRequests() {
         )}
       </section>
 
-      {/* Delete confirmation */}
       {leaveToDelete !==
-        null && (
-        <Modal
-          title="Delete Leave Request"
-          message="Are you sure you want to move this leave request to Trash? You can recover it later from the Trash page."
-          onCancel={() =>
-            setLeaveToDelete(
-              null
-            )
-          }
-          onConfirm={
-            confirmDelete
-          }
-        />
-      )}
+        null &&
+        isAdmin && (
+          <Modal
+            title="Delete Leave Request"
+            message="Are you sure you want to move this leave request to Trash? You can recover it later from the Trash page."
+            onCancel={() =>
+              setLeaveToDelete(
+                null
+              )
+            }
+            onConfirm={
+              confirmDelete
+            }
+          />
+        )}
     </main>
   )
 }

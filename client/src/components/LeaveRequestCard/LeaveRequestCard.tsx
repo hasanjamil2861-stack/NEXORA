@@ -49,7 +49,6 @@ export default function LeaveRequestCard({
 
   return (
     <article className="leave-request-card">
-      {/* Status accent and header */}
       <div
         className={`leave-card-accent ${statusClass}`}
       />
@@ -74,7 +73,6 @@ export default function LeaveRequestCard({
         </div>
       </div>
 
-      {/* Employee request information */}
       <div className="leave-card-title">
         <span>
           EMPLOYEE REQUEST
@@ -89,28 +87,6 @@ export default function LeaveRequestCard({
         </small>
       </div>
 
-      {/* Employee information */}
-      <div className="leave-reason-box">
-        <div className="leave-reason-icon">
-          <UserRound size={14} />
-        </div>
-
-        <div>
-          <span>
-            Employee
-          </span>
-
-          <p>
-            {leaveRequest.employeeId.email}
-          </p>
-
-          <small>
-            {leaveRequest.employeeId.position}
-          </small>
-        </div>
-      </div>
-
-      {/* Leave type */}
       <div className="leave-type-box">
         <div className="leave-type-icon">
           <BriefcaseBusiness
@@ -129,7 +105,6 @@ export default function LeaveRequestCard({
         </div>
       </div>
 
-      {/* Leave dates */}
       <div className="leave-card-details">
         <div className="leave-detail-item">
           <div className="leave-detail-icon">
@@ -164,7 +139,6 @@ export default function LeaveRequestCard({
         </div>
       </div>
 
-      {/* Leave reason */}
       <div className="leave-reason-box">
         <div className="leave-reason-icon">
           <FileText size={14} />
@@ -181,7 +155,6 @@ export default function LeaveRequestCard({
         </div>
       </div>
 
-      {/* Admin actions only */}
       {isAdmin && (
         <div className="leave-card-actions">
           <button

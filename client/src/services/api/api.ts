@@ -1,13 +1,18 @@
-const API_URL = "https://nexora-3-v485.onrender.com"
+const API_URL =
+  "https://nexora-3-v485.onrender.com"
 
 export async function apiRequest(
   endpoint: string,
   options: RequestInit = {}
 ) {
   const token =
-    localStorage.getItem("nexora-token")
+    localStorage.getItem(
+      "nexora-token"
+    )
 
-  const headers = new Headers(options.headers)
+  const headers = new Headers(
+    options.headers
+  )
 
   headers.set(
     "Content-Type",
@@ -30,13 +35,17 @@ export async function apiRequest(
   )
 
   if (!response.ok) {
-    if (response.status === 401) {
+    if (
+      response.status === 401
+    ) {
       throw new Error(
         "Unauthorized. Please login again."
       )
     }
 
-    if (response.status === 403) {
+    if (
+      response.status === 403
+    ) {
       throw new Error(
         "You do not have permission to perform this action."
       )

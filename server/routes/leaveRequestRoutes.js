@@ -15,15 +15,15 @@ const {
 const router = express.Router()
 
 // Employee + Admin
-// Create a leave request
+// Employee can create their own request
 router.post(
   "/leave-requests",
   protect,
   postLeaveRequest
 )
 
-// Employee → own requests
-// Admin → all requests
+// Employee -> own requests
+// Admin -> all requests
 router.get(
   "/leave-requests",
   protect,
@@ -31,7 +31,7 @@ router.get(
 )
 
 // Admin only
-// Approve / Reject a leave request
+// Approve / Reject
 router.put(
   "/leave-requests/:id",
   protect,

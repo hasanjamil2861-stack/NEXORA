@@ -2,7 +2,10 @@ const LeaveRequest = require("../models/LeaveRequest")
 const Employee = require("../models/Employee")
 
 // Get leave requests
-const getLeaveRequests = async (req, res) => {
+const getLeaveRequests = async (
+  req,
+  res
+) => {
   try {
     // Admin can see all leave requests
     if (req.user.role === "Admin") {
@@ -14,17 +17,21 @@ const getLeaveRequests = async (req, res) => {
           )
           .sort({ createdAt: -1 })
 
-      return res.json(leaveRequests)
+      return res.json(
+        leaveRequests
+      )
     }
 
     // Employee can see only their own requests
-    const employee = await Employee.findOne({
-      email: req.user.email,
-    })
+    const employee =
+      await Employee.findOne({
+        email: req.user.email,
+      })
 
     if (!employee) {
       return res.status(404).json({
-        message: "Employee profile not found.",
+        message:
+          "Employee profile not found.",
       })
     }
 
@@ -46,20 +53,56 @@ const getLeaveRequests = async (req, res) => {
     )
 
     res.status(500).json({
-      message: "Failed to get leave requests",
+      message:
+        "Failed to get leave requests.",
       error: error.message,
     })
   }
 }
 
 // Create a leave request
-const postLeaveRequest = async (req, res) => {
+const postLeaveRequest = async (
+  req,
+  res
+) => {
   try {
-    // Employee account
-    if (req.user.role === "Employee") {
-      const employee = await Employee.findOne({
-        email: req.user.email,
+    const {
+      leaveType,
+      startDate,
+      endDate,
+      reason,
+    } = req.body
+
+    if (
+      !leaveType ||
+      !startDate ||
+      !endDate ||
+      !reason?.trim()
+    ) {
+      return res.status(400).json({
+        message:
+          "Leave type, start date, end date, and reason are required.",
       })
+    }
+
+    if (
+      new Date(endDate).getTime() <
+      new Date(startDate).getTime()
+    ) {
+      return res.status(400).json({
+        message:
+          "End date cannot be before start date.",
+      })
+    }
+
+    // Employee creates a request
+    if (
+      req.user.role === "Employee"
+    ) {
+      const employee =
+        await Employee.findOne({
+          email: req.user.email,
+        })
 
       if (!employee) {
         return res.status(404).json({
@@ -68,20 +111,15 @@ const postLeaveRequest = async (req, res) => {
         })
       }
 
-      const {
-        leaveType,
-        startDate,
-        endDate,
-        reason,
-      } = req.body
-
       const newLeaveRequest =
         new LeaveRequest({
-          employeeId: employee._id,
+          employeeId:
+            employee._id,
           leaveType,
           startDate,
           endDate,
-          reason,
+          reason:
+            reason.trim(),
           status: "Pending",
         })
 
@@ -93,30 +131,16 @@ const postLeaveRequest = async (req, res) => {
           "firstName lastName email position"
         )
 
-      return res
-        .status(201)
-        .json(populatedLeaveRequest)
+      return res.status(201).json(
+        populatedLeaveRequest
+      )
     }
 
-    // Admin can create a request if needed
-    const newLeaveRequest =
-      new LeaveRequest({
-        ...req.body,
-        status:
-          req.body.status || "Pending",
-      })
-
-    await newLeaveRequest.save()
-
-    const populatedLeaveRequest =
-      await newLeaveRequest.populate(
-        "employeeId",
-        "firstName lastName email position"
-      )
-
-    res
-      .status(201)
-      .json(populatedLeaveRequest)
+    // Admin creation is not required
+    return res.status(403).json({
+      message:
+        "Admins review leave requests instead of creating employee requests.",
+    })
   } catch (error) {
     console.error(
       "Save leave request error:",
@@ -125,17 +149,22 @@ const postLeaveRequest = async (req, res) => {
 
     res.status(500).json({
       message:
-        "Failed to save leave request",
+        "Failed to save leave request.",
       error: error.message,
     })
   }
 }
 
-// Update a leave request
-const updateLeaveRequest = async (req, res) => {
+// Update leave request
+// Admin only
+const updateLeaveRequest = async (
+  req,
+  res
+) => {
   try {
-    // Only Admin can approve/reject requests
-    if (req.user.role !== "Admin") {
+    if (
+      req.user.role !== "Admin"
+    ) {
       return res.status(403).json({
         message:
           "Only Admin can update leave requests.",
@@ -145,9 +174,11 @@ const updateLeaveRequest = async (req, res) => {
     const { status } = req.body
 
     if (
-      status !== "Pending" &&
-      status !== "Approved" &&
-      status !== "Rejected"
+      ![
+        "Pending",
+        "Approved",
+        "Rejected",
+      ].includes(status)
     ) {
       return res.status(400).json({
         message:
@@ -177,7 +208,9 @@ const updateLeaveRequest = async (req, res) => {
       })
     }
 
-    res.json(updatedLeaveRequest)
+    res.json(
+      updatedLeaveRequest
+    )
   } catch (error) {
     console.error(
       "Update leave request error:",
@@ -186,17 +219,22 @@ const updateLeaveRequest = async (req, res) => {
 
     res.status(500).json({
       message:
-        "Failed to update leave request",
+        "Failed to update leave request.",
       error: error.message,
     })
   }
 }
 
-// Delete a leave request
-const deleteLeaveRequest = async (req, res) => {
+// Delete leave request
+// Admin only
+const deleteLeaveRequest = async (
+  req,
+  res
+) => {
   try {
-    // Only Admin can delete leave requests
-    if (req.user.role !== "Admin") {
+    if (
+      req.user.role !== "Admin"
+    ) {
       return res.status(403).json({
         message:
           "Only Admin can delete leave requests.",
@@ -229,7 +267,7 @@ const deleteLeaveRequest = async (req, res) => {
 
     res.status(500).json({
       message:
-        "Failed to delete leave request",
+        "Failed to delete leave request.",
       error: error.message,
     })
   }
