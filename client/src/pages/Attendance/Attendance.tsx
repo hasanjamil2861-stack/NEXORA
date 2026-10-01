@@ -14,6 +14,7 @@ import {
 import AttendanceCard from "../../components/AttendanceCard/AttendanceCard"
 import Modal from "../../components/Modal/Modal"
 
+import { useAuth } from "../../context/AuthContext"
 import { useTrash } from "../../context/TrashContext"
 import { useToast } from "../../context/ToastContext"
 
@@ -41,32 +42,41 @@ type AttendanceApiRecord = {
 }
 
 export default function Attendance() {
+  const { user } = useAuth()
+
+  const isAdmin = user?.role === "Admin"
+
   const [attendanceList, setAttendanceList] =
     useState<AttendanceRecord[]>([])
 
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] =
+    useState("")
 
-  const [statusFilter, setStatusFilter] = useState<
-    "All" | "Present" | "Absent" | "Late"
-  >("All")
+  const [statusFilter, setStatusFilter] =
+    useState<
+      "All" | "Present" | "Absent" | "Late"
+    >("All")
 
-  const [dateFilter, setDateFilter] = useState("")
+  const [dateFilter, setDateFilter] =
+    useState("")
 
-  const [sortOption, setSortOption] = useState<
-    | "default"
-    | "employee-asc"
-    | "employee-desc"
-    | "date-asc"
-    | "date-desc"
-  >("default")
+  const [sortOption, setSortOption] =
+    useState<
+      | "default"
+      | "employee-asc"
+      | "employee-desc"
+      | "date-asc"
+      | "date-desc"
+    >("default")
 
-  const [attendanceToDelete, setAttendanceToDelete] =
-    useState<string | null>(null)
+  const [
+    attendanceToDelete,
+    setAttendanceToDelete,
+  ] = useState<string | null>(null)
 
   const { moveToTrash } = useTrash()
   const { showToast } = useToast()
 
-  // Load attendance records from the backend
   useEffect(() => {
     async function fetchAttendance() {
       try {
@@ -75,16 +85,27 @@ export default function Attendance() {
 
         const formattedAttendance: AttendanceRecord[] =
           data.map((record) => ({
-            id: record._id,
-            employeeName: record.employeeName ?? "",
+            id: String(record._id),
+            employeeName:
+              record.employeeName ?? "",
             date: record.date ?? "",
-            checkIn: record.checkIn ?? "",
-            checkOut: record.checkOut ?? "",
-            status: record.status ?? "Present",
+            checkIn:
+              record.checkIn ?? "",
+            checkOut:
+              record.checkOut ?? "",
+            status:
+              record.status ?? "Present",
           }))
 
-        setAttendanceList(formattedAttendance)
-      } catch {
+        setAttendanceList(
+          formattedAttendance
+        )
+      } catch (error) {
+        console.error(
+          "Failed to load attendance:",
+          error
+        )
+
         showToast(
           "Failed to load attendance records",
           "error"
@@ -95,20 +116,29 @@ export default function Attendance() {
     fetchAttendance()
   }, [showToast])
 
-  // Prepare an attendance record for deletion
-  function handleDeleteAttendance(id: string) {
+  function handleDeleteAttendance(
+    id: string
+  ) {
+    if (!isAdmin) {
+      return
+    }
+
     setAttendanceToDelete(id)
   }
 
-  // Delete from MongoDB, then move the record to Trash
   async function confirmDeleteAttendance() {
-    if (attendanceToDelete === null) {
+    if (
+      !isAdmin ||
+      attendanceToDelete === null
+    ) {
       return
     }
 
     const attendanceRecord =
       attendanceList.find(
-        (item) => item.id === attendanceToDelete
+        (item) =>
+          item.id ===
+          attendanceToDelete
       )
 
     if (!attendanceRecord) {
@@ -116,24 +146,28 @@ export default function Attendance() {
     }
 
     try {
-      await deleteAttendance(attendanceRecord.id)
+      await deleteAttendance(
+        attendanceRecord.id
+      )
 
       moveToTrash(
         "Attendance",
         attendanceRecord.id,
         attendanceRecord.employeeName,
         `${attendanceRecord.date} - ${attendanceRecord.status}`,
-        attendanceRecord as unknown as Record<
+        attendanceRecord as Record<
           string,
           unknown
         >
       )
 
-      setAttendanceList((currentAttendance) =>
-        currentAttendance.filter(
-          (item) =>
-            item.id !== attendanceRecord.id
-        )
+      setAttendanceList(
+        (currentAttendance) =>
+          currentAttendance.filter(
+            (item) =>
+              item.id !==
+              attendanceRecord.id
+          )
       )
 
       setAttendanceToDelete(null)
@@ -142,7 +176,12 @@ export default function Attendance() {
         "Attendance record moved to Trash",
         "success"
       )
-    } catch {
+    } catch (error) {
+      console.error(
+        "Failed to delete attendance:",
+        error
+      )
+
       showToast(
         "Failed to delete attendance record",
         "error"
@@ -150,78 +189,98 @@ export default function Attendance() {
     }
   }
 
-  // Attendance statistics
-  const totalAttendance = attendanceList.length
+  const totalAttendance =
+    attendanceList.length
 
-  const presentCount = attendanceList.filter(
-    (record) => record.status === "Present"
-  ).length
+  const presentCount =
+    attendanceList.filter(
+      (record) =>
+        record.status === "Present"
+    ).length
 
-  const absentCount = attendanceList.filter(
-    (record) => record.status === "Absent"
-  ).length
+  const absentCount =
+    attendanceList.filter(
+      (record) =>
+        record.status === "Absent"
+    ).length
 
-  const lateCount = attendanceList.filter(
-    (record) => record.status === "Late"
-  ).length
+  const lateCount =
+    attendanceList.filter(
+      (record) =>
+        record.status === "Late"
+    ).length
 
   const attendanceRate =
     totalAttendance > 0
       ? Math.round(
-          (presentCount / totalAttendance) * 100
+          (presentCount /
+            totalAttendance) *
+            100
         )
       : 0
 
-  // Search, filter, and sort attendance records
-  const filteredAttendance = [...attendanceList]
-    .filter((record) =>
-      String(record.employeeName ?? "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-    )
-    .filter((record) =>
-      statusFilter === "All"
-        ? true
-        : record.status === statusFilter
-    )
-    .filter((record) =>
-      dateFilter === ""
-        ? true
-        : record.date === dateFilter
-    )
-    .sort((a, b) => {
-      if (sortOption === "employee-asc") {
-        return a.employeeName.localeCompare(
-          b.employeeName
-        )
-      }
+  const filteredAttendance =
+    [...attendanceList]
+      .filter((record) =>
+        record.employeeName
+          .toLowerCase()
+          .includes(
+            searchTerm
+              .toLowerCase()
+              .trim()
+          )
+      )
+      .filter((record) =>
+        statusFilter === "All"
+          ? true
+          : record.status ===
+            statusFilter
+      )
+      .filter((record) =>
+        dateFilter === ""
+          ? true
+          : record.date ===
+            dateFilter
+      )
+      .sort((a, b) => {
+        switch (sortOption) {
+          case "employee-asc":
+            return a.employeeName.localeCompare(
+              b.employeeName
+            )
 
-      if (sortOption === "employee-desc") {
-        return b.employeeName.localeCompare(
-          a.employeeName
-        )
-      }
+          case "employee-desc":
+            return b.employeeName.localeCompare(
+              a.employeeName
+            )
 
-      if (sortOption === "date-asc") {
-        return (
-          new Date(a.date).getTime() -
-          new Date(b.date).getTime()
-        )
-      }
+          case "date-asc":
+            return (
+              new Date(
+                a.date
+              ).getTime() -
+              new Date(
+                b.date
+              ).getTime()
+            )
 
-      if (sortOption === "date-desc") {
-        return (
-          new Date(b.date).getTime() -
-          new Date(a.date).getTime()
-        )
-      }
+          case "date-desc":
+            return (
+              new Date(
+                b.date
+              ).getTime() -
+              new Date(
+                a.date
+              ).getTime()
+            )
 
-      return 0
-    })
+          default:
+            return 0
+        }
+      })
 
   return (
     <main className="attendance-page">
-      {/* Hero header */}
       <header className="attendance-hero">
         <div className="attendance-hero-main">
           <div className="attendance-hero-icon">
@@ -235,13 +294,14 @@ export default function Attendance() {
             </span>
 
             <h1>
-              Attendance <span>Overview</span>
+              Attendance{" "}
+              <span>Overview</span>
             </h1>
 
             <p>
-              Monitor employee attendance,
-              daily presence, absences, and
-              late arrivals from one central workspace.
+              {isAdmin
+                ? "Monitor employee attendance, daily presence, absences, and late arrivals from one central workspace."
+                : "View your attendance records, daily presence, absences, and late arrivals."}
             </p>
           </div>
         </div>
@@ -254,7 +314,9 @@ export default function Attendance() {
               </div>
 
               <div>
-                <strong>{presentCount}</strong>
+                <strong>
+                  {presentCount}
+                </strong>
                 <span>Present</span>
               </div>
             </div>
@@ -267,7 +329,9 @@ export default function Attendance() {
               </div>
 
               <div>
-                <strong>{lateCount}</strong>
+                <strong>
+                  {lateCount}
+                </strong>
                 <span>Late</span>
               </div>
             </div>
@@ -275,12 +339,14 @@ export default function Attendance() {
 
           <div className="attendance-live-badge">
             <Activity size={13} />
-            Live Workforce
+
+            {isAdmin
+              ? "Live Workforce"
+              : "My Attendance"}
           </div>
         </div>
       </header>
 
-      {/* Attendance statistics */}
       <section className="attendance-stats">
         <article className="attendance-stat-card">
           <div className="attendance-stat-icon total">
@@ -289,8 +355,16 @@ export default function Attendance() {
 
           <div>
             <span>Total Records</span>
-            <strong>{totalAttendance}</strong>
-            <small>Attendance records</small>
+
+            <strong>
+              {totalAttendance}
+            </strong>
+
+            <small>
+              {isAdmin
+                ? "Attendance records"
+                : "Your attendance records"}
+            </small>
           </div>
         </article>
 
@@ -301,8 +375,16 @@ export default function Attendance() {
 
           <div>
             <span>Present</span>
-            <strong>{presentCount}</strong>
-            <small>Employees present</small>
+
+            <strong>
+              {presentCount}
+            </strong>
+
+            <small>
+              {isAdmin
+                ? "Employees present"
+                : "Days present"}
+            </small>
           </div>
         </article>
 
@@ -313,8 +395,16 @@ export default function Attendance() {
 
           <div>
             <span>Absent</span>
-            <strong>{absentCount}</strong>
-            <small>Employees absent</small>
+
+            <strong>
+              {absentCount}
+            </strong>
+
+            <small>
+              {isAdmin
+                ? "Employees absent"
+                : "Days absent"}
+            </small>
           </div>
         </article>
 
@@ -325,13 +415,18 @@ export default function Attendance() {
 
           <div>
             <span>Late</span>
-            <strong>{lateCount}</strong>
-            <small>Late arrivals</small>
+
+            <strong>
+              {lateCount}
+            </strong>
+
+            <small>
+              Late arrivals
+            </small>
           </div>
         </article>
       </section>
 
-      {/* Attendance rate overview */}
       <section className="attendance-overview">
         <div className="attendance-overview-header">
           <div className="attendance-overview-title">
@@ -340,12 +435,19 @@ export default function Attendance() {
             </div>
 
             <div>
-              <span>WORKFORCE OVERVIEW</span>
-              <h2>Attendance Rate</h2>
+              <span>
+                WORKFORCE OVERVIEW
+              </span>
+
+              <h2>
+                Attendance Rate
+              </h2>
             </div>
           </div>
 
-          <strong>{attendanceRate}%</strong>
+          <strong>
+            {attendanceRate}%
+          </strong>
         </div>
 
         <div className="attendance-progress-track">
@@ -359,15 +461,17 @@ export default function Attendance() {
 
         <div className="attendance-overview-footer">
           <span>
-            {presentCount} of {totalAttendance} records
+            {presentCount} of{" "}
+            {totalAttendance} records
             marked present
           </span>
 
-          <span>{lateCount} late arrivals</span>
+          <span>
+            {lateCount} late arrivals
+          </span>
         </div>
       </section>
 
-      {/* Search, filters, and sorting */}
       <div className="attendance-toolbar">
         <div className="attendance-search">
           <Search size={17} />
@@ -377,7 +481,9 @@ export default function Attendance() {
             placeholder="Search employee..."
             value={searchTerm}
             onChange={(e) =>
-              setSearchTerm(e.target.value)
+              setSearchTerm(
+                e.target.value
+              )
             }
           />
         </div>
@@ -404,9 +510,18 @@ export default function Attendance() {
               <option value="All">
                 All Statuses
               </option>
-              <option value="Present">Present</option>
-              <option value="Absent">Absent</option>
-              <option value="Late">Late</option>
+
+              <option value="Present">
+                Present
+              </option>
+
+              <option value="Absent">
+                Absent
+              </option>
+
+              <option value="Late">
+                Late
+              </option>
             </select>
           </div>
 
@@ -420,7 +535,9 @@ export default function Attendance() {
               type="date"
               value={dateFilter}
               onChange={(e) =>
-                setDateFilter(e.target.value)
+                setDateFilter(
+                  e.target.value
+                )
               }
             />
           </div>
@@ -447,15 +564,19 @@ export default function Attendance() {
               <option value="default">
                 Default Order
               </option>
+
               <option value="employee-asc">
                 Employee A → Z
               </option>
+
               <option value="employee-desc">
                 Employee Z → A
               </option>
+
               <option value="date-asc">
                 Date: Oldest
               </option>
+
               <option value="date-desc">
                 Date: Newest
               </option>
@@ -464,7 +585,6 @@ export default function Attendance() {
         </div>
       </div>
 
-      {/* Attendance records header */}
       <div className="attendance-section-header">
         <div>
           <div className="attendance-section-title">
@@ -472,57 +592,71 @@ export default function Attendance() {
               <CalendarCheck size={16} />
             </span>
 
-            <h2>Attendance Records</h2>
+            <h2>
+              {isAdmin
+                ? "Attendance Records"
+                : "My Attendance Records"}
+            </h2>
           </div>
 
           <p>
-            Review employee attendance activity and
-            daily records.
+            {isAdmin
+              ? "Review employee attendance activity and daily records."
+              : "Review your attendance activity and daily records."}
           </p>
         </div>
 
         <span className="attendance-results-count">
-          {filteredAttendance.length} records
+          {filteredAttendance.length}{" "}
+          records
         </span>
       </div>
 
-      {/* Attendance records */}
       <div className="attendance-grid">
         {filteredAttendance.length > 0 ? (
-          filteredAttendance.map((record) => (
-            <AttendanceCard
-              key={record.id}
-              attendance={record}
-              onDelete={handleDeleteAttendance}
-            />
-          ))
+          filteredAttendance.map(
+            (record) => (
+              <AttendanceCard
+                key={record.id}
+                attendance={record}
+                onDelete={
+                  handleDeleteAttendance
+                }
+              />
+            )
+          )
         ) : (
           <div className="attendance-empty">
             <div className="attendance-empty-icon">
               <Search size={24} />
             </div>
 
-            <h2>No Attendance Records Found</h2>
+            <h2>
+              No Attendance Records Found
+            </h2>
 
             <p>
-              No attendance records match your
-              current search or filters.
+              No attendance records match
+              your current search or
+              filters.
             </p>
           </div>
         )}
       </div>
 
-      {/* Delete confirmation */}
-      {attendanceToDelete !== null && (
-        <Modal
-          title="Delete Attendance Record"
-          message="This attendance record will be moved to Trash and can be recovered later."
-          onCancel={() =>
-            setAttendanceToDelete(null)
-          }
-          onConfirm={confirmDeleteAttendance}
-        />
-      )}
+      {isAdmin &&
+        attendanceToDelete !== null && (
+          <Modal
+            title="Delete Attendance Record"
+            message="This attendance record will be moved to Trash and can be recovered later."
+            onCancel={() =>
+              setAttendanceToDelete(null)
+            }
+            onConfirm={
+              confirmDeleteAttendance
+            }
+          />
+        )}
     </main>
   )
 }

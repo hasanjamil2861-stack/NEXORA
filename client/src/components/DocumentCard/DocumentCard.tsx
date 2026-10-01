@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 
 import type { Document } from "../../types/Document"
+import { useAuth } from "../../context/AuthContext"
 
 type DocumentCardProps = {
   document: Document
@@ -27,7 +28,10 @@ export default function DocumentCard({
   onDelete,
   onEdit,
 }: DocumentCardProps) {
-  // Return the correct icon based on document type
+  const { user } = useAuth()
+
+  const isAdmin = user?.role === "Admin"
+
   const getTypeIcon = () => {
     switch (document.type) {
       case "PDF":
@@ -47,7 +51,6 @@ export default function DocumentCard({
     }
   }
 
-  // Determine document type and status styles
   const typeClass = document.type.toLowerCase()
   const isActive = document.status === "Active"
 
@@ -57,7 +60,6 @@ export default function DocumentCard({
     >
       <div className="document-card-accent" />
 
-      {/* Document header and status */}
       <div className="document-card-header">
         <div className="document-card-type-icon">
           {getTypeIcon()}
@@ -88,7 +90,6 @@ export default function DocumentCard({
         </div>
       </div>
 
-      {/* Document type and category */}
       <div className="document-card-meta">
         <div className="document-meta-item">
           <div className="document-meta-icon">
@@ -97,7 +98,6 @@ export default function DocumentCard({
 
           <div>
             <span>Type</span>
-
             <strong>{document.type}</strong>
           </div>
         </div>
@@ -109,13 +109,11 @@ export default function DocumentCard({
 
           <div>
             <span>Category</span>
-
             <strong>{document.category}</strong>
           </div>
         </div>
       </div>
 
-      {/* Upload information */}
       <div className="document-card-details">
         <div className="document-detail-row">
           <div className="document-detail-left">
@@ -136,7 +134,6 @@ export default function DocumentCard({
         </div>
       </div>
 
-      {/* Document reference and actions */}
       <div className="document-card-footer">
         <div className="document-card-reference">
           <FileText size={14} />
@@ -146,30 +143,31 @@ export default function DocumentCard({
           </span>
         </div>
 
-        <div className="document-card-actions">
-          <button
-            type="button"
-            className="document-edit-btn"
-            onClick={() => onEdit(document.id)}
-            title="Edit Document"
-          >
-            <Pencil size={15} />
-            <span>Edit</span>
-          </button>
+        {isAdmin && (
+          <div className="document-card-actions">
+            <button
+              type="button"
+              className="document-edit-btn"
+              onClick={() => onEdit(document.id)}
+              title="Edit Document"
+            >
+              <Pencil size={15} />
+              <span>Edit</span>
+            </button>
 
-          <button
-            type="button"
-            className="document-delete-btn"
-            onClick={() => onDelete(document.id)}
-            title="Delete Document"
-          >
-            <Trash2 size={15} />
-            <span>Delete</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              className="document-delete-btn"
+              onClick={() => onDelete(document.id)}
+              title="Delete Document"
+            >
+              <Trash2 size={15} />
+              <span>Delete</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Hover indicator */}
       <div className="document-card-hover-icon">
         <ArrowUpRight size={16} />
       </div>

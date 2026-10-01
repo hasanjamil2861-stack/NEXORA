@@ -1,17 +1,13 @@
 import {
-  Banknote,
-  Building2,
   CalendarDays,
-  CircleCheck,
-  CircleX,
-  Clock3,
-  FileSignature,
+  CircleDollarSign,
   Pencil,
   Trash2,
   UserRound,
 } from "lucide-react"
 
 import type { Contract } from "../../types/Contract"
+import { useAuth } from "../../context/AuthContext"
 
 type ContractCardProps = {
   contract: Contract
@@ -24,162 +20,93 @@ export default function ContractCard({
   onDelete,
   onEdit,
 }: ContractCardProps) {
-  // Determine contract status and type
-  const isActive = contract.status === "Active"
-  const isExpired = contract.status === "Expired"
-  const isEmployee = contract.contractType === "Employee"
+  const { user } = useAuth()
 
-  const statusClass = isActive
-    ? "active"
-    : isExpired
-      ? "expired"
-      : "pending"
+  const isAdmin =
+    user?.role === "Admin"
 
   return (
     <article className="contract-card">
-      {/* Status accent and card header */}
-      <div
-        className={`contract-card-accent ${statusClass}`}
-      />
-
-      <div className="contract-card-top">
-        <div className="contract-card-icon">
-          <FileSignature size={19} />
-        </div>
-
-        <div
-          className={`contract-status ${statusClass}`}
-        >
-          {isActive ? (
-            <CircleCheck size={13} />
-          ) : isExpired ? (
-            <CircleX size={13} />
-          ) : (
-            <Clock3 size={13} />
-          )}
-
-          {contract.status}
-        </div>
-      </div>
-
-      {/* Contract information */}
-      <div className="contract-card-title">
-        <span>
-          {isEmployee
-            ? "EMPLOYEE CONTRACT"
-            : "CLIENT CONTRACT"}
-        </span>
-
-        <h2>{contract.partyName}</h2>
-
-        <small>
-          Contract #{contract.id}
-        </small>
-      </div>
-
-      {/* Contract type */}
-      <div className="contract-type-box">
-        <div className="contract-type-icon">
-          {isEmployee ? (
-            <UserRound size={15} />
-          ) : (
-            <Building2 size={15} />
-          )}
-        </div>
-
+      <div className="contract-card-header">
         <div>
-          <span>Contract Type</span>
-
-          <strong>
+          <span>
             {contract.contractType}
-          </strong>
+          </span>
+
+          <h2>
+            {contract.partyName}
+          </h2>
         </div>
+
+        <span
+          className={`contract-status contract-status-${contract.status.toLowerCase()}`}
+        >
+          {contract.status}
+        </span>
       </div>
 
-      {/* Contract value */}
-      <div className="contract-value-box">
-        <div className="contract-value-icon">
-          <Banknote size={17} />
-        </div>
-
-        <div>
-          <span>Contract Value</span>
-
-          <strong>
-            ${contract.value.toLocaleString()}
-          </strong>
-        </div>
-      </div>
-
-      {/* Contract dates */}
       <div className="contract-details">
         <div className="contract-detail-item">
-          <div className="contract-detail-icon">
-            <CalendarDays size={14} />
-          </div>
+          <UserRound size={16} />
 
           <div>
-            <span>Start Date</span>
-
+            <span>Party</span>
             <strong>
-              {contract.startDate}
+              {contract.partyName}
             </strong>
           </div>
         </div>
 
         <div className="contract-detail-item">
-          <div className="contract-detail-icon">
-            <CalendarDays size={14} />
-          </div>
+          <CalendarDays size={16} />
 
           <div>
-            <span>End Date</span>
-
+            <span>Timeline</span>
             <strong>
+              {contract.startDate} →{" "}
               {contract.endDate}
             </strong>
           </div>
         </div>
+
+        <div className="contract-detail-item">
+          <CircleDollarSign size={16} />
+
+          <div>
+            <span>Value</span>
+            <strong>
+              $
+              {contract.value.toLocaleString()}
+            </strong>
+          </div>
+        </div>
       </div>
 
-      {/* Status and actions */}
-      <div className="contract-card-footer">
-        <div>
-          <span>Current Status</span>
-
-          <strong
-            className={
-              isActive
-                ? "active-text"
-                : isExpired
-                  ? "expired-text"
-                  : "pending-text"
-            }
-          >
-            {contract.status}
-          </strong>
-        </div>
-
-        <div className="contract-footer-actions">
+      {isAdmin && (
+        <div className="contract-card-actions">
           <button
             type="button"
             className="contract-edit-btn"
-            onClick={() => onEdit(contract.id)}
+            onClick={() =>
+              onEdit(contract.id)
+            }
           >
-            <Pencil size={14} />
+            <Pencil size={15} />
             Edit
           </button>
 
           <button
             type="button"
             className="contract-delete-btn"
-            onClick={() => onDelete(contract.id)}
+            onClick={() =>
+              onDelete(contract.id)
+            }
           >
-            <Trash2 size={14} />
+            <Trash2 size={15} />
             Delete
           </button>
         </div>
-      </div>
+      )}
     </article>
   )
 }

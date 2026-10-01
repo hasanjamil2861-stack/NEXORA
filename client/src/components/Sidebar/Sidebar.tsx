@@ -56,8 +56,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile menu trigger */}
-
       <button
         type="button"
         className="sidebar-mobile-trigger"
@@ -71,7 +69,9 @@ export default function Sidebar() {
             ? "Close navigation menu"
             : "Open navigation menu"
         }
-        aria-expanded={isMobileMenuOpen}
+        aria-expanded={
+          isMobileMenuOpen
+        }
       >
         {isMobileMenuOpen ? (
           <X size={22} />
@@ -79,8 +79,6 @@ export default function Sidebar() {
           <Menu size={22} />
         )}
       </button>
-
-      {/* Mobile overlay */}
 
       {isMobileMenuOpen && (
         <button
@@ -98,42 +96,24 @@ export default function Sidebar() {
             : ""
         }`}
       >
-
-        {/* NEXORA brand */}
-
         <div className="sidebar-brand">
-
           <div className="sidebar-brand-logo">
-
             <img
               src="/images/Logo.jpg"
               alt="NEXORA Logo"
             />
-
           </div>
 
           <div className="sidebar-brand-text">
-
-            <h2>
-              NEXORA
-            </h2>
+            <h2>NEXORA</h2>
 
             <span>
               Business Management
             </span>
-
           </div>
-
         </div>
 
-        {/* Main navigation */}
-
         <nav className="sidebar-navigation">
-
-          {/* =========================
-              ADMIN ONLY
-              ========================= */}
-
           {isAdmin && (
             <>
               <NavLink
@@ -142,10 +122,7 @@ export default function Sidebar() {
                 onClick={closeMobileMenu}
               >
                 <LayoutDashboard className="sidebar-icon" />
-
-                <span>
-                  Dashboard
-                </span>
+                <span>Dashboard</span>
               </NavLink>
 
               <NavLink
@@ -154,10 +131,7 @@ export default function Sidebar() {
                 onClick={closeMobileMenu}
               >
                 <Users className="sidebar-icon" />
-
-                <span>
-                  Employees
-                </span>
+                <span>Employees</span>
               </NavLink>
 
               <NavLink
@@ -166,29 +140,19 @@ export default function Sidebar() {
                 onClick={closeMobileMenu}
               >
                 <Building2 className="sidebar-icon" />
-
-                <span>
-                  Departments
-                </span>
-              </NavLink>
-
-              <NavLink
-                to="/projects"
-                title="Projects"
-                onClick={closeMobileMenu}
-              >
-                <FolderKanban className="sidebar-icon" />
-
-                <span>
-                  Projects
-                </span>
+                <span>Departments</span>
               </NavLink>
             </>
           )}
 
-          {/* =========================
-              ADMIN + EMPLOYEE
-              ========================= */}
+          <NavLink
+            to="/projects"
+            title="Projects"
+            onClick={closeMobileMenu}
+          >
+            <FolderKanban className="sidebar-icon" />
+            <span>Projects</span>
+          </NavLink>
 
           <NavLink
             to="/tasks"
@@ -196,15 +160,8 @@ export default function Sidebar() {
             onClick={closeMobileMenu}
           >
             <ClipboardList className="sidebar-icon" />
-
-            <span>
-              Tasks
-            </span>
+            <span>Tasks</span>
           </NavLink>
-
-          {/* =========================
-              ADMIN ONLY
-              ========================= */}
 
           {isAdmin && (
             <NavLink
@@ -213,16 +170,9 @@ export default function Sidebar() {
               onClick={closeMobileMenu}
             >
               <UsersRound className="sidebar-icon" />
-
-              <span>
-                Clients
-              </span>
+              <span>Clients</span>
             </NavLink>
           )}
-
-          {/* =========================
-              ADMIN + EMPLOYEE
-              ========================= */}
 
           <NavLink
             to="/leave-requests"
@@ -230,59 +180,39 @@ export default function Sidebar() {
             onClick={closeMobileMenu}
           >
             <CalendarDays className="sidebar-icon" />
-
             <span>
               Leave Requests
             </span>
           </NavLink>
 
-          {/* =========================
-              ADMIN ONLY
-              ========================= */}
+          <NavLink
+            to="/attendance"
+            title="Attendance"
+            onClick={closeMobileMenu}
+          >
+            <CalendarCheck className="sidebar-icon" />
+            <span>Attendance</span>
+          </NavLink>
+
+          <NavLink
+            to="/contracts"
+            title="Contracts"
+            onClick={closeMobileMenu}
+          >
+            <FileSignature className="sidebar-icon" />
+            <span>Contracts</span>
+          </NavLink>
 
           {isAdmin && (
-            <>
-              <NavLink
-                to="/attendance"
-                title="Attendance"
-                onClick={closeMobileMenu}
-              >
-                <CalendarCheck className="sidebar-icon" />
-
-                <span>
-                  Attendance
-                </span>
-              </NavLink>
-
-              <NavLink
-                to="/contracts"
-                title="Contracts"
-                onClick={closeMobileMenu}
-              >
-                <FileSignature className="sidebar-icon" />
-
-                <span>
-                  Contracts
-                </span>
-              </NavLink>
-
-              <NavLink
-                to="/invoices"
-                title="Invoices"
-                onClick={closeMobileMenu}
-              >
-                <Receipt className="sidebar-icon" />
-
-                <span>
-                  Invoices
-                </span>
-              </NavLink>
-            </>
+            <NavLink
+              to="/invoices"
+              title="Invoices"
+              onClick={closeMobileMenu}
+            >
+              <Receipt className="sidebar-icon" />
+              <span>Invoices</span>
+            </NavLink>
           )}
-
-          {/* =========================
-              ADMIN + EMPLOYEE
-              ========================= */}
 
           <NavLink
             to="/documents"
@@ -290,15 +220,8 @@ export default function Sidebar() {
             onClick={closeMobileMenu}
           >
             <FileText className="sidebar-icon" />
-
-            <span>
-              Documents
-            </span>
+            <span>Documents</span>
           </NavLink>
-
-          {/* =========================
-              ADMIN ONLY
-              ========================= */}
 
           {isAdmin && (
             <>
@@ -308,10 +231,7 @@ export default function Sidebar() {
                 onClick={closeMobileMenu}
               >
                 <BarChart3 className="sidebar-icon" />
-
-                <span>
-                  Reports
-                </span>
+                <span>Reports</span>
               </NavLink>
 
               <NavLink
@@ -320,17 +240,11 @@ export default function Sidebar() {
                 onClick={closeMobileMenu}
               >
                 <Trash2 className="sidebar-icon" />
-
-                <span>
-                  Trash
-                </span>
+                <span>Trash</span>
               </NavLink>
             </>
           )}
-
         </nav>
-
-        {/* Logout */}
 
         <button
           type="button"
@@ -339,12 +253,8 @@ export default function Sidebar() {
           title="Logout"
         >
           <LogOut className="sidebar-icon" />
-
-          <span>
-            Logout
-          </span>
+          <span>Logout</span>
         </button>
-
       </aside>
     </>
   )

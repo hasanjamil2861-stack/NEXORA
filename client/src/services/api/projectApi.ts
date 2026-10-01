@@ -1,16 +1,15 @@
 import { apiRequest } from "./api"
 
-// Get all projects
 export function getProjects() {
   return apiRequest("/projects")
 }
 
-// Get one project by ID
 export function getProject(id: string) {
-  return apiRequest(`/projects/${id}`)
+  return apiRequest(
+    `/projects/${id}`
+  )
 }
 
-// Create a new project
 export function createProject(
   project: unknown
 ) {
@@ -20,20 +19,26 @@ export function createProject(
   })
 }
 
-// Update an existing project
 export function updateProject(
   id: string,
   project: unknown
 ) {
-  return apiRequest(`/projects/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(project),
-  })
+  return apiRequest(
+    `/projects/${id}`,
+    {
+      method: "PUT",
+      body: JSON.stringify(project),
+    }
+  )
 }
 
-// Delete a project
-export function deleteProject(id: string) {
-  return apiRequest(`/projects/${id}`, {
-    method: "DELETE",
-  })
+export function deleteProject(
+  id: string
+) {
+  return apiRequest(
+    `/projects/${id}`,
+    {
+      method: "DELETE",
+    }
+  )
 }

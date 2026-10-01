@@ -29,6 +29,8 @@ import {
 
 import { useToast } from "../../context/ToastContext"
 import { useTrash } from "../../context/TrashContext"
+import { useAuth } from "../../context/AuthContext"
+
 import type { Document } from "../../types/Document"
 import DocumentCard from "../../components/DocumentCard/DocumentCard"
 import Modal from "../../components/Modal/Modal"
@@ -40,11 +42,24 @@ import {
   deleteDocument,
 } from "../../services/api/documentApi"
 
+type DocumentEmployee = {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  position: string
+}
+
+type DocumentWithEmployee = Document & {
+  employeeId?: string | DocumentEmployee | null
+}
+
 type DocumentApiRecord = {
   _id: string
   name?: string
   type?: Document["type"]
   category?: Document["category"]
+  employeeId?: string | DocumentEmployee | null
   uploadedBy?: string
   uploadDate?: string
   status?: Document["status"]
@@ -54,6 +69,7 @@ type DocumentFormData = {
   name: string
   type: Document["type"]
   category: Document["category"]
+  employeeId: string
   uploadedBy: string
   uploadDate: string
   status: Document["status"]
@@ -63,6 +79,7 @@ const emptyDocumentForm: DocumentFormData = {
   name: "",
   type: "PDF",
   category: "Employee",
+  employeeId: "",
   uploadedBy: "",
   uploadDate: "",
   status: "Active",
@@ -71,12 +88,15 @@ const emptyDocumentForm: DocumentFormData = {
 export default function Documents() {
   const { showToast } = useToast()
   const { moveToTrash } = useTrash()
+  const { user } = useAuth()
 
-  const [documentList, setDocumentList] =
-    useState<Document[]>([])
+  const isAdmin = user?.role === "Admin"
 
-  const [showForm, setShowForm] =
-    useState(false)
+  const [documentList, setDocumentList] = useState<
+    DocumentWithEmployee[]
+  >([])
+
+  const [showForm, setShowForm] = useState(false)
 
   const [formData, setFormData] =
     useState<DocumentFormData>(
@@ -92,8 +112,7 @@ export default function Documents() {
   const [newDocumentId, setNewDocumentId] =
     useState<string | null>(null)
 
-  const [search, setSearch] =
-    useState("")
+  const [search, setSearch] = useState("")
 
   const [typeFilter, setTypeFilter] =
     useState("All")
@@ -113,20 +132,22 @@ export default function Documents() {
   const documentFormRef =
     useRef<HTMLFormElement | null>(null)
 
-  // GET DOCUMENTS
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
         const data =
           (await getDocuments()) as DocumentApiRecord[]
 
-        const formattedDocuments: Document[] =
+        const formattedDocuments:
+          DocumentWithEmployee[] =
           data.map((document) => ({
             id: document._id,
             name: document.name ?? "",
             type: document.type ?? "PDF",
             category:
               document.category ?? "Employee",
+            employeeId:
+              document.employeeId ?? null,
             uploadedBy:
               document.uploadedBy ?? "",
             uploadDate:
@@ -135,7 +156,9 @@ export default function Documents() {
               document.status ?? "Active",
           }))
 
-        setDocumentList(formattedDocuments)
+        setDocumentList(
+          formattedDocuments
+        )
       } catch {
         showToast(
           "Failed to load documents",
@@ -147,7 +170,6 @@ export default function Documents() {
     fetchDocuments()
   }, [showToast])
 
-  // SCROLL TO NEW DOCUMENT
   useEffect(() => {
     if (!newDocumentId) {
       return
@@ -169,17 +191,19 @@ export default function Documents() {
       setNewDocumentId(null)
     })
 
-    return () => cancelAnimationFrame(frame)
+    return () =>
+      cancelAnimationFrame(frame)
   }, [newDocumentId])
 
-  // RESET FORM
   const resetForm = () => {
-    setFormData(emptyDocumentForm)
+    setFormData({
+      ...emptyDocumentForm,
+    })
+
     setEditingDocument(null)
     setFormError("")
   }
 
-  // OPEN FORM
   const openDocumentForm = () => {
     resetForm()
     setShowForm(true)
@@ -192,7 +216,6 @@ export default function Documents() {
     })
   }
 
-  // UPDATE FORM FIELD
   const updateFormField = <
     K extends keyof DocumentFormData
   >(
@@ -207,29 +230,18 @@ export default function Documents() {
     setFormError("")
   }
 
-  // ADD / EDIT DOCUMENT
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault()
 
+    if (!isAdmin) {
+      return
+    }
+
     if (!formData.name.trim()) {
       setFormError(
         "Document name is required."
-      )
-      return
-    }
-
-    if (!formData.type) {
-      setFormError(
-        "Document type is required."
-      )
-      return
-    }
-
-    if (!formData.category) {
-      setFormError(
-        "Document category is required."
       )
       return
     }
@@ -248,32 +260,45 @@ export default function Documents() {
       return
     }
 
-    if (!formData.status) {
+    if (
+      formData.category === "Employee" &&
+      !formData.employeeId.trim()
+    ) {
       setFormError(
-        "Document status is required."
+        "Employee assignment is required."
       )
       return
     }
 
-    const documentData: DocumentFormData = {
+    const documentData = {
       name: formData.name.trim(),
       type: formData.type,
       category: formData.category,
-      uploadedBy: formData.uploadedBy.trim(),
+      employeeId:
+        formData.category === "Employee"
+          ? formData.employeeId.trim()
+          : null,
+      uploadedBy:
+        formData.uploadedBy.trim(),
       uploadDate: formData.uploadDate,
       status: formData.status,
     }
 
-    // UPDATE EXISTING DOCUMENT
+    const documentPayload =
+      documentData as Parameters<
+        typeof createDocument
+      >[0]
+
     if (editingDocument !== null) {
       try {
         const updatedDocument =
           (await updateDocument(
             editingDocument,
-            documentData
+            documentPayload
           )) as DocumentApiRecord
 
-        const formattedDocument: Document = {
+        const formattedDocument:
+          DocumentWithEmployee = {
           id: updatedDocument._id,
           name:
             updatedDocument.name ?? "",
@@ -282,6 +307,9 @@ export default function Documents() {
           category:
             updatedDocument.category ??
             "Employee",
+          employeeId:
+            updatedDocument.employeeId ??
+            null,
           uploadedBy:
             updatedDocument.uploadedBy ??
             "",
@@ -293,15 +321,12 @@ export default function Documents() {
             "Active",
         }
 
-        setDocumentList(
-          (currentDocuments) =>
-            currentDocuments.map(
-              (document) =>
-                document.id ===
-                editingDocument
-                  ? formattedDocument
-                  : document
-            )
+        setDocumentList((current) =>
+          current.map((document) =>
+            document.id === editingDocument
+              ? formattedDocument
+              : document
+          )
         )
 
         showToast(
@@ -321,39 +346,36 @@ export default function Documents() {
       return
     }
 
-    // CREATE NEW DOCUMENT
     try {
       const newDocument =
         (await createDocument(
-          documentData
+          documentPayload
         )) as DocumentApiRecord
 
-      const formattedDocument: Document = {
+      const formattedDocument:
+        DocumentWithEmployee = {
         id: newDocument._id,
-        name:
-          newDocument.name ?? "",
+        name: newDocument.name ?? "",
         type:
           newDocument.type ?? "PDF",
         category:
           newDocument.category ??
           "Employee",
+        employeeId:
+          newDocument.employeeId ??
+          null,
         uploadedBy:
-          newDocument.uploadedBy ??
-          "",
+          newDocument.uploadedBy ?? "",
         uploadDate:
-          newDocument.uploadDate ??
-          "",
+          newDocument.uploadDate ?? "",
         status:
-          newDocument.status ??
-          "Active",
+          newDocument.status ?? "Active",
       }
 
-      setDocumentList(
-        (currentDocuments) => [
-          ...currentDocuments,
-          formattedDocument,
-        ]
-      )
+      setDocumentList((current) => [
+        ...current,
+        formattedDocument,
+      ])
 
       setNewDocumentId(
         formattedDocument.id
@@ -374,8 +396,11 @@ export default function Documents() {
     }
   }
 
-  // EDIT DOCUMENT
   const handleEdit = (id: string) => {
+    if (!isAdmin) {
+      return
+    }
+
     const documentToEdit =
       documentList.find(
         (document) =>
@@ -386,16 +411,25 @@ export default function Documents() {
       return
     }
 
+    const employeeId =
+      typeof documentToEdit.employeeId ===
+      "string"
+        ? documentToEdit.employeeId
+        : documentToEdit.employeeId?._id ??
+          ""
+
     setEditingDocument(id)
 
     setFormData({
-      name: documentToEdit.name ?? "",
+      name: documentToEdit.name,
       type: documentToEdit.type,
-      category: documentToEdit.category,
+      category:
+        documentToEdit.category,
+      employeeId,
       uploadedBy:
-        documentToEdit.uploadedBy ?? "",
+        documentToEdit.uploadedBy,
       uploadDate:
-        documentToEdit.uploadDate ?? "",
+        documentToEdit.uploadDate,
       status: documentToEdit.status,
     })
 
@@ -410,13 +444,19 @@ export default function Documents() {
     })
   }
 
-  // DELETE DOCUMENT
   const handleDelete = (id: string) => {
+    if (!isAdmin) {
+      return
+    }
+
     setDocumentToDelete(id)
   }
 
   const confirmDelete = async () => {
-    if (documentToDelete === null) {
+    if (
+      documentToDelete === null ||
+      !isAdmin
+    ) {
       return
     }
 
@@ -435,7 +475,6 @@ export default function Documents() {
         documentToDelete
       )
 
-      // Move the deleted document to local Trash
       moveToTrash(
         "Document",
         document.id,
@@ -447,12 +486,12 @@ export default function Documents() {
         >
       )
 
-      setDocumentList(
-        (currentDocuments) =>
-          currentDocuments.filter(
-            (item) =>
-              item.id !== documentToDelete
-          )
+      setDocumentList((current) =>
+        current.filter(
+          (item) =>
+            item.id !==
+            documentToDelete
+        )
       )
 
       setDocumentToDelete(null)
@@ -469,13 +508,11 @@ export default function Documents() {
     }
   }
 
-  // CANCEL FORM
   const handleCancelForm = () => {
     resetForm()
     setShowForm(false)
   }
 
-  // FILTER AND SORT DOCUMENTS
   const filteredDocuments =
     [...documentList]
       .filter((document) => {
@@ -483,14 +520,10 @@ export default function Documents() {
           search.toLowerCase().trim()
 
         const documentName =
-          String(
-            document.name ?? ""
-          ).toLowerCase()
+          document.name.toLowerCase()
 
         const uploadedByValue =
-          String(
-            document.uploadedBy ?? ""
-          ).toLowerCase()
+          document.uploadedBy.toLowerCase()
 
         const matchesSearch =
           documentName.includes(
@@ -573,7 +606,6 @@ export default function Documents() {
         }
       })
 
-  // DOCUMENT STATISTICS
   const totalDocuments =
     documentList.length
 
@@ -663,7 +695,6 @@ export default function Documents() {
 
   return (
     <main className="documents-page">
-      {/* Hero section */}
       <section className="documents-hero">
         <div className="documents-hero-content">
           <div className="documents-eyebrow">
@@ -687,8 +718,9 @@ export default function Documents() {
               <h1>Documents</h1>
 
               <p>
-                Centralize, organize and manage
-                company documents from one place.
+                Centralize, organize and
+                manage company documents
+                from one place.
               </p>
             </div>
           </div>
@@ -701,8 +733,13 @@ export default function Documents() {
             </div>
 
             <div>
-              <span>DOCUMENT STORAGE</span>
-              <strong>Operational</strong>
+              <span>
+                DOCUMENT STORAGE
+              </span>
+
+              <strong>
+                Operational
+              </strong>
             </div>
 
             <CircleCheck
@@ -711,27 +748,28 @@ export default function Documents() {
             />
           </div>
 
-          <button
-            type="button"
-            className="documents-add-btn"
-            onClick={() => {
-              if (showForm) {
-                handleCancelForm()
-              } else {
-                openDocumentForm()
-              }
-            }}
-          >
-            <Plus size={19} />
+          {isAdmin && (
+            <button
+              type="button"
+              className="documents-add-btn"
+              onClick={() => {
+                if (showForm) {
+                  handleCancelForm()
+                } else {
+                  openDocumentForm()
+                }
+              }}
+            >
+              <Plus size={19} />
 
-            {showForm
-              ? "Close Form"
-              : "Add Document"}
-          </button>
+              {showForm
+                ? "Close Form"
+                : "Add Document"}
+            </button>
+          )}
         </div>
       </section>
 
-      {/* Statistics */}
       <section className="documents-stats">
         <article className="document-stat-card documents-stat-blue">
           <div className="document-stat-icon">
@@ -741,7 +779,9 @@ export default function Documents() {
           <div className="document-stat-content">
             <span>Total Documents</span>
 
-            <strong>{totalDocuments}</strong>
+            <strong>
+              {totalDocuments}
+            </strong>
 
             <small>
               <Activity size={12} />
@@ -758,7 +798,9 @@ export default function Documents() {
           <div className="document-stat-content">
             <span>Active Documents</span>
 
-            <strong>{activeDocuments}</strong>
+            <strong>
+              {activeDocuments}
+            </strong>
 
             <small>
               <CircleCheck size={12} />
@@ -775,7 +817,9 @@ export default function Documents() {
           <div className="document-stat-content">
             <span>Archived</span>
 
-            <strong>{archivedDocuments}</strong>
+            <strong>
+              {archivedDocuments}
+            </strong>
 
             <small>
               <HardDrive size={12} />
@@ -792,7 +836,9 @@ export default function Documents() {
           <div className="document-stat-content">
             <span>PDF Documents</span>
 
-            <strong>{pdfDocuments}</strong>
+            <strong>
+              {pdfDocuments}
+            </strong>
 
             <small>
               <FileType2 size={12} />
@@ -802,7 +848,6 @@ export default function Documents() {
         </article>
       </section>
 
-      {/* Analytics */}
       <section className="documents-analytics">
         <div className="documents-analytics-card">
           <div className="documents-section-heading">
@@ -812,102 +857,77 @@ export default function Documents() {
 
             <div>
               <h2>Document Overview</h2>
-              <p>Current document distribution</p>
+
+              <p>
+                Current document distribution
+              </p>
             </div>
           </div>
 
           <div className="documents-type-rows">
-            <div className="documents-type-row">
-              <div className="documents-type-info">
-                <span className="documents-type-symbol pdf">
-                  <FileType2 size={16} />
-                </span>
-                <span>PDF</span>
-              </div>
+            {[
+              [
+                "PDF",
+                pdfDocuments,
+                "pdf",
+                <FileType2 size={16} />,
+              ],
+              [
+                "Word",
+                wordDocuments,
+                "word",
+                <FilePenLine size={16} />,
+              ],
+              [
+                "Excel",
+                excelDocuments,
+                "excel",
+                <FileSpreadsheet size={16} />,
+              ],
+              [
+                "Images",
+                imageDocuments,
+                "image",
+                <Image size={16} />,
+              ],
+            ].map(
+              ([label, count, className, icon]) => (
+                <div
+                  className="documents-type-row"
+                  key={String(label)}
+                >
+                  <div className="documents-type-info">
+                    <span
+                      className={`documents-type-symbol ${String(
+                        className
+                      )}`}
+                    >
+                      {icon}
+                    </span>
 
-              <div className="documents-progress">
-                <span
-                  style={{
-                    width: `${
-                      (pdfDocuments /
-                        largestTypeCount) *
-                      100
-                    }%`,
-                  }}
-                />
-              </div>
+                    <span>
+                      {label}
+                    </span>
+                  </div>
 
-              <strong>{pdfDocuments}</strong>
-            </div>
+                  <div className="documents-progress">
+                    <span
+                      style={{
+                        width: `${
+                          (Number(count) /
+                            largestTypeCount) *
+                          100
+                        }%`,
+                      }}
+                    />
+                  </div>
 
-            <div className="documents-type-row">
-              <div className="documents-type-info">
-                <span className="documents-type-symbol word">
-                  <FilePenLine size={16} />
-                </span>
-                <span>Word</span>
-              </div>
-
-              <div className="documents-progress">
-                <span
-                  style={{
-                    width: `${
-                      (wordDocuments /
-                        largestTypeCount) *
-                      100
-                    }%`,
-                  }}
-                />
-              </div>
-
-              <strong>{wordDocuments}</strong>
-            </div>
-
-            <div className="documents-type-row">
-              <div className="documents-type-info">
-                <span className="documents-type-symbol excel">
-                  <FileSpreadsheet size={16} />
-                </span>
-                <span>Excel</span>
-              </div>
-
-              <div className="documents-progress">
-                <span
-                  style={{
-                    width: `${
-                      (excelDocuments /
-                        largestTypeCount) *
-                      100
-                    }%`,
-                  }}
-                />
-              </div>
-
-              <strong>{excelDocuments}</strong>
-            </div>
-
-            <div className="documents-type-row">
-              <div className="documents-type-info">
-                <span className="documents-type-symbol image">
-                  <Image size={16} />
-                </span>
-                <span>Images</span>
-              </div>
-
-              <div className="documents-progress">
-                <span
-                  style={{
-                    width: `${
-                      (imageDocuments /
-                        largestTypeCount) *
-                      100
-                    }%`,
-                  }}
-                />
-              </div>
-
-              <strong>{imageDocuments}</strong>
-            </div>
+                  <strong>
+                    {count}
+                  </strong>
+                </div>
+              )
+            )}
           </div>
         </div>
 
@@ -919,7 +939,10 @@ export default function Documents() {
 
             <div>
               <h2>Categories</h2>
-              <p>Documents by business area</p>
+
+              <p>
+                Documents by business area
+              </p>
             </div>
           </div>
 
@@ -929,7 +952,10 @@ export default function Documents() {
                 <FileText size={15} />
                 Employees
               </span>
-              <strong>{employeeDocuments}</strong>
+
+              <strong>
+                {employeeDocuments}
+              </strong>
             </div>
 
             <div className="documents-category-item">
@@ -937,7 +963,10 @@ export default function Documents() {
                 <FilePenLine size={15} />
                 Contracts
               </span>
-              <strong>{contractDocuments}</strong>
+
+              <strong>
+                {contractDocuments}
+              </strong>
             </div>
 
             <div className="documents-category-item">
@@ -945,7 +974,10 @@ export default function Documents() {
                 <FileText size={15} />
                 Invoices
               </span>
-              <strong>{invoiceDocuments}</strong>
+
+              <strong>
+                {invoiceDocuments}
+              </strong>
             </div>
 
             <div className="documents-category-item">
@@ -953,7 +985,10 @@ export default function Documents() {
                 <FolderOpen size={15} />
                 Projects
               </span>
-              <strong>{projectDocuments}</strong>
+
+              <strong>
+                {projectDocuments}
+              </strong>
             </div>
 
             <div className="documents-category-item">
@@ -961,14 +996,16 @@ export default function Documents() {
                 <Database size={15} />
                 Company
               </span>
-              <strong>{companyDocuments}</strong>
+
+              <strong>
+                {companyDocuments}
+              </strong>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Add / Edit form */}
-      {showForm && (
+      {showForm && isAdmin && (
         <section className="documents-form-card">
           <div className="documents-form-header">
             <div className="documents-form-heading">
@@ -1069,21 +1106,48 @@ export default function Documents() {
                   <option value="Employee">
                     Employee
                   </option>
+
                   <option value="Contract">
                     Contract
                   </option>
+
                   <option value="Invoice">
                     Invoice
                   </option>
+
                   <option value="Project">
                     Project
                   </option>
+
                   <option value="Company">
                     Company
                   </option>
                 </select>
               </div>
             </div>
+
+            {formData.category === "Employee" && (
+              <div className="documents-field">
+                <label>Employee ID</label>
+
+                <div className="documents-input-wrapper">
+                  <FileText size={17} />
+
+                  <input
+                    type="text"
+                    placeholder="Enter employee MongoDB ID"
+                    value={formData.employeeId}
+                    required
+                    onChange={(event) =>
+                      updateFormField(
+                        "employeeId",
+                        event.target.value
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="documents-field">
               <label>Uploaded By</label>
@@ -1145,6 +1209,7 @@ export default function Documents() {
                   <option value="Active">
                     Active
                   </option>
+
                   <option value="Archived">
                     Archived
                   </option>
@@ -1190,7 +1255,6 @@ export default function Documents() {
         </section>
       )}
 
-      {/* Document explorer */}
       <section className="documents-controls">
         <div className="documents-controls-header">
           <div>
@@ -1204,7 +1268,8 @@ export default function Documents() {
           <div className="documents-result-count">
             <Files size={15} />
 
-            {filteredDocuments.length} result
+            {filteredDocuments.length}{" "}
+            result
             {filteredDocuments.length !== 1
               ? "s"
               : ""}
@@ -1220,7 +1285,9 @@ export default function Documents() {
               placeholder="Search by document or uploader..."
               value={search}
               onChange={(event) =>
-                setSearch(event.target.value)
+                setSearch(
+                  event.target.value
+                )
               }
             />
           </div>
@@ -1231,14 +1298,22 @@ export default function Documents() {
             <select
               value={typeFilter}
               onChange={(event) =>
-                setTypeFilter(event.target.value)
+                setTypeFilter(
+                  event.target.value
+                )
               }
             >
-              <option value="All">All Types</option>
+              <option value="All">
+                All Types
+              </option>
               <option value="PDF">PDF</option>
               <option value="Word">Word</option>
-              <option value="Excel">Excel</option>
-              <option value="Image">Image</option>
+              <option value="Excel">
+                Excel
+              </option>
+              <option value="Image">
+                Image
+              </option>
             </select>
           </div>
 
@@ -1311,21 +1386,27 @@ export default function Documents() {
               <option value="name-asc">
                 Name: A → Z
               </option>
+
               <option value="name-desc">
                 Name: Z → A
               </option>
+
               <option value="date-newest">
                 Upload Date: Newest
               </option>
+
               <option value="date-oldest">
                 Upload Date: Oldest
               </option>
+
               <option value="type-asc">
                 Type: A → Z
               </option>
+
               <option value="category-asc">
                 Category: A → Z
               </option>
+
               <option value="status-asc">
                 Status: A → Z
               </option>
@@ -1334,7 +1415,6 @@ export default function Documents() {
         </div>
       </section>
 
-      {/* Document cards */}
       <section className="documents-grid">
         {filteredDocuments.length > 0 ? (
           filteredDocuments.map(
@@ -1380,17 +1460,17 @@ export default function Documents() {
         )}
       </section>
 
-      {/* Delete confirmation */}
-      {documentToDelete !== null && (
-        <Modal
-          title="Delete Document"
-          message="Are you sure you want to move this document to Trash? You can recover it later from the Trash page."
-          onCancel={() =>
-            setDocumentToDelete(null)
-          }
-          onConfirm={confirmDelete}
-        />
-      )}
+      {documentToDelete !== null &&
+        isAdmin && (
+          <Modal
+            title="Delete Document"
+            message="Are you sure you want to move this document to Trash? You can recover it later from the Trash page."
+            onCancel={() =>
+              setDocumentToDelete(null)
+            }
+            onConfirm={confirmDelete}
+          />
+        )}
     </main>
   )
 }

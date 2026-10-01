@@ -11,6 +11,8 @@ import {
   Trash2,
 } from "lucide-react"
 
+import { useAuth } from "../../context/AuthContext"
+
 type TaskCardProps = {
   task: Task
   onDelete: (id: string) => void
@@ -22,16 +24,23 @@ export default function TaskCard({
   onDelete,
   onEdit,
 }: TaskCardProps) {
-  // Determine task status
-  const isCompleted = task.status === "Completed"
-  const isInProgress = task.status === "In Progress"
+  const { user } = useAuth()
 
-  // Normalize priority for display and styling
-  const priority = String(task.priority ?? "Medium")
+  const isAdmin =
+    user?.role === "Admin"
+
+  const isCompleted =
+    task.status === "Completed"
+
+  const isInProgress =
+    task.status === "In Progress"
+
+  const priority = String(
+    task.priority ?? "Medium"
+  )
 
   return (
     <article className="task-card">
-      {/* Task header and status */}
       <div className="task-card-header">
         <div className="task-card-title">
           <div className="task-card-icon">
@@ -39,9 +48,13 @@ export default function TaskCard({
           </div>
 
           <div>
-            <h2>{task.title ?? ""}</h2>
+            <h2>
+              {task.title ?? ""}
+            </h2>
 
-            <span>Task #{task.id}</span>
+            <span>
+              Task #{task.id}
+            </span>
           </div>
         </div>
 
@@ -62,16 +75,17 @@ export default function TaskCard({
             <Clock3 size={13} />
           )}
 
-          {task.status ?? "Pending"}
+          {task.status ??
+            "Pending"}
         </div>
       </div>
 
-      {/* Task description */}
       <div className="task-description">
-        <p>{task.description ?? ""}</p>
+        <p>
+          {task.description ?? ""}
+        </p>
       </div>
 
-      {/* Task priority and due date */}
       <div className="task-info-list">
         <div className="task-info-item">
           <div className="task-info-icon">
@@ -97,30 +111,37 @@ export default function TaskCard({
           <div>
             <span>Due Date</span>
 
-            <strong>{task.dueDate ?? ""}</strong>
+            <strong>
+              {task.dueDate ?? ""}
+            </strong>
           </div>
         </div>
       </div>
 
-      {/* Edit and delete actions */}
       <div className="task-actions">
         <button
           type="button"
           className="task-edit-btn"
-          onClick={() => onEdit(task.id)}
+          onClick={() =>
+            onEdit(task.id)
+          }
         >
           <Pencil size={14} />
           Edit
         </button>
 
-        <button
-          type="button"
-          className="task-delete-btn"
-          onClick={() => onDelete(task.id)}
-        >
-          <Trash2 size={14} />
-          Delete
-        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            className="task-delete-btn"
+            onClick={() =>
+              onDelete(task.id)
+            }
+          >
+            <Trash2 size={14} />
+            Delete
+          </button>
+        )}
       </div>
     </article>
   )

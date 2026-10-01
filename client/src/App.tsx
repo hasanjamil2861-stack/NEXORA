@@ -29,6 +29,8 @@ import "@assets/styles/TrashCard.css"
 import "@assets/styles/Register.css"
 
 import { TrashProvider } from "./context/TrashContext"
+import { AuthProvider } from "./context/AuthContext"
+
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute"
 import MainLayout from "./layouts/MainLayout/MainLayout"
 
@@ -52,70 +54,42 @@ import Register from "./pages/Register/Register"
 export default function App() {
   return (
     <BrowserRouter>
-      <TrashProvider>
-        <Routes>
+      <AuthProvider>
+        <TrashProvider>
+          <Routes>
+            <Route
+              path="/login"
+              element={<Login />}
+            />
 
-          {/* Public Routes */}
+            <Route
+              path="/register"
+              element={<Register />}
+            />
 
-          <Route
-            path="/login"
-            element={<Login />}
-          />
-
-          <Route
-            path="/register"
-            element={<Register />}
-          />
-
-          {/* All authenticated users */}
-
-          <Route element={<ProtectedRoute />}>
-
-            <Route element={<MainLayout />}>
-
-              {/* Employee + Admin */}
-
+            <Route
+              element={<ProtectedRoute />}
+            >
               <Route
-                path="/tasks"
-                element={<Tasks />}
-              />
-
-              <Route
-                path="/leave-requests"
-                element={<LeaveRequests />}
-              />
-
-              <Route
-                path="/documents"
-                element={<Documents />}
-              />
-
-              {/* Admin Only */}
-
-              <Route
-                element={
-                  <ProtectedRoute adminOnly />
-                }
+                element={<MainLayout />}
               >
+                {/* Admin + Employee */}
 
                 <Route
-                  path="/"
-                  element={<Dashboard />}
+                  path="/tasks"
+                  element={<Tasks />}
                 />
 
                 <Route
-                  path="/employees"
-                  element={<Employees />}
+                  path="/leave-requests"
+                  element={
+                    <LeaveRequests />
+                  }
                 />
 
                 <Route
-                  path="/employees/:id"
-                  element={<EmployeeDetails />}
-                />
-
-                <Route
-                  path="/departments"
-                  element={<Departments />}
+                  path="/documents"
+                  element={<Documents />}
                 />
 
                 <Route
@@ -124,43 +98,89 @@ export default function App() {
                 />
 
                 <Route
-                  path="/clients"
-                  element={<Clients />}
-                />
-
-                <Route
                   path="/attendance"
-                  element={<Attendance />}
+                  element={
+                    <Attendance />
+                  }
                 />
 
                 <Route
                   path="/contracts"
-                  element={<Contracts />}
+                  element={
+                    <Contracts />
+                  }
                 />
+
+                {/* Admin Only */}
 
                 <Route
-                  path="/invoices"
-                  element={<Invoices />}
-                />
+                  element={
+                    <ProtectedRoute
+                      adminOnly
+                    />
+                  }
+                >
+                  <Route
+                    path="/"
+                    element={
+                      <Dashboard />
+                    }
+                  />
 
-                <Route
-                  path="/reports"
-                  element={<Reports />}
-                />
+                  <Route
+                    path="/employees"
+                    element={
+                      <Employees />
+                    }
+                  />
 
-                <Route
-                  path="/trash"
-                  element={<Trash />}
-                />
+                  <Route
+                    path="/employees/:id"
+                    element={
+                      <EmployeeDetails />
+                    }
+                  />
 
+                  <Route
+                    path="/departments"
+                    element={
+                      <Departments />
+                    }
+                  />
+
+                  <Route
+                    path="/clients"
+                    element={
+                      <Clients />
+                    }
+                  />
+
+                  <Route
+                    path="/invoices"
+                    element={
+                      <Invoices />
+                    }
+                  />
+
+                  <Route
+                    path="/reports"
+                    element={
+                      <Reports />
+                    }
+                  />
+
+                  <Route
+                    path="/trash"
+                    element={
+                      <Trash />
+                    }
+                  />
+                </Route>
               </Route>
-
             </Route>
-
-          </Route>
-
-        </Routes>
-      </TrashProvider>
+          </Routes>
+        </TrashProvider>
+      </AuthProvider>
     </BrowserRouter>
   )
 }

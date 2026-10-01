@@ -7,6 +7,7 @@ import {
 } from "lucide-react"
 
 import type { Project } from "../../types/Project"
+import { useAuth } from "../../context/AuthContext"
 
 type ProjectCardProps = {
   project: Project
@@ -19,7 +20,10 @@ export default function ProjectCard({
   onDelete,
   onEdit,
 }: ProjectCardProps) {
-  // Convert project status into a UI progress value
+  const { user } = useAuth()
+
+  const isAdmin = user?.role === "Admin"
+
   const progress =
     project.status === "Completed"
       ? 100
@@ -31,7 +35,6 @@ export default function ProjectCard({
 
   return (
     <article className="project-card">
-      {/* Project header and status */}
       <div className="project-card-top">
         <div className="project-card-icon">
           <CalendarDays size={21} />
@@ -46,14 +49,11 @@ export default function ProjectCard({
         </span>
       </div>
 
-      {/* Project title and description */}
       <div className="project-card-title">
         <h2>{project.name}</h2>
-
         <p>{project.description}</p>
       </div>
 
-      {/* Project information */}
       <div className="project-details">
         <div className="project-detail-item">
           <div className="project-detail-icon">
@@ -84,7 +84,6 @@ export default function ProjectCard({
 
           <div>
             <span>Timeline</span>
-
             <strong>
               {project.startDate} → {project.endDate}
             </strong>
@@ -98,7 +97,6 @@ export default function ProjectCard({
 
           <div>
             <span>Budget</span>
-
             <strong>
               ${project.budget.toLocaleString()}
             </strong>
@@ -106,10 +104,10 @@ export default function ProjectCard({
         </div>
       </div>
 
-      {/* Project progress */}
       <div className="project-progress-section">
         <div className="project-progress-header">
           <span>Project Progress</span>
+
           <strong>{progress}%</strong>
         </div>
 
@@ -125,26 +123,27 @@ export default function ProjectCard({
         </div>
       </div>
 
-      {/* Edit and delete actions */}
-      <div className="project-card-actions">
-        <button
-          type="button"
-          className="project-edit-btn"
-          onClick={() => onEdit(project.id)}
-        >
-          <Pencil size={16} />
-          Edit
-        </button>
+      {isAdmin && (
+        <div className="project-card-actions">
+          <button
+            type="button"
+            className="project-edit-btn"
+            onClick={() => onEdit(project.id)}
+          >
+            <Pencil size={16} />
+            Edit
+          </button>
 
-        <button
-          type="button"
-          className="project-delete-btn"
-          onClick={() => onDelete(project.id)}
-        >
-          <Trash2 size={16} />
-          Delete
-        </button>
-      </div>
+          <button
+            type="button"
+            className="project-delete-btn"
+            onClick={() => onDelete(project.id)}
+          >
+            <Trash2 size={16} />
+            Delete
+          </button>
+        </div>
+      )}
     </article>
   )
 }
