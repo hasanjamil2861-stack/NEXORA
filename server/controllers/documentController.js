@@ -9,9 +9,18 @@ const getDocuments = async (
   res
 ) => {
   try {
-    if (req.user.role === "Admin") {
+    const documentFields =
+      "-fileData"
+
+    if (
+      req.user.role ===
+      "Admin"
+    ) {
       const documents =
         await Document.find()
+          .select(
+            documentFields
+          )
           .populate(
             "employeeId",
             "firstName lastName email position"
@@ -29,7 +38,9 @@ const getDocuments = async (
             "name email role"
           )
 
-      return res.json(documents)
+      return res.json(
+        documents
+      )
     }
 
     const employee =
@@ -52,6 +63,9 @@ const getDocuments = async (
         employeeId:
           employee._id,
       })
+        .select(
+          documentFields
+        )
         .populate(
           "employeeId",
           "firstName lastName email position"
@@ -69,17 +83,20 @@ const getDocuments = async (
           "name email role"
         )
 
-    return res.json(documents)
+    return res.json(
+      documents
+    )
   } catch (error) {
     console.error(
       "Get documents error:",
       error
     )
 
-    res.status(500).json({
+    return res.status(500).json({
       message:
         "Failed to get documents",
-      error: error.message,
+      error:
+        error.message,
     })
   }
 }
@@ -101,7 +118,11 @@ const postDocument = async (
       status,
     } = req.body
 
-    if (!name || !type || !category) {
+    if (
+      !name ||
+      !type ||
+      !category
+    ) {
       return res.status(400).json({
         message:
           "Name, type and category are required.",
@@ -118,11 +139,10 @@ const postDocument = async (
     let finalEmployeeId =
       employeeId || null
 
-    /*
-      Employee uploads:
-      automatically use their own employee profile.
-    */
-    if (req.user.role === "Employee") {
+    if (
+      req.user.role ===
+      "Employee"
+    ) {
       const employee =
         await Employee.findOne({
           email:
@@ -142,10 +162,6 @@ const postDocument = async (
         employee._id
     }
 
-    /*
-      Admin can upload for
-      any employee or leave it null.
-    */
     if (
       finalEmployeeId
     ) {
@@ -176,6 +192,12 @@ const postDocument = async (
         uploadedBy:
           req.user.userId,
         fileUrl,
+        fileData:
+          Buffer.alloc(0),
+        fileContentType:
+          "application/octet-stream",
+        originalFileName:
+          name,
         uploadDate:
           uploadDate ||
           new Date().toISOString(),
@@ -189,6 +211,9 @@ const postDocument = async (
       await Document.findById(
         newDocument._id
       )
+        .select(
+          "-fileData"
+        )
         .populate(
           "employeeId",
           "firstName lastName email position"
@@ -206,7 +231,7 @@ const postDocument = async (
           "name email role"
         )
 
-    res.status(201).json(
+    return res.status(201).json(
       populatedDocument
     )
   } catch (error) {
@@ -215,10 +240,11 @@ const postDocument = async (
       error
     )
 
-    res.status(500).json({
+    return res.status(500).json({
       message:
         "Failed to save document",
-      error: error.message,
+      error:
+        error.message,
     })
   }
 }
@@ -237,6 +263,9 @@ const updateDocument = async (
           runValidators: true,
         }
       )
+        .select(
+          "-fileData"
+        )
         .populate(
           "employeeId",
           "firstName lastName email position"
@@ -261,17 +290,20 @@ const updateDocument = async (
       })
     }
 
-    res.json(updatedDocument)
+    return res.json(
+      updatedDocument
+    )
   } catch (error) {
     console.error(
       "Update document error:",
       error
     )
 
-    res.status(500).json({
+    return res.status(500).json({
       message:
         "Failed to update document",
-      error: error.message,
+      error:
+        error.message,
     })
   }
 }
@@ -293,11 +325,9 @@ const deleteDocument = async (
       })
     }
 
-    res.json({
+    return res.json({
       message:
         "Document deleted successfully.",
-      document:
-        deletedDocument,
     })
   } catch (error) {
     console.error(
@@ -305,10 +335,11 @@ const deleteDocument = async (
       error
     )
 
-    res.status(500).json({
+    return res.status(500).json({
       message:
         "Failed to delete document",
-      error: error.message,
+      error:
+        error.message,
     })
   }
 }

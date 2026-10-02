@@ -18,6 +18,9 @@ import {
 import type { Document } from "../../types/Document"
 import { useAuth } from "../../context/AuthContext"
 
+const API_URL =
+  "https://nexora-3-v485.onrender.com"
+
 type DocumentCardProps = {
   document: Document
   onDelete: (id: string) => void
@@ -59,17 +62,81 @@ export default function DocumentCard({
   const isActive =
     document.status === "Active"
 
-  const handleViewDocument = () => {
-    if (!document.fileUrl) {
-      return
-    }
+  const handleViewDocument =
+    async () => {
+      if (!document.fileUrl) {
+        return
+      }
 
-    window.open(
-      document.fileUrl,
-      "_blank",
-      "noopener,noreferrer"
-    )
-  }
+      const token =
+        localStorage.getItem(
+          "nexora-token"
+        )
+
+      if (!token) {
+        return
+      }
+
+      const newTab =
+        window.open(
+          "",
+          "_blank"
+        )
+
+      if (!newTab) {
+        return
+      }
+
+      try {
+        const fileUrl =
+          document.fileUrl.startsWith(
+            "http"
+          )
+            ? document.fileUrl
+            : `${API_URL}${document.fileUrl}`
+
+        const response =
+          await fetch(
+            fileUrl,
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          )
+
+        if (!response.ok) {
+          throw new Error(
+            "Failed to open document."
+          )
+        }
+
+        const blob =
+          await response.blob()
+
+        const blobUrl =
+          URL.createObjectURL(
+            blob
+          )
+
+        newTab.location.href =
+          blobUrl
+
+        setTimeout(() => {
+          URL.revokeObjectURL(
+            blobUrl
+          )
+        }, 60000)
+      } catch (error) {
+        console.error(
+          "View document error:",
+          error
+        )
+
+        newTab.close()
+      }
+    }
 
   return (
     <article
@@ -87,7 +154,9 @@ export default function DocumentCard({
             DOCUMENT
           </span>
 
-          <h2>{document.name}</h2>
+          <h2>
+            {document.name}
+          </h2>
         </div>
 
         <div
@@ -116,7 +185,9 @@ export default function DocumentCard({
           </div>
 
           <div>
-            <span>Type</span>
+            <span>
+              Type
+            </span>
 
             <strong>
               {document.type}
@@ -130,7 +201,9 @@ export default function DocumentCard({
           </div>
 
           <div>
-            <span>Category</span>
+            <span>
+              Category
+            </span>
 
             <strong>
               {document.category}
@@ -205,7 +278,9 @@ export default function DocumentCard({
                 type="button"
                 className="document-edit-btn"
                 onClick={() =>
-                  onEdit(document.id)
+                  onEdit(
+                    document.id
+                  )
                 }
                 title="Edit Document"
               >
@@ -220,7 +295,9 @@ export default function DocumentCard({
                 type="button"
                 className="document-delete-btn"
                 onClick={() =>
-                  onDelete(document.id)
+                  onDelete(
+                    document.id
+                  )
                 }
                 title="Delete Document"
               >

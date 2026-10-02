@@ -17,14 +17,22 @@ const {
 
 const {
   uploadDocument,
+  getDocumentFile,
 } = require("../controllers/documentUploadController")
 
-const router = express.Router()
+const router =
+  express.Router()
 
 router.get(
   "/documents",
   protect,
   getDocuments
+)
+
+router.get(
+  "/documents/file/:id",
+  protect,
+  getDocumentFile
 )
 
 router.post(

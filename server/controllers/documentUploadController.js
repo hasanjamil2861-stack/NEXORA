@@ -10,15 +10,12 @@ const Project =
 const Task =
   require("../models/Task")
 
-const cloudinary =
-  require("../config/cloudinary")
-
 const getDocumentType = (
   mimeType
 ) => {
   if (
     mimeType ===
-      "application/pdf"
+    "application/pdf"
   ) {
     return "PDF"
   }
@@ -42,7 +39,9 @@ const getDocumentType = (
   }
 
   if (
-    mimeType.startsWith("image/")
+    mimeType.startsWith(
+      "image/"
+    )
   ) {
     return "Image"
   }
@@ -167,53 +166,13 @@ const uploadDocument =
         }
       }
 
-      const uploadResult =
-        await new Promise(
-          (
-            resolve,
-            reject
-          ) => {
-            const stream =
-              cloudinary.uploader.upload_stream(
-                {
-                  folder:
-                    "nexora/documents",
-                  resource_type:
-                    "auto",
-                  public_id:
-                    `${Date.now()}-${req.file.originalname
-                      .replace(
-                        /\.[^/.]+$/,
-                        ""
-                      )
-                      .replace(
-                        /[^a-zA-Z0-9-_]/g,
-                        "-"
-                      )}`,
-                },
-                (
-                  error,
-                  result
-                ) => {
-                  if (error) {
-                    reject(error)
-                  } else {
-                    resolve(result)
-                  }
-                }
-              )
-
-            stream.end(
-              req.file.buffer
-            )
-          }
-        )
-
       const newDocument =
         new Document({
-          name: name.trim(),
+          name:
+            name.trim(),
 
-          type: documentType,
+          type:
+            documentType,
 
           category,
 
@@ -232,14 +191,26 @@ const uploadDocument =
           uploadedBy:
             req.user.userId,
 
-          fileUrl:
-            uploadResult.secure_url,
+          fileUrl: "",
+
+          fileData:
+            req.file.buffer,
+
+          fileContentType:
+            req.file.mimetype,
+
+          originalFileName:
+            req.file.originalname,
 
           uploadDate:
             new Date().toISOString(),
 
-          status: "Active",
+          status:
+            "Active",
         })
+
+      newDocument.fileUrl =
+        `/documents/file/${newDocument._id}`
 
       await newDocument.save()
 
@@ -247,6 +218,9 @@ const uploadDocument =
         await Document.findById(
           newDocument._id
         )
+          .select(
+            "-fileData"
+          )
           .populate(
             "employeeId",
             "firstName lastName email position"
@@ -281,6 +255,127 @@ const uploadDocument =
     }
   }
 
+const getDocumentFile =
+  async (req, res) => {
+    try {
+      const document =
+        await Document.findById(
+          req.params.id
+        ).select(
+          "fileData fileContentType originalFileName employeeId projectId taskId"
+        )
+
+      if (
+        !document ||
+        !document.fileData
+      ) {
+        return res.status(404).json({
+          message:
+            "File not found.",
+        })
+      }
+
+      if (
+        req.user.role ===
+        "Employee"
+      ) {
+        const employee =
+          await Employee.findOne({
+            email:
+              req.user.email
+                .trim()
+                .toLowerCase(),
+          })
+
+        if (!employee) {
+          return res.status(404).json({
+            message:
+              "Employee profile not found.",
+          })
+        }
+
+        let hasAccess = false
+
+        if (
+          document.employeeId &&
+          document.employeeId.toString() ===
+            employee._id.toString()
+        ) {
+          hasAccess = true
+        }
+
+        if (
+          document.taskId
+        ) {
+          const task =
+            await Task.findById(
+              document.taskId
+            )
+
+          if (
+            task &&
+            task.assignedTo.toString() ===
+              employee._id.toString()
+          ) {
+            hasAccess = true
+          }
+        }
+
+        if (
+          document.projectId
+        ) {
+          const project =
+            await Project.findById(
+              document.projectId
+            )
+
+          if (
+            project &&
+            project.assignedEmployees.some(
+              (id) =>
+                id.toString() ===
+                employee._id.toString()
+            )
+          ) {
+            hasAccess = true
+          }
+        }
+
+        if (!hasAccess) {
+          return res.status(403).json({
+            message:
+              "You do not have permission to view this document.",
+          })
+        }
+      }
+
+      res.set(
+        "Content-Type",
+        document.fileContentType
+      )
+
+      res.set(
+        "Content-Disposition",
+        `inline; filename="${document.originalFileName}"`
+      )
+
+      return res.send(
+        document.fileData
+      )
+    } catch (error) {
+      console.error(
+        "Get document file error:",
+        error
+      )
+
+      return res.status(500).json({
+        message:
+          "Failed to retrieve document file.",
+      })
+    }
+  }
+
 module.exports = {
   uploadDocument,
+  getDocumentFile,
 }

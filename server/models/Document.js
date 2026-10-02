@@ -61,6 +61,21 @@ const documentSchema =
         required: true,
       },
 
+      fileData: {
+        type: Buffer,
+        required: true,
+      },
+
+      fileContentType: {
+        type: String,
+        required: true,
+      },
+
+      originalFileName: {
+        type: String,
+        required: true,
+      },
+
       uploadDate: {
         type: String,
         required: true,
