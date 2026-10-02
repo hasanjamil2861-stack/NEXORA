@@ -48,6 +48,7 @@ export default function Login() {
         setError("")
 
         const cleanEmail = email.trim()
+        const enteredPassword = password
 
         if (!cleanEmail) {
             setError("Email is required.")
@@ -61,23 +62,24 @@ export default function Login() {
             return
         }
 
-        if (!password) {
+        if (!enteredPassword) {
             setError("Password is required.")
             return
         }
+
+        // Clear inputs immediately after clicking Login
+        setEmail("")
+        setPassword("")
+        setShowPassword(false)
 
         setIsSubmitting(true)
 
         const success = await login(
             cleanEmail,
-            password
+            enteredPassword
         )
 
         if (success) {
-            setEmail("")
-            setPassword("")
-            setShowPassword(false)
-
             navigate("/")
             return
         }
