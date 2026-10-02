@@ -3,14 +3,18 @@ const API_URL =
 
 export type UploadDocumentData = {
   name: string
+
   category:
     | "Employee"
     | "Contract"
     | "Invoice"
     | "Project"
     | "Company"
+
   projectId?: string
+
   taskId?: string
+
   file: File
 }
 
@@ -21,6 +25,12 @@ export async function uploadDocument(
     localStorage.getItem(
       "nexora-token"
     )
+
+  if (!token) {
+    throw new Error(
+      "You are not authenticated. Please login again."
+    )
+  }
 
   const formData =
     new FormData()
@@ -54,27 +64,78 @@ export async function uploadDocument(
     data.file
   )
 
-  const response =
-    await fetch(
-      `${API_URL}/documents/upload`,
-      {
-        method: "POST",
+  let response: Response
 
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
+  try {
+    response =
+      await fetch(
+        `${API_URL}/documents/upload`,
+        {
+          method: "POST",
 
-        body: formData,
-      }
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+
+          body: formData,
+        }
+      )
+  } catch (error) {
+    console.error(
+      "Document upload network error:",
+      error
     )
 
-  const result =
-    await response.json()
+    throw new Error(
+      "Failed to connect to the server. Please check your internet connection and try again."
+    )
+  }
+
+  const contentType =
+    response.headers.get(
+      "content-type"
+    ) || ""
+
+  let result: any = null
+
+  if (
+    contentType.includes(
+      "application/json"
+    )
+  ) {
+    try {
+      result =
+        await response.json()
+    } catch (error) {
+      console.error(
+        "Failed to parse JSON response:",
+        error
+      )
+
+      throw new Error(
+        "The server returned an invalid response."
+      )
+    }
+  } else {
+    const text =
+      await response.text()
+
+    console.error(
+      "Server returned non-JSON response:",
+      text
+    )
+
+    throw new Error(
+      response.ok
+        ? "The server returned an unexpected response."
+        : `Upload failed. Server returned status ${response.status}.`
+    )
+  }
 
   if (!response.ok) {
     throw new Error(
-      result.message ||
+      result?.message ||
         "Failed to upload document."
     )
   }
