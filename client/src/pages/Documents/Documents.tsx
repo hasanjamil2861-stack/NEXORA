@@ -159,26 +159,38 @@ export default function Documents() {
         const formattedDocuments:
           DocumentWithEmployee[] =
           data.map((document) => ({
-            id: document._id,
-            name: document.name ?? "",
+            id:
+              document._id,
+
+            name:
+              document.name ?? "",
+
             type:
               document.type ?? "PDF",
+
             category:
               document.category ??
               "Employee",
+
             employeeId:
               document.employeeId ??
               null,
+
             uploadedBy:
               typeof document.uploadedBy ===
               "string"
                 ? document.uploadedBy
                 : document.uploadedBy?.name ??
                   "",
+
             uploadDate:
               document.uploadDate ?? "",
+
             status:
               document.status ?? "Active",
+
+            fileUrl:
+              document.fileUrl ?? "",
           }))
 
         setDocumentList(
@@ -265,7 +277,8 @@ export default function Documents() {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file =
-      event.target.files?.[0] ?? null
+      event.target.files?.[0] ??
+      null
 
     if (!file) {
       setSelectedFile(null)
@@ -378,31 +391,36 @@ export default function Documents() {
       return
     }
 
-    /*
-      UPDATE
-      Admin only.
-    */
     if (editingDocument !== null) {
       try {
         const updatedDocument =
           (await updateDocument(
             editingDocument,
             {
-              name: formData.name.trim(),
-              type: formData.type,
-              category: formData.category,
+              name:
+                formData.name.trim(),
+
+              type:
+                formData.type,
+
+              category:
+                formData.category,
+
               employeeId:
                 isAdmin &&
                 formData.category ===
                   "Employee"
                   ? formData.employeeId.trim()
                   : null,
+
               uploadedBy:
                 isAdmin
                   ? formData.uploadedBy.trim()
                   : undefined,
+
               uploadDate:
                 formData.uploadDate,
+
               status:
                 formData.status,
             } as Parameters<
@@ -412,30 +430,43 @@ export default function Documents() {
 
         const formattedDocument:
           DocumentWithEmployee = {
-          id: updatedDocument._id,
+          id:
+            updatedDocument._id,
+
           name:
-            updatedDocument.name ?? "",
+            updatedDocument.name ??
+            "",
+
           type:
             updatedDocument.type ??
             "PDF",
+
           category:
             updatedDocument.category ??
             "Employee",
+
           employeeId:
             updatedDocument.employeeId ??
             null,
+
           uploadedBy:
             typeof updatedDocument.uploadedBy ===
             "string"
               ? updatedDocument.uploadedBy
               : updatedDocument.uploadedBy?.name ??
                 "",
+
           uploadDate:
             updatedDocument.uploadDate ??
             "",
+
           status:
             updatedDocument.status ??
             "Active",
+
+          fileUrl:
+            updatedDocument.fileUrl ??
+            "",
         }
 
         setDocumentList((current) =>
@@ -464,10 +495,6 @@ export default function Documents() {
       return
     }
 
-    /*
-      REAL FILE UPLOAD
-      Admin + Employee.
-    */
     if (!selectedFile) {
       setFormError(
         "Please select a file to upload."
@@ -487,11 +514,6 @@ export default function Documents() {
           file:
             selectedFile,
 
-          /*
-            Employee uploads are automatically
-            linked to their own employee profile
-            by the backend.
-          */
           projectId:
             undefined,
 
@@ -534,6 +556,10 @@ export default function Documents() {
         status:
           uploadedDocument.status ??
           "Active",
+
+        fileUrl:
+          uploadedDocument.fileUrl ??
+          "",
       }
 
       setDocumentList((current) => [
@@ -593,15 +619,21 @@ export default function Documents() {
     setFormData({
       name:
         documentToEdit.name,
+
       type:
         documentToEdit.type,
+
       category:
         documentToEdit.category,
+
       employeeId,
+
       uploadedBy:
         documentToEdit.uploadedBy,
+
       uploadDate:
         documentToEdit.uploadDate,
+
       status:
         documentToEdit.status,
     })

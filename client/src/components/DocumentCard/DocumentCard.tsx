@@ -74,8 +74,18 @@ export default function DocumentCard({
         )
 
       if (!token) {
+        console.error(
+          "No authentication token found."
+        )
         return
       }
+
+      const fileUrl =
+        document.fileUrl.startsWith(
+          "http"
+        )
+          ? document.fileUrl
+          : `${API_URL}${document.fileUrl}`
 
       const newTab =
         window.open(
@@ -84,21 +94,19 @@ export default function DocumentCard({
         )
 
       if (!newTab) {
+        console.error(
+          "Popup was blocked by the browser."
+        )
         return
       }
 
       try {
-        const fileUrl =
-          document.fileUrl.startsWith(
-            "http"
-          )
-            ? document.fileUrl
-            : `${API_URL}${document.fileUrl}`
-
         const response =
           await fetch(
             fileUrl,
             {
+              method: "GET",
+
               headers: {
                 Authorization:
                   `Bearer ${token}`,
@@ -108,7 +116,7 @@ export default function DocumentCard({
 
         if (!response.ok) {
           throw new Error(
-            "Failed to open document."
+            `Failed to open document (${response.status}).`
           )
         }
 
