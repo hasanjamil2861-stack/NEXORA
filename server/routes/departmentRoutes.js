@@ -1,48 +1,49 @@
 const express = require("express")
 
 const {
-    protect,
-    adminOnly,
+  protect,
+  adminOnly,
 } = require("../middleware/authMiddleware")
 
 const {
-    getDepartments,
-    postDepartment,
-    updateDepartment,
-    deleteDepartment,
+  getDepartments,
+  postDepartment,
+  updateDepartment,
+  deleteDepartment,
 } = require("../controllers/departmentController")
 
 const router = express.Router()
 
-// Get all departments - Admin + Employee
+// Get all departments - Admin only
 router.get(
-    "/departments",
-    protect,
-    getDepartments
+  "/departments",
+  protect,
+  adminOnly,
+  getDepartments
 )
 
-// Create a department - Admin only
+// Create department - Admin only
 router.post(
-    "/departments",
-    protect,
-    adminOnly,
-    postDepartment
+  "/departments",
+  protect,
+  adminOnly,
+  postDepartment
 )
 
-// Update a department - Admin only
+// Update department - Admin only
 router.put(
-    "/departments/:id",
-    protect,
-    adminOnly,
-    updateDepartment
+  "/departments/:id",
+  protect,
+  adminOnly,
+  updateDepartment
 )
 
-// Delete a department - Admin only
+// Delete department - Admin only
 router.delete(
-    "/departments/:id",
-    protect,
-    adminOnly,
-    deleteDepartment
+  "/departments/:id",
+  protect,
+  adminOnly,
+  deleteDepartment
 )
 
 module.exports = router

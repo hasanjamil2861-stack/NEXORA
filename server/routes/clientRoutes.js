@@ -1,48 +1,49 @@
 const express = require("express")
 
 const {
-    protect,
-    adminOnly,
+  protect,
+  adminOnly,
 } = require("../middleware/authMiddleware")
 
 const {
-    getClients,
-    postClient,
-    updateClient,
-    deleteClient,
+  getClients,
+  postClient,
+  updateClient,
+  deleteClient,
 } = require("../controllers/clientController")
 
 const router = express.Router()
 
-// Create a client - Admin only
-router.post(
-    "/clients",
-    protect,
-    adminOnly,
-    postClient
-)
-
-// Get all clients - Admin + Employee
+// Get all clients - Admin only
 router.get(
-    "/clients",
-    protect,
-    getClients
+  "/clients",
+  protect,
+  adminOnly,
+  getClients
 )
 
-// Update a client - Admin only
+// Create client - Admin only
+router.post(
+  "/clients",
+  protect,
+  adminOnly,
+  postClient
+)
+
+// Update client - Admin only
 router.put(
-    "/clients/:id",
-    protect,
-    adminOnly,
-    updateClient
+  "/clients/:id",
+  protect,
+  adminOnly,
+  updateClient
 )
 
-// Delete a client - Admin only
+// Delete client - Admin only
 router.delete(
-    "/clients/:id",
-    protect,
-    adminOnly,
-    deleteClient
+  "/clients/:id",
+  protect,
+  adminOnly,
+  deleteClient
 )
 
 module.exports = router

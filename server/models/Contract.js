@@ -1,28 +1,62 @@
-/* Contract schema */
-
 const mongoose = require("mongoose")
 
-const contractSchema = new mongoose.Schema({
-  partyName: String,
+const contractSchema =
+  new mongoose.Schema(
+    {
+      employeeId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee",
+        default: null,
+      },
 
-  contractType: {
-    type: String,
-    enum: ["Employee", "Client"],
-  },
+      partyName: {
+        type: String,
+        required: true,
+      },
 
-  startDate: String,
-  endDate: String,
-  value: Number,
+      contractType: {
+        type: String,
+        enum: [
+          "Employee",
+          "Client",
+        ],
+        required: true,
+      },
 
-  status: {
-    type: String,
-    enum: ["Active", "Expired", "Pending"],
-  },
-})
+      startDate: {
+        type: String,
+        required: true,
+      },
 
-const Contract = mongoose.model(
-  "Contract",
-  contractSchema
-)
+      endDate: {
+        type: String,
+        required: true,
+      },
+
+      value: {
+        type: Number,
+        required: true,
+      },
+
+      status: {
+        type: String,
+        enum: [
+          "Active",
+          "Expired",
+          "Pending",
+        ],
+        required: true,
+      },
+    },
+    {
+      timestamps: true,
+    }
+  )
+
+const Contract =
+  mongoose.model(
+    "Contract",
+    contractSchema
+  )
 
 module.exports = Contract

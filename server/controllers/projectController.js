@@ -1,72 +1,281 @@
 const Project = require("../models/Project")
+const Employee = require("../models/Employee")
 
-// Get all projects
 const getProjects = async (req, res) => {
   try {
-    const projects = await Project.find()
+    if (req.user.role === "Admin") {
+      const projects =
+        await Project.find()
+          .populate(
+            "assignedEmployees",
+            "firstName lastName email position"
+          )
 
-    res.json(projects)
+      return res.json(projects)
+    }
+
+    const employee =
+      await Employee.findOne({
+        email: req.user.email,
+      })
+
+    if (!employee) {
+      return res.status(404).json({
+        message:
+          "Employee profile not found.",
+      })
+    }
+
+    const projects =
+      await Project.find({
+        assignedEmployees:
+          employee._id,
+      }).populate(
+        "assignedEmployees",
+        "firstName lastName email position"
+      )
+
+    return res.json(projects)
   } catch (error) {
-    console.error("Get projects error:", error)
+    console.error(
+      "Get projects error:",
+      error
+    )
 
     res.status(500).json({
-      message: "Failed to get projects",
+      message:
+        "Failed to get projects",
       error: error.message,
     })
   }
 }
 
-// Create a project
 const postProject = async (req, res) => {
   try {
-    const newProject = new Project(req.body)
+    const {
+      name,
+      description,
+      client,
+      manager,
+      startDate,
+      endDate,
+      budget,
+      status,
+      assignedEmployees,
+    } = req.body
+
+    if (
+      !name ||
+      !description ||
+      !client ||
+      !manager ||
+      !startDate ||
+      !endDate ||
+      budget === undefined
+    ) {
+      return res.status(400).json({
+        message:
+          "Please provide all required project fields.",
+      })
+    }
+
+    if (
+      !Array.isArray(
+        assignedEmployees
+      )
+    ) {
+      return res.status(400).json({
+        message:
+          "assignedEmployees must be an array.",
+      })
+    }
+
+    const employees =
+      await Employee.find({
+        _id: {
+          $in: assignedEmployees,
+        },
+      })
+
+    if (
+      employees.length !==
+      assignedEmployees.length
+    ) {
+      return res.status(400).json({
+        message:
+          "One or more assigned employees were not found.",
+      })
+    }
+
+    const newProject =
+      new Project({
+        name,
+        description,
+        client,
+        manager,
+        startDate,
+        endDate,
+        budget,
+        status,
+        assignedEmployees,
+      })
 
     await newProject.save()
 
-    res.status(201).json(newProject)
+    const populatedProject =
+      await Project.findById(
+        newProject._id
+      ).populate(
+        "assignedEmployees",
+        "firstName lastName email position"
+      )
+
+    res.status(201).json(
+      populatedProject
+    )
   } catch (error) {
-    console.error("Save project error:", error)
+    console.error(
+      "Save project error:",
+      error
+    )
 
     res.status(500).json({
-      message: "Failed to save project",
+      message:
+        "Failed to save project",
       error: error.message,
     })
   }
 }
 
-// Update a project
-const updateProject = async (req, res) => {
+const updateProject = async (
+  req,
+  res
+) => {
   try {
-    const updatedProject = await Project.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    )
+    const {
+      name,
+      description,
+      client,
+      manager,
+      startDate,
+      endDate,
+      budget,
+      status,
+      assignedEmployees,
+    } = req.body
+
+    if (
+      assignedEmployees !==
+        undefined &&
+      !Array.isArray(
+        assignedEmployees
+      )
+    ) {
+      return res.status(400).json({
+        message:
+          "assignedEmployees must be an array.",
+      })
+    }
+
+    if (
+      Array.isArray(
+        assignedEmployees
+      )
+    ) {
+      const employees =
+        await Employee.find({
+          _id: {
+            $in: assignedEmployees,
+          },
+        })
+
+      if (
+        employees.length !==
+        assignedEmployees.length
+      ) {
+        return res.status(400).json({
+          message:
+            "One or more assigned employees were not found.",
+        })
+      }
+    }
+
+    const updatedProject =
+      await Project.findByIdAndUpdate(
+        req.params.id,
+        {
+          name,
+          description,
+          client,
+          manager,
+          startDate,
+          endDate,
+          budget,
+          status,
+          assignedEmployees,
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      ).populate(
+        "assignedEmployees",
+        "firstName lastName email position"
+      )
+
+    if (!updatedProject) {
+      return res.status(404).json({
+        message:
+          "Project not found.",
+      })
+    }
 
     res.json(updatedProject)
   } catch (error) {
-    console.error("Update project error:", error)
+    console.error(
+      "Update project error:",
+      error
+    )
 
     res.status(500).json({
-      message: "Failed to update project",
+      message:
+        "Failed to update project",
       error: error.message,
     })
   }
 }
 
-// Delete a project
-const deleteProject = async (req, res) => {
+const deleteProject = async (
+  req,
+  res
+) => {
   try {
-    const deletedProject = await Project.findByIdAndDelete(
-      req.params.id
+    const deletedProject =
+      await Project.findByIdAndDelete(
+        req.params.id
+      )
+
+    if (!deletedProject) {
+      return res.status(404).json({
+        message:
+          "Project not found.",
+      })
+    }
+
+    res.json({
+      message:
+        "Project deleted successfully.",
+      project: deletedProject,
+    })
+  } catch (error) {
+    console.error(
+      "Delete project error:",
+      error
     )
 
-    res.json(deletedProject)
-  } catch (error) {
-    console.error("Delete project error:", error)
-
     res.status(500).json({
-      message: "Failed to delete project",
+      message:
+        "Failed to delete project",
       error: error.message,
     })
   }
