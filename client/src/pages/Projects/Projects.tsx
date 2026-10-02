@@ -193,8 +193,12 @@ export default function Projects() {
    * receives all projects.
    *
    * Employee:
-   * backend returns only projects assigned
-   * to the logged-in employee.
+   * receives only assigned projects.
+   *
+   * IMPORTANT:
+   * assignedEmployees is preserved inside
+   * projectList so Edit can restore the
+   * correct employees.
    */
   useEffect(() => {
     async function fetchProjects() {
@@ -203,29 +207,53 @@ export default function Projects() {
           (await getProjects()) as ProjectApiRecord[]
 
         const formattedProjects: Project[] =
-          data.map((project) => ({
-            id: project._id,
-            name:
-              project.name ?? "",
-            description:
-              project.description ??
-              "",
-            client:
-              project.client ?? "",
-            manager:
-              project.manager ?? "",
-            startDate:
-              project.startDate ??
-              "",
-            endDate:
-              project.endDate ??
-              "",
-            budget:
-              project.budget ?? 0,
-            status:
-              project.status ??
-              "Planned",
-          }))
+          data.map((project) => {
+            const assigned =
+              Array.isArray(
+                project.assignedEmployees
+              )
+                ? project.assignedEmployees
+                : project.assignedEmployees
+                  ? [
+                      project.assignedEmployees,
+                    ]
+                  : []
+
+            return {
+              id: project._id,
+
+              name:
+                project.name ?? "",
+
+              description:
+                project.description ?? "",
+
+              client:
+                project.client ?? "",
+
+              manager:
+                project.manager ?? "",
+
+              startDate:
+                project.startDate ?? "",
+
+              endDate:
+                project.endDate ?? "",
+
+              budget:
+                project.budget ?? 0,
+
+              status:
+                project.status ??
+                "Planned",
+
+              assignedEmployees:
+                assigned.map(
+                  (employee) =>
+                    employee._id
+                ),
+            }
+          })
 
         setProjectList(
           formattedProjects
@@ -236,6 +264,8 @@ export default function Projects() {
           error
         )
 
+        setProjectList([])
+
         showToast(
           "Failed to load projects",
           "error"
@@ -243,8 +273,16 @@ export default function Projects() {
       }
     }
 
-    fetchProjects()
-  }, [showToast, isAdmin])
+    if (user?.email) {
+      fetchProjects()
+    } else {
+      setProjectList([])
+    }
+  }, [
+    showToast,
+    isAdmin,
+    user?.email,
+  ])
 
   /*
    * Load employees for Admin only.
@@ -376,8 +414,7 @@ export default function Projects() {
     }
 
     if (
-      selectedEmployees.length ===
-      0
+      selectedEmployees.length === 0
     ) {
       return "Please assign at least one employee to this project."
     }
@@ -494,6 +531,13 @@ export default function Projects() {
     }
   }
 
+  /*
+   * Open project in Edit mode.
+   *
+   * IMPORTANT:
+   * assignedEmployees now comes directly
+   * from projectList.
+   */
   function handleEditProject(
     id: string
   ) {
@@ -544,52 +588,12 @@ export default function Projects() {
     setStatus(project.status)
 
     /*
-     * Get the original project from the API
-     * so we can restore its assigned employees.
+     * Restore the employees already
+     * assigned to this project.
      */
-    async function loadAssignedEmployees() {
-      try {
-        const data =
-          (await getProjects()) as ProjectApiRecord[]
-
-        const apiProject =
-          data.find(
-            (item) =>
-              item._id === id
-          )
-
-        if (
-          !apiProject?.assignedEmployees
-        ) {
-          setSelectedEmployees([])
-        } else {
-          const assigned =
-            Array.isArray(
-              apiProject.assignedEmployees
-            )
-              ? apiProject.assignedEmployees
-              : [
-                  apiProject.assignedEmployees,
-                ]
-
-          setSelectedEmployees(
-            assigned.map(
-              (employee) =>
-                employee._id
-            )
-          )
-        }
-      } catch (error) {
-        console.error(
-          "Load assigned employees error:",
-          error
-        )
-
-        setSelectedEmployees([])
-      }
-    }
-
-    loadAssignedEmployees()
+    setSelectedEmployees(
+      project.assignedEmployees ?? []
+    )
 
     setEditingProject(id)
 
@@ -643,8 +647,9 @@ export default function Projects() {
 
       status,
 
-      assignedEmployees:
-        selectedEmployees,
+      assignedEmployees: [
+        ...selectedEmployees,
+      ],
     }
 
     try {
@@ -665,6 +670,17 @@ export default function Projects() {
             "MongoDB did not return the updated project."
           )
         }
+
+        const assigned =
+          Array.isArray(
+            updatedProject.assignedEmployees
+          )
+            ? updatedProject.assignedEmployees
+            : updatedProject.assignedEmployees
+              ? [
+                  updatedProject.assignedEmployees,
+                ]
+              : []
 
         const formattedProject: Project =
           {
@@ -702,6 +718,12 @@ export default function Projects() {
             status:
               updatedProject.status ??
               "Planned",
+
+            assignedEmployees:
+              assigned.map(
+                (employee) =>
+                  employee._id
+              ),
           }
 
         setProjectList(
@@ -739,42 +761,53 @@ export default function Projects() {
         )
       }
 
+      const assigned =
+        Array.isArray(
+          newProject.assignedEmployees
+        )
+          ? newProject.assignedEmployees
+          : newProject.assignedEmployees
+            ? [
+                newProject.assignedEmployees,
+              ]
+            : []
+
       const formattedProject: Project =
         {
           id:
             newProject._id,
 
           name:
-            newProject.name ??
-            "",
+            newProject.name ?? "",
 
           description:
             newProject.description ??
             "",
 
           client:
-            newProject.client ??
-            "",
+            newProject.client ?? "",
 
           manager:
-            newProject.manager ??
-            "",
+            newProject.manager ?? "",
 
           startDate:
-            newProject.startDate ??
-            "",
+            newProject.startDate ?? "",
 
           endDate:
-            newProject.endDate ??
-            "",
+            newProject.endDate ?? "",
 
           budget:
-            newProject.budget ??
-            0,
+            newProject.budget ?? 0,
 
           status:
             newProject.status ??
             "Planned",
+
+          assignedEmployees:
+            assigned.map(
+              (employee) =>
+                employee._id
+            ),
         }
 
       setProjectList(
@@ -1220,7 +1253,7 @@ export default function Projects() {
         </div>
       </section>
 
-      {/* Add / edit project form - Admin only */}
+      {/* Add / edit project form */}
       {isAdmin && showForm && (
         <form
           ref={projectFormRef}
@@ -1603,7 +1636,7 @@ export default function Projects() {
         </div>
       </section>
 
-      {/* Delete confirmation - Admin only */}
+      {/* Delete confirmation */}
       {isAdmin &&
         projectToDelete !==
           null && (

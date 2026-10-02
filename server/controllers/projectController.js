@@ -4,6 +4,14 @@ const Employee = require("../models/Employee")
 // Get projects
 const getProjects = async (req, res) => {
   try {
+    console.log("================================")
+    console.log("GET PROJECTS REQUEST")
+    console.log("USER:", req.user)
+    console.log("ROLE:", req.user?.role)
+    console.log("EMAIL:", req.user?.email)
+    console.log("USER ID:", req.user?.userId)
+    console.log("================================")
+
     // Admin can see all projects
     if (req.user.role === "Admin") {
       const projects =
@@ -12,14 +20,61 @@ const getProjects = async (req, res) => {
           "firstName lastName email position"
         )
 
+      console.log(
+        "ADMIN PROJECTS:",
+        projects
+      )
+
       return res.json(projects)
     }
 
-    // Find the Employee profile using the logged-in user's email
-    const employee =
-      await Employee.findOne({
-        email: req.user.email,
-      })
+    /*
+     * Find the Employee profile that belongs
+     * to the currently logged-in User.
+     *
+     * First try userId.
+     *
+     * If an older Employee does not have userId,
+     * fallback to email.
+     */
+    let employee = null
+
+    if (req.user.userId) {
+      employee =
+        await Employee.findOne({
+          userId: req.user.userId,
+        })
+
+      console.log(
+        "EMPLOYEE FOUND BY USER ID:",
+        employee
+      )
+    }
+
+    if (!employee && req.user.email) {
+      employee =
+        await Employee.findOne({
+          email:
+            req.user.email
+              .trim()
+              .toLowerCase(),
+        })
+
+      console.log(
+        "EMPLOYEE FOUND BY EMAIL:",
+        employee
+      )
+    }
+
+    console.log(
+      "FINAL EMPLOYEE:",
+      employee
+    )
+
+    console.log(
+      "EMPLOYEE ID:",
+      employee?._id
+    )
 
     if (!employee) {
       return res.status(404).json({
@@ -28,7 +83,10 @@ const getProjects = async (req, res) => {
       })
     }
 
-    // Employee sees only projects assigned to him
+    /*
+     * Employee can only see projects where
+     * their Employee _id exists in assignedEmployees.
+     */
     const projects =
       await Project.find({
         assignedEmployees: employee._id,
@@ -36,6 +94,16 @@ const getProjects = async (req, res) => {
         "assignedEmployees",
         "firstName lastName email position"
       )
+
+    console.log(
+      "EMPLOYEE PROJECTS:",
+      projects
+    )
+
+    console.log(
+      "EMPLOYEE PROJECT COUNT:",
+      projects.length
+    )
 
     return res.json(projects)
   } catch (error) {
@@ -52,9 +120,24 @@ const getProjects = async (req, res) => {
   }
 }
 
-// Create project - Admin only through route
+// Create project - Admin only
 const postProject = async (req, res) => {
   try {
+    console.log("================================")
+    console.log("CREATE PROJECT REQUEST")
+    console.log("BODY:", req.body)
+    console.log(
+      "ASSIGNED EMPLOYEES:",
+      req.body.assignedEmployees
+    )
+    console.log(
+      "IS ARRAY:",
+      Array.isArray(
+        req.body.assignedEmployees
+      )
+    )
+    console.log("================================")
+
     const {
       name,
       description,
@@ -82,14 +165,17 @@ const postProject = async (req, res) => {
       })
     }
 
-    if (
-      !Array.isArray(
-        assignedEmployees
-      )
-    ) {
+    if (!Array.isArray(assignedEmployees)) {
       return res.status(400).json({
         message:
           "assignedEmployees must be an array.",
+      })
+    }
+
+    if (assignedEmployees.length === 0) {
+      return res.status(400).json({
+        message:
+          "At least one employee must be assigned.",
       })
     }
 
@@ -99,6 +185,13 @@ const postProject = async (req, res) => {
           $in: assignedEmployees,
         },
       })
+
+    console.log(
+      "FOUND EMPLOYEES:",
+      employees.map(
+        (employee) => employee._id
+      )
+    )
 
     if (
       employees.length !==
@@ -123,7 +216,17 @@ const postProject = async (req, res) => {
         assignedEmployees,
       })
 
+    console.log(
+      "PROJECT BEFORE SAVE:",
+      newProject
+    )
+
     await newProject.save()
+
+    console.log(
+      "PROJECT AFTER SAVE:",
+      newProject
+    )
 
     const populatedProject =
       await Project.findById(
@@ -132,6 +235,11 @@ const postProject = async (req, res) => {
         "assignedEmployees",
         "firstName lastName email position"
       )
+
+    console.log(
+      "PROJECT FROM DATABASE:",
+      populatedProject
+    )
 
     res.status(201).json(
       populatedProject
@@ -150,7 +258,7 @@ const postProject = async (req, res) => {
   }
 }
 
-// Update project - Admin only through route
+// Update project - Admin only
 const updateProject = async (
   req,
   res
@@ -169,11 +277,8 @@ const updateProject = async (
     } = req.body
 
     if (
-      assignedEmployees !==
-        undefined &&
-      !Array.isArray(
-        assignedEmployees
-      )
+      assignedEmployees !== undefined &&
+      !Array.isArray(assignedEmployees)
     ) {
       return res.status(400).json({
         message:
@@ -182,10 +287,15 @@ const updateProject = async (
     }
 
     if (
-      Array.isArray(
-        assignedEmployees
-      )
+      Array.isArray(assignedEmployees)
     ) {
+      if (assignedEmployees.length === 0) {
+        return res.status(400).json({
+          message:
+            "At least one employee must be assigned.",
+        })
+      }
+
       const employees =
         await Employee.find({
           _id: {
@@ -234,6 +344,11 @@ const updateProject = async (
       })
     }
 
+    console.log(
+      "UPDATED PROJECT:",
+      updatedProject
+    )
+
     res.json(updatedProject)
   } catch (error) {
     console.error(
@@ -249,7 +364,7 @@ const updateProject = async (
   }
 }
 
-// Delete project - Admin only through route
+// Delete project - Admin only
 const deleteProject = async (
   req,
   res

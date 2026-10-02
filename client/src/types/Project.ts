@@ -12,4 +12,5 @@ export interface Project {
     | "In Progress"
     | "Completed"
     | "Cancelled"
+  assignedEmployees: string[]
 }
