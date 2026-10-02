@@ -74,6 +74,10 @@ export default function Login() {
         )
 
         if (success) {
+            setEmail("")
+            setPassword("")
+            setShowPassword(false)
+
             navigate("/")
             return
         }
