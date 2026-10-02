@@ -471,19 +471,13 @@ export default function Tasks() {
       return "Task priority is required."
     }
 
-    if (
-      isAdmin &&
-      editingTask === null &&
-      !assignedTo
-    ) {
+    // Admin must select Employee + Project
+    // on both CREATE and EDIT.
+    if (isAdmin && !assignedTo) {
       return "Please assign the task to an employee."
     }
 
-    if (
-      isAdmin &&
-      editingTask === null &&
-      !projectId
-    ) {
+    if (isAdmin && !projectId) {
       return "Please select a project."
     }
 
@@ -532,72 +526,10 @@ export default function Tasks() {
           return
         }
 
-        // ---------------------------------------------------
-        // EMPLOYEE UPDATE
-        // Employee can ONLY change status
-        // ---------------------------------------------------
-
+        // Employee should never reach
+        // an edit form because TaskCard
+        // hides the Edit button.
         if (!isAdmin) {
-          const updatedTask =
-            (await updateTask(
-              editingTask,
-              {
-                status,
-              }
-            )) as TaskApiRecord
-
-          const formattedTask: Task = {
-            id: String(
-              updatedTask._id
-            ),
-
-            title:
-              updatedTask.title ??
-              existingTask.title,
-
-            description:
-              updatedTask.description ??
-              existingTask.description,
-
-            status:
-              updatedTask.status ??
-              status,
-
-            priority:
-              updatedTask.priority ??
-              existingTask.priority,
-
-            assignedTo:
-              updatedTask.assignedTo ??
-              existingTask.assignedTo,
-
-            projectId:
-              updatedTask.projectId ??
-              existingTask.projectId,
-
-            dueDate:
-              updatedTask.dueDate ??
-              existingTask.dueDate,
-          }
-
-          setTaskList(
-            (currentTasks) =>
-              currentTasks.map(
-                (task) =>
-                  task.id ===
-                  editingTask
-                    ? formattedTask
-                    : task
-              )
-          )
-
-          showToast(
-            "Task status updated successfully",
-            "success"
-          )
-
-          resetForm()
-
           return
         }
 
@@ -616,15 +548,9 @@ export default function Tasks() {
 
           priority,
 
-          assignedTo:
-            getAssignedEmployeeId(
-              existingTask.assignedTo
-            ),
+          assignedTo,
 
-          projectId:
-            getProjectId(
-              existingTask.projectId
-            ),
+          projectId,
 
           dueDate,
         }
@@ -658,15 +584,15 @@ export default function Tasks() {
 
           assignedTo:
             updatedTask.assignedTo ??
-            existingTask.assignedTo,
+            assignedTo,
 
           projectId:
             updatedTask.projectId ??
-            existingTask.projectId,
+            projectId,
 
           dueDate:
             updatedTask.dueDate ??
-            "",
+            dueDate,
         }
 
         setTaskList(
@@ -867,6 +793,11 @@ export default function Tasks() {
   function handleEditTask(
     id: string
   ) {
+    // Employees cannot edit tasks.
+    if (!isAdmin) {
+      return
+    }
+
     const task =
       taskList.find(
         (currentTask) =>
@@ -1580,6 +1511,7 @@ export default function Tasks() {
                 id="task-status"
                 value={status}
                 required
+                disabled={!isAdmin}
                 onChange={(e) => {
                   setStatus(
                     e.target.value as Task["status"]
@@ -1642,98 +1574,101 @@ export default function Tasks() {
 
             </div>
 
-            {isAdmin &&
-              editingTask ===
-                null && (
-                <>
-                  <div className="task-form-field">
+            {/* =================================================
+                ADMIN ONLY
+                Show Employee + Project on BOTH CREATE & EDIT
+                ================================================= */}
 
-                    <label htmlFor="task-assigned-to">
-                      <ClipboardList size={15} />
-                      Assign Employee
-                    </label>
+            {isAdmin && (
+              <>
+                <div className="task-form-field">
 
-                    <select
-                      id="task-assigned-to"
-                      value={assignedTo}
-                      required
-                      onChange={(e) => {
-                        setAssignedTo(
-                          e.target.value
-                        )
+                  <label htmlFor="task-assigned-to">
+                    <ClipboardList size={15} />
+                    Assign Employee
+                  </label>
 
-                        setFormError("")
-                      }}
-                    >
+                  <select
+                    id="task-assigned-to"
+                    value={assignedTo}
+                    required
+                    onChange={(e) => {
+                      setAssignedTo(
+                        e.target.value
+                      )
 
-                      <option value="">
-                        Select employee
-                      </option>
+                      setFormError("")
+                    }}
+                  >
 
-                      {employees.map(
-                        (employee) => (
-                          <option
-                            key={
-                              employee._id
-                            }
-                            value={
-                              employee._id
-                            }
-                          >
-                            {employee.firstName}{" "}
-                            {employee.lastName}
-                          </option>
-                        )
-                      )}
+                    <option value="">
+                      Select employee
+                    </option>
 
-                    </select>
+                    {employees.map(
+                      (employee) => (
+                        <option
+                          key={
+                            employee._id
+                          }
+                          value={
+                            employee._id
+                          }
+                        >
+                          {employee.firstName}{" "}
+                          {employee.lastName}
+                        </option>
+                      )
+                    )}
 
-                  </div>
+                  </select>
 
-                  <div className="task-form-field">
+                </div>
 
-                    <label htmlFor="task-project">
-                      <ClipboardList size={15} />
-                      Project
-                    </label>
+                <div className="task-form-field">
 
-                    <select
-                      id="task-project"
-                      value={projectId}
-                      required
-                      onChange={(e) => {
-                        setProjectId(
-                          e.target.value
-                        )
+                  <label htmlFor="task-project">
+                    <ClipboardList size={15} />
+                    Project
+                  </label>
 
-                        setFormError("")
-                      }}
-                    >
+                  <select
+                    id="task-project"
+                    value={projectId}
+                    required
+                    onChange={(e) => {
+                      setProjectId(
+                        e.target.value
+                      )
 
-                      <option value="">
-                        Select project
-                      </option>
+                      setFormError("")
+                    }}
+                  >
 
-                      {projects.map(
-                        (project) => (
-                          <option
-                            key={
-                              project._id
-                            }
-                            value={
-                              project._id
-                            }
-                          >
-                            {project.name}
-                          </option>
-                        )
-                      )}
+                    <option value="">
+                      Select project
+                    </option>
 
-                    </select>
+                    {projects.map(
+                      (project) => (
+                        <option
+                          key={
+                            project._id
+                          }
+                          value={
+                            project._id
+                          }
+                        >
+                          {project.name}
+                        </option>
+                      )
+                    )}
 
-                  </div>
-                </>
-              )}
+                  </select>
+
+                </div>
+              </>
+            )}
 
           </div>
 
@@ -1758,9 +1693,7 @@ export default function Tasks() {
 
               {editingTask !==
               null
-                ? isAdmin
-                  ? "Update Task"
-                  : "Update Status"
+                ? "Update Task"
                 : "Create Task"}
 
             </button>

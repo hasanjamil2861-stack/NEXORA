@@ -75,8 +75,7 @@ export default function TaskCard({
             <Clock3 size={13} />
           )}
 
-          {task.status ??
-            "Pending"}
+          {task.status ?? "Pending"}
         </div>
       </div>
 
@@ -93,7 +92,9 @@ export default function TaskCard({
           </div>
 
           <div>
-            <span>Priority</span>
+            <span>
+              Priority
+            </span>
 
             <strong
               className={`task-priority-value ${priority.toLowerCase()}`}
@@ -109,7 +110,9 @@ export default function TaskCard({
           </div>
 
           <div>
-            <span>Due Date</span>
+            <span>
+              Due Date
+            </span>
 
             <strong>
               {task.dueDate ?? ""}
@@ -118,19 +121,19 @@ export default function TaskCard({
         </div>
       </div>
 
-      <div className="task-actions">
-        <button
-          type="button"
-          className="task-edit-btn"
-          onClick={() =>
-            onEdit(task.id)
-          }
-        >
-          <Pencil size={14} />
-          Edit
-        </button>
+      {isAdmin && (
+        <div className="task-actions">
+          <button
+            type="button"
+            className="task-edit-btn"
+            onClick={() =>
+              onEdit(task.id)
+            }
+          >
+            <Pencil size={14} />
+            Edit Task
+          </button>
 
-        {isAdmin && (
           <button
             type="button"
             className="task-delete-btn"
@@ -141,8 +144,8 @@ export default function TaskCard({
             <Trash2 size={14} />
             Delete
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </article>
   )
 }
