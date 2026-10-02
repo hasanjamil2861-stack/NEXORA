@@ -8,6 +8,8 @@
   --primary-dark: #4338ca;
   --blue: #2563eb;
   --cyan: #0891b2;
+  --aqua: #06b6d4;
+  --teal: #0f766e;
 
   --green: #059669;
   --green-light: #ecfdf5;
@@ -594,10 +596,12 @@
 }
 
 /* =========================================================
-   FORM
+   FORM — PREMIUM AQUA ADD INVOICE
 ========================================================= */
 
 .invoice-form {
+  position: relative;
+
   display: grid;
 
   grid-template-columns:
@@ -609,28 +613,35 @@
   padding: 21px;
 
   box-sizing: border-box;
+  overflow: hidden;
 
-  background: #ffffff;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(34, 211, 238, 0.18),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      rgba(20, 184, 166, 0.11),
+      transparent 34%
+    ),
+    linear-gradient(
+      135deg,
+      #f7feff 0%,
+      #effbfd 48%,
+      #ecfdfb 100%
+    );
 
-  border: 1px solid var(--border);
+  border: 1px solid #b9e5e9;
   border-radius: 17px;
 
   box-shadow:
-    0 5px 18px rgba(15, 23, 42, 0.045);
+    0 12px 30px rgba(8, 145, 178, 0.09),
+    0 4px 12px rgba(15, 23, 42, 0.035),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
 
   animation: invoiceFormIn 0.25s ease;
-}
-
-@keyframes invoiceFormIn {
-  from {
-    opacity: 0;
-    transform: translateY(-7px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .invoice-form::before {
@@ -645,20 +656,59 @@
 
   background: linear-gradient(
     90deg,
-    #2563eb,
-    #4f46e5,
-    #7c3aed
+    #0891b2,
+    #06b6d4,
+    #14b8a6
   );
 
   border-radius: 999px;
+
+  box-shadow:
+    0 2px 8px rgba(6, 182, 212, 0.16);
+}
+
+.invoice-form::after {
+  content: "";
+
+  position: absolute;
+  right: -90px;
+  bottom: -110px;
+
+  width: 260px;
+  height: 260px;
+
+  background: radial-gradient(
+    circle,
+    rgba(6, 182, 212, 0.10),
+    transparent 68%
+  );
+
+  border-radius: 50%;
+
+  pointer-events: none;
+}
+
+@keyframes invoiceFormIn {
+  from {
+    opacity: 0;
+    transform: translateY(-7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .invoice-form h2 {
   grid-column: 1 / -1;
 
+  position: relative;
+  z-index: 2;
+
   margin: 0 0 2px;
 
-  color: #172033;
+  color: #155e75;
 
   font-size: 18px;
   font-weight: 750;
@@ -667,6 +717,9 @@
 
 .invoice-form input,
 .invoice-form select {
+  position: relative;
+  z-index: 2;
+
   width: 100%;
   min-width: 0;
   height: 43px;
@@ -677,9 +730,9 @@
 
   color: #334155;
 
-  background: #fbfcfe;
+  background: rgba(255, 255, 255, 0.82);
 
-  border: 1px solid #e1e6ee;
+  border: 1px solid #b8dfe3;
   border-radius: 9px;
   outline: none;
 
@@ -687,10 +740,14 @@
   font-size: 12px;
   font-weight: 550;
 
+  box-shadow:
+    0 2px 7px rgba(8, 145, 178, 0.025);
+
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
-    background 0.2s ease;
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .invoice-form input::placeholder,
@@ -703,7 +760,7 @@
 .invoices-search input:hover,
 .invoices-controls > select:hover {
   background: #ffffff;
-  border-color: #cbd4df;
+  border-color: #7dd3dc;
 }
 
 .invoice-form input:focus,
@@ -711,10 +768,12 @@
 .invoices-search input:focus,
 .invoices-controls > select:focus {
   background: #ffffff;
-  border-color: #6366f1;
+
+  border-color: #06b6d4;
 
   box-shadow:
-    0 0 0 3px rgba(99, 102, 241, 0.08);
+    0 0 0 3px rgba(6, 182, 212, 0.11),
+    0 5px 12px rgba(8, 145, 178, 0.06);
 }
 
 .invoice-form select,
@@ -723,6 +782,9 @@
 }
 
 .invoice-form-error {
+  position: relative;
+  z-index: 2;
+
   grid-column: 1 / -1;
 
   margin: 0;
@@ -744,6 +806,9 @@
 ========================================================= */
 
 .invoice-form-total {
+  position: relative;
+  z-index: 2;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -755,14 +820,18 @@
 
   box-sizing: border-box;
 
-  background: linear-gradient(
-    135deg,
-    #f8f7ff,
-    #f1f5ff
-  );
+  background:
+    linear-gradient(
+      135deg,
+      rgba(236, 254, 255, 0.95),
+      rgba(240, 253, 250, 0.95)
+    );
 
-  border: 1px solid #e7e5ff;
+  border: 1px solid #bce5e5;
   border-radius: 9px;
+
+  box-shadow:
+    0 3px 9px rgba(8, 145, 178, 0.045);
 }
 
 .invoice-form-total span {
@@ -773,7 +842,7 @@
 }
 
 .invoice-form-total strong {
-  color: #4f46e5;
+  color: #0891b2;
 
   font-size: 14px;
   font-weight: 850;
@@ -781,6 +850,9 @@
 }
 
 .invoice-form button {
+  position: relative;
+  z-index: 2;
+
   min-height: 42px;
 
   border-radius: 9px;
@@ -802,24 +874,28 @@
 
   background: linear-gradient(
     135deg,
-    #2563eb,
-    #4f46e5
+    #0891b2,
+    #06b6d4,
+    #14b8a6
   );
 
   border: 0;
+
+  box-shadow:
+    0 8px 18px rgba(6, 182, 212, 0.19);
 }
 
 .invoice-save-btn:hover {
   transform: translateY(-1px);
 
   box-shadow:
-    0 8px 17px rgba(37, 99, 235, 0.17);
+    0 10px 21px rgba(6, 182, 212, 0.25);
 }
 
 .invoice-cancel-btn {
   color: #b91c1c;
 
-  background: #fef2f2;
+  background: rgba(254, 242, 242, 0.9);
 
   border: 1px solid #fee2e2;
 }
@@ -1875,7 +1951,7 @@
 .invoice-form select:focus-visible,
 .invoices-search input:focus-visible,
 .invoices-controls > select:focus-visible {
-  outline: 2px solid #6366f1;
+  outline: 2px solid #06b6d4;
   outline-offset: 2px;
 }
 
