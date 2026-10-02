@@ -26,6 +26,7 @@ import Modal from "../../components/Modal/Modal"
 
 import { useToast } from "../../context/ToastContext"
 import { useTrash } from "../../context/TrashContext"
+import { useAuth } from "../../context/AuthContext"
 
 import type {
   Task,
@@ -39,6 +40,9 @@ import {
   updateTask,
   deleteTask,
 } from "../../services/api/taskApi"
+
+import { getEmployees } from "../../services/api/employeeApi"
+import { getProjects } from "../../services/api/projectApi"
 
 type TaskApiRecord = {
   _id: string
@@ -55,9 +59,27 @@ type TaskApiRecord = {
   dueDate?: string
 }
 
+type EmployeeOption = {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  position: string
+}
+
+type ProjectOption = {
+  _id: string
+  name: string
+  status: string
+}
+
 export default function Tasks() {
   const { showToast } = useToast()
   const { moveToTrash } = useTrash()
+  const { user } = useAuth()
+
+  const isAdmin =
+    user?.role === "Admin"
 
   // =========================================================
   // FORM
@@ -84,6 +106,12 @@ export default function Tasks() {
   const [dueDate, setDueDate] =
     useState("")
 
+  const [assignedTo, setAssignedTo] =
+    useState("")
+
+  const [projectId, setProjectId] =
+    useState("")
+
   // =========================================================
   // TASK DATA
   // =========================================================
@@ -99,6 +127,16 @@ export default function Tasks() {
 
   const [formError, setFormError] =
     useState("")
+
+  // =========================================================
+  // ADMIN OPTIONS
+  // =========================================================
+
+  const [employees, setEmployees] =
+    useState<EmployeeOption[]>([])
+
+  const [projects, setProjects] =
+    useState<ProjectOption[]>([])
 
   // =========================================================
   // SEARCH / FILTER
@@ -187,18 +225,27 @@ export default function Tasks() {
         const formattedTasks: Task[] =
           data.map((task) => ({
             id: String(task._id),
+
             title:
               task.title ?? "",
+
             description:
               task.description ?? "",
+
             status:
-              task.status ?? "Pending",
+              task.status ??
+              "Pending",
+
             priority:
-              task.priority ?? "Medium",
+              task.priority ??
+              "Medium",
+
             assignedTo:
               task.assignedTo ?? "",
+
             projectId:
               task.projectId ?? "",
+
             dueDate:
               task.dueDate ?? "",
           }))
@@ -228,6 +275,48 @@ export default function Tasks() {
   }, [showToast])
 
   // =========================================================
+  // FETCH EMPLOYEES + PROJECTS FOR ADMIN
+  // =========================================================
+
+  useEffect(() => {
+    if (!isAdmin) {
+      return
+    }
+
+    async function fetchFormOptions() {
+      try {
+        const [
+          employeeData,
+          projectData,
+        ] = await Promise.all([
+          getEmployees(),
+          getProjects(),
+        ])
+
+        setEmployees(
+          employeeData as EmployeeOption[]
+        )
+
+        setProjects(
+          projectData as ProjectOption[]
+        )
+      } catch (error) {
+        console.error(
+          "Fetch task options error:",
+          error
+        )
+
+        showToast(
+          "Failed to load employees or projects",
+          "error"
+        )
+      }
+    }
+
+    fetchFormOptions()
+  }, [isAdmin, showToast])
+
+  // =========================================================
   // STATISTICS
   // =========================================================
 
@@ -237,7 +326,8 @@ export default function Tasks() {
   const pendingTasks =
     taskList.filter(
       (task) =>
-        task.status === "Pending"
+        task.status ===
+        "Pending"
     ).length
 
   const inProgressTasks =
@@ -250,13 +340,15 @@ export default function Tasks() {
   const completedTasks =
     taskList.filter(
       (task) =>
-        task.status === "Completed"
+        task.status ===
+        "Completed"
     ).length
 
   const highPriorityTasks =
     taskList.filter(
       (task) =>
-        task.priority === "High"
+        task.priority ===
+        "High"
     ).length
 
   const completionPercentage =
@@ -305,9 +397,53 @@ export default function Tasks() {
     setStatus("Pending")
     setPriority("Medium")
     setDueDate("")
+    setAssignedTo("")
+    setProjectId("")
     setEditingTask(null)
     setFormError("")
     setShowForm(false)
+  }
+
+  // =========================================================
+  // GET ASSIGNED ID
+  // =========================================================
+
+  function getAssignedEmployeeId(
+    value:
+      | string
+      | TaskEmployee
+      | undefined
+  ) {
+    if (!value) {
+      return ""
+    }
+
+    if (typeof value === "string") {
+      return value
+    }
+
+    return value._id
+  }
+
+  // =========================================================
+  // GET PROJECT ID
+  // =========================================================
+
+  function getProjectId(
+    value:
+      | string
+      | TaskProject
+      | undefined
+  ) {
+    if (!value) {
+      return ""
+    }
+
+    if (typeof value === "string") {
+      return value
+    }
+
+    return value._id
   }
 
   // =========================================================
@@ -333,6 +469,22 @@ export default function Tasks() {
 
     if (!priority) {
       return "Task priority is required."
+    }
+
+    if (
+      isAdmin &&
+      editingTask === null &&
+      !assignedTo
+    ) {
+      return "Please assign the task to an employee."
+    }
+
+    if (
+      isAdmin &&
+      editingTask === null &&
+      !projectId
+    ) {
+      return "Please select a project."
     }
 
     return ""
@@ -380,16 +532,100 @@ export default function Tasks() {
           return
         }
 
+        // ---------------------------------------------------
+        // EMPLOYEE UPDATE
+        // Employee can ONLY change status
+        // ---------------------------------------------------
+
+        if (!isAdmin) {
+          const updatedTask =
+            (await updateTask(
+              editingTask,
+              {
+                status,
+              }
+            )) as TaskApiRecord
+
+          const formattedTask: Task = {
+            id: String(
+              updatedTask._id
+            ),
+
+            title:
+              updatedTask.title ??
+              existingTask.title,
+
+            description:
+              updatedTask.description ??
+              existingTask.description,
+
+            status:
+              updatedTask.status ??
+              status,
+
+            priority:
+              updatedTask.priority ??
+              existingTask.priority,
+
+            assignedTo:
+              updatedTask.assignedTo ??
+              existingTask.assignedTo,
+
+            projectId:
+              updatedTask.projectId ??
+              existingTask.projectId,
+
+            dueDate:
+              updatedTask.dueDate ??
+              existingTask.dueDate,
+          }
+
+          setTaskList(
+            (currentTasks) =>
+              currentTasks.map(
+                (task) =>
+                  task.id ===
+                  editingTask
+                    ? formattedTask
+                    : task
+              )
+          )
+
+          showToast(
+            "Task status updated successfully",
+            "success"
+          )
+
+          resetForm()
+
+          return
+        }
+
+        // ---------------------------------------------------
+        // ADMIN UPDATE
+        // ---------------------------------------------------
+
         const taskData = {
-          title: title.trim(),
+          title:
+            title.trim(),
+
           description:
             description.trim(),
+
           status,
+
           priority,
+
           assignedTo:
-            existingTask.assignedTo,
+            getAssignedEmployeeId(
+              existingTask.assignedTo
+            ),
+
           projectId:
-            existingTask.projectId,
+            getProjectId(
+              existingTask.projectId
+            ),
+
           dueDate,
         }
 
@@ -403,25 +639,34 @@ export default function Tasks() {
           id: String(
             updatedTask._id
           ),
+
           title:
-            updatedTask.title ?? "",
+            updatedTask.title ??
+            "",
+
           description:
             updatedTask.description ??
             "",
+
           status:
             updatedTask.status ??
             "Pending",
+
           priority:
             updatedTask.priority ??
             "Medium",
+
           assignedTo:
             updatedTask.assignedTo ??
             existingTask.assignedTo,
+
           projectId:
             updatedTask.projectId ??
             existingTask.projectId,
+
           dueDate:
-            updatedTask.dueDate ?? "",
+            updatedTask.dueDate ??
+            "",
         }
 
         setTaskList(
@@ -447,11 +692,20 @@ export default function Tasks() {
 
       else {
         const newTaskData = {
-          title: title.trim(),
+          title:
+            title.trim(),
+
           description:
             description.trim(),
+
           status,
+
           priority,
+
+          assignedTo,
+
+          projectId,
+
           dueDate,
         }
 
@@ -464,23 +718,31 @@ export default function Tasks() {
           id: String(
             createdTask._id
           ),
+
           title:
-            createdTask.title ?? "",
+            createdTask.title ??
+            "",
+
           description:
             createdTask.description ??
             "",
+
           status:
             createdTask.status ??
             "Pending",
+
           priority:
             createdTask.priority ??
             "Medium",
+
           assignedTo:
             createdTask.assignedTo ??
-            "",
+            assignedTo,
+
           projectId:
             createdTask.projectId ??
-            "",
+            projectId,
+
           dueDate:
             createdTask.dueDate ??
             "",
@@ -526,11 +788,16 @@ export default function Tasks() {
   function handleDeleteTask(
     id: string
   ) {
+    if (!isAdmin) {
+      return
+    }
+
     setTaskToDelete(id)
   }
 
   async function confirmDeleteTask() {
     if (
+      !isAdmin ||
       taskToDelete === null
     ) {
       return
@@ -610,13 +877,17 @@ export default function Tasks() {
       return
     }
 
-    setTitle(task.title)
+    setTitle(
+      task.title
+    )
 
     setDescription(
       task.description
     )
 
-    setStatus(task.status)
+    setStatus(
+      task.status
+    )
 
     setPriority(
       task.priority
@@ -624,6 +895,18 @@ export default function Tasks() {
 
     setDueDate(
       task.dueDate
+    )
+
+    setAssignedTo(
+      getAssignedEmployeeId(
+        task.assignedTo
+      )
+    )
+
+    setProjectId(
+      getProjectId(
+        task.projectId
+      )
     )
 
     setEditingTask(
@@ -735,9 +1018,9 @@ export default function Tasks() {
             </h1>
 
             <p>
-              Plan, organize, and monitor your team&apos;s
-              workload with a centralized task management
-              workspace.
+              {isAdmin
+                ? "Plan, organize, and monitor your team's workload with a centralized task management workspace."
+                : "View and manage the tasks assigned to you."}
             </p>
 
           </div>
@@ -771,36 +1054,40 @@ export default function Tasks() {
 
           </div>
 
-          <button
-            type="button"
-            className="add-task-btn"
-            onClick={() => {
-              if (showForm) {
-                resetForm()
-              } else {
-                setShowForm(true)
-                setFormError("")
-              }
-            }}
-          >
+          {isAdmin && (
+            <button
+              type="button"
+              className="add-task-btn"
+              onClick={() => {
+                if (showForm) {
+                  resetForm()
+                } else {
+                  setShowForm(true)
+                  setFormError("")
+                }
+              }}
+            >
 
-            {showForm ? (
-              <>
-                <X size={18} />
-                <span>
-                  Close Form
-                </span>
-              </>
-            ) : (
-              <>
-                <Plus size={18} />
-                <span>
-                  Add Task
-                </span>
-              </>
-            )}
+              {showForm ? (
+                <>
+                  <X size={18} />
 
-          </button>
+                  <span>
+                    Close Form
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Plus size={18} />
+
+                  <span>
+                    Add Task
+                  </span>
+                </>
+              )}
+
+            </button>
+          )}
 
         </div>
 
@@ -949,7 +1236,8 @@ export default function Tasks() {
           <div
             className="task-progress-bar"
             style={{
-              width: `${completionPercentage}%`,
+              width:
+                `${completionPercentage}%`,
             }}
           />
 
@@ -1189,7 +1477,9 @@ export default function Tasks() {
                 </h2>
 
                 <p>
-                  Enter the task information below.
+                  {isAdmin
+                    ? "Enter the task information below."
+                    : "Update the status of your assigned task."}
                 </p>
 
               </div>
@@ -1219,10 +1509,12 @@ export default function Tasks() {
                 placeholder="Enter task title"
                 value={title}
                 required
+                disabled={!isAdmin}
                 onChange={(e) => {
                   setTitle(
                     e.target.value
                   )
+
                   setFormError("")
                 }}
               />
@@ -1241,10 +1533,12 @@ export default function Tasks() {
                 type="date"
                 value={dueDate}
                 required
+                disabled={!isAdmin}
                 onChange={(e) => {
                   setDueDate(
                     e.target.value
                   )
+
                   setFormError("")
                 }}
               />
@@ -1263,10 +1557,12 @@ export default function Tasks() {
                 placeholder="Enter task description"
                 value={description}
                 required
+                disabled={!isAdmin}
                 onChange={(e) => {
                   setDescription(
                     e.target.value
                   )
+
                   setFormError("")
                 }}
               />
@@ -1288,6 +1584,7 @@ export default function Tasks() {
                   setStatus(
                     e.target.value as Task["status"]
                   )
+
                   setFormError("")
                 }}
               >
@@ -1319,10 +1616,12 @@ export default function Tasks() {
                 id="task-priority"
                 value={priority}
                 required
+                disabled={!isAdmin}
                 onChange={(e) => {
                   setPriority(
                     e.target.value as Task["priority"]
                   )
+
                   setFormError("")
                 }}
               >
@@ -1342,6 +1641,99 @@ export default function Tasks() {
               </select>
 
             </div>
+
+            {isAdmin &&
+              editingTask ===
+                null && (
+                <>
+                  <div className="task-form-field">
+
+                    <label htmlFor="task-assigned-to">
+                      <ClipboardList size={15} />
+                      Assign Employee
+                    </label>
+
+                    <select
+                      id="task-assigned-to"
+                      value={assignedTo}
+                      required
+                      onChange={(e) => {
+                        setAssignedTo(
+                          e.target.value
+                        )
+
+                        setFormError("")
+                      }}
+                    >
+
+                      <option value="">
+                        Select employee
+                      </option>
+
+                      {employees.map(
+                        (employee) => (
+                          <option
+                            key={
+                              employee._id
+                            }
+                            value={
+                              employee._id
+                            }
+                          >
+                            {employee.firstName}{" "}
+                            {employee.lastName}
+                          </option>
+                        )
+                      )}
+
+                    </select>
+
+                  </div>
+
+                  <div className="task-form-field">
+
+                    <label htmlFor="task-project">
+                      <ClipboardList size={15} />
+                      Project
+                    </label>
+
+                    <select
+                      id="task-project"
+                      value={projectId}
+                      required
+                      onChange={(e) => {
+                        setProjectId(
+                          e.target.value
+                        )
+
+                        setFormError("")
+                      }}
+                    >
+
+                      <option value="">
+                        Select project
+                      </option>
+
+                      {projects.map(
+                        (project) => (
+                          <option
+                            key={
+                              project._id
+                            }
+                            value={
+                              project._id
+                            }
+                          >
+                            {project.name}
+                          </option>
+                        )
+                      )}
+
+                    </select>
+
+                  </div>
+                </>
+              )}
 
           </div>
 
@@ -1366,7 +1758,9 @@ export default function Tasks() {
 
               {editingTask !==
               null
-                ? "Update Task"
+                ? isAdmin
+                  ? "Update Task"
+                  : "Update Status"
                 : "Create Task"}
 
             </button>
@@ -1390,6 +1784,7 @@ export default function Tasks() {
                 key={task.id}
                 id={`task-${task.id}`}
               >
+
                 <TaskCard
                   task={task}
                   onDelete={
@@ -1399,6 +1794,7 @@ export default function Tasks() {
                     handleEditTask
                   }
                 />
+
               </div>
             )
           )
@@ -1444,19 +1840,20 @@ export default function Tasks() {
           DELETE MODAL
           ===================================================== */}
 
-      {taskToDelete !==
-        null && (
-        <Modal
-          title="Delete Task"
-          message="Are you sure you want to move this task to Trash? You can recover it later from the Trash page."
-          onCancel={() =>
-            setTaskToDelete(null)
-          }
-          onConfirm={
-            confirmDeleteTask
-          }
-        />
-      )}
+      {isAdmin &&
+        taskToDelete !==
+          null && (
+          <Modal
+            title="Delete Task"
+            message="Are you sure you want to move this task to Trash? You can recover it later from the Trash page."
+            onCancel={() =>
+              setTaskToDelete(null)
+            }
+            onConfirm={
+              confirmDeleteTask
+            }
+          />
+        )}
 
     </main>
   )
