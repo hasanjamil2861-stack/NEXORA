@@ -14,6 +14,7 @@ import {
   Plus,
   Search,
   TrendingUp,
+  UserRound,
 } from "lucide-react"
 
 import ProjectCard from "../../components/ProjectCard/ProjectCard"
@@ -23,6 +24,7 @@ import type { Project } from "../../types/Project"
 
 import { useToast } from "../../context/ToastContext"
 import { useTrash } from "../../context/TrashContext"
+import { useAuth } from "../../context/AuthContext"
 
 import {
   getProjects,
@@ -30,6 +32,16 @@ import {
   updateProject,
   deleteProject,
 } from "../../services/api/projectApi"
+
+import { getEmployees } from "../../services/api/employeeApi"
+
+type ProjectAssignedEmployee = {
+  _id: string
+  firstName?: string
+  lastName?: string
+  email?: string
+  position?: string
+}
 
 type ProjectApiRecord = {
   _id: string
@@ -41,6 +53,18 @@ type ProjectApiRecord = {
   endDate?: string
   budget?: number
   status?: Project["status"]
+  assignedEmployees?:
+    | ProjectAssignedEmployee
+    | ProjectAssignedEmployee[]
+}
+
+type EmployeeOption = {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  position: string
+  status?: "Active" | "Inactive"
 }
 
 type ProjectSortOption =
@@ -61,8 +85,21 @@ const initialForm = {
 }
 
 export default function Projects() {
+  const { user } = useAuth()
+
+  const isAdmin =
+    user?.role === "Admin"
+
   const [projectList, setProjectList] =
     useState<Project[]>([])
+
+  const [employeeList, setEmployeeList] =
+    useState<EmployeeOption[]>([])
+
+  const [
+    selectedEmployees,
+    setSelectedEmployees,
+  ] = useState<string[]>([])
 
   const [showForm, setShowForm] =
     useState(false)
@@ -98,7 +135,9 @@ export default function Projects() {
     useState("")
 
   const [statusFilter, setStatusFilter] =
-    useState<"All" | Project["status"]>("All")
+    useState<
+      "All" | Project["status"]
+    >("All")
 
   const [sortBy, setSortBy] =
     useState<ProjectSortOption>("None")
@@ -118,7 +157,9 @@ export default function Projects() {
   const { showToast } = useToast()
   const { moveToTrash } = useTrash()
 
-  // Scroll to the newly created project.
+  /*
+   * Scroll to the newly created project.
+   */
   useEffect(() => {
     if (!newProjectId) {
       return
@@ -145,7 +186,16 @@ export default function Projects() {
     }
   }, [newProjectId])
 
-  // Load projects from MongoDB.
+  /*
+   * Load projects from MongoDB.
+   *
+   * Admin:
+   * receives all projects.
+   *
+   * Employee:
+   * backend returns only projects assigned
+   * to the logged-in employee.
+   */
   useEffect(() => {
     async function fetchProjects() {
       try {
@@ -155,24 +205,31 @@ export default function Projects() {
         const formattedProjects: Project[] =
           data.map((project) => ({
             id: project._id,
-            name: project.name ?? "",
+            name:
+              project.name ?? "",
             description:
-              project.description ?? "",
+              project.description ??
+              "",
             client:
               project.client ?? "",
             manager:
               project.manager ?? "",
             startDate:
-              project.startDate ?? "",
+              project.startDate ??
+              "",
             endDate:
-              project.endDate ?? "",
+              project.endDate ??
+              "",
             budget:
               project.budget ?? 0,
             status:
-              project.status ?? "Planned",
+              project.status ??
+              "Planned",
           }))
 
-        setProjectList(formattedProjects)
+        setProjectList(
+          formattedProjects
+        )
       } catch (error) {
         console.error(
           "Fetch projects error:",
@@ -187,26 +244,84 @@ export default function Projects() {
     }
 
     fetchProjects()
-  }, [showToast])
+  }, [showToast, isAdmin])
 
-  // Reset the project form.
+  /*
+   * Load employees for Admin only.
+   */
+  useEffect(() => {
+    if (!isAdmin) {
+      setEmployeeList([])
+      return
+    }
+
+    async function fetchEmployees() {
+      try {
+        const data =
+          (await getEmployees()) as EmployeeOption[]
+
+        setEmployeeList(data)
+      } catch (error) {
+        console.error(
+          "Fetch employees error:",
+          error
+        )
+
+        showToast(
+          "Failed to load employees",
+          "error"
+        )
+      }
+    }
+
+    fetchEmployees()
+  }, [isAdmin, showToast])
+
+  /*
+   * Reset the project form.
+   */
   function resetForm() {
     setName(initialForm.name)
-    setDescription(initialForm.description)
+
+    setDescription(
+      initialForm.description
+    )
+
     setClient(initialForm.client)
+
     setManager(initialForm.manager)
-    setStartDate(initialForm.startDate)
-    setEndDate(initialForm.endDate)
+
+    setStartDate(
+      initialForm.startDate
+    )
+
+    setEndDate(
+      initialForm.endDate
+    )
+
     setBudget(initialForm.budget)
+
     setStatus(initialForm.status)
+
+    setSelectedEmployees([])
+
     setEditingProject(null)
+
     setFormError("")
+
     setShowForm(false)
   }
 
   function openProjectForm() {
+    if (!isAdmin) {
+      return
+    }
+
     setShowForm(true)
+
     setFormError("")
+
+    setSelectedEmployees([])
 
     requestAnimationFrame(() => {
       projectFormRef.current?.scrollIntoView({
@@ -260,23 +375,76 @@ export default function Projects() {
       return "Project status is required."
     }
 
+    if (
+      selectedEmployees.length ===
+      0
+    ) {
+      return "Please assign at least one employee to this project."
+    }
+
     return ""
   }
 
-  function handleDeleteProject(id: string) {
+  function handleEmployeeToggle(
+    employeeId: string
+  ) {
+    if (!isAdmin) {
+      return
+    }
+
+    setSelectedEmployees(
+      (currentEmployees) => {
+        if (
+          currentEmployees.includes(
+            employeeId
+          )
+        ) {
+          return currentEmployees.filter(
+            (id) =>
+              id !== employeeId
+          )
+        }
+
+        return [
+          ...currentEmployees,
+          employeeId,
+        ]
+      }
+    )
+
+    setFormError("")
+  }
+
+  function handleDeleteProject(
+    id: string
+  ) {
+    if (!isAdmin) {
+      return
+    }
+
     setProjectToDelete(id)
   }
 
-  // Delete from MongoDB, then move the project to Trash.
+  /*
+   * Delete from MongoDB, then move the project
+   * to Trash.
+   */
   async function confirmDeleteProject() {
-    if (projectToDelete === null) {
+    if (!isAdmin) {
+      return
+    }
+
+    if (
+      projectToDelete === null
+    ) {
       return
     }
 
     const project =
       projectList.find(
         (item) =>
-          item.id === projectToDelete
+          item.id ===
+          projectToDelete
       )
 
     if (!project) {
@@ -326,34 +494,107 @@ export default function Projects() {
     }
   }
 
-  function handleEditProject(id: string) {
+  function handleEditProject(
+    id: string
+  ) {
+    if (!isAdmin) {
+      return
+    }
+
     const project =
       projectList.find(
-        (item) => item.id === id
+        (item) =>
+          item.id === id
       )
 
     if (!project) {
       return
     }
 
-    setName(project.name ?? "")
+    setName(
+      project.name ?? ""
+    )
+
     setDescription(
       project.description ?? ""
     )
-    setClient(project.client ?? "")
-    setManager(project.manager ?? "")
+
+    setClient(
+      project.client ?? ""
+    )
+
+    setManager(
+      project.manager ?? ""
+    )
+
     setStartDate(
       project.startDate ?? ""
     )
+
     setEndDate(
       project.endDate ?? ""
     )
+
     setBudget(
-      String(project.budget ?? 0)
+      String(
+        project.budget ?? 0
+      )
     )
+
     setStatus(project.status)
-    setEditingProject(project.id)
+
+    /*
+     * Get the original project from the API
+     * so we can restore its assigned employees.
+     */
+    async function loadAssignedEmployees() {
+      try {
+        const data =
+          (await getProjects()) as ProjectApiRecord[]
+
+        const apiProject =
+          data.find(
+            (item) =>
+              item._id === id
+          )
+
+        if (
+          !apiProject?.assignedEmployees
+        ) {
+          setSelectedEmployees([])
+        } else {
+          const assigned =
+            Array.isArray(
+              apiProject.assignedEmployees
+            )
+              ? apiProject.assignedEmployees
+              : [
+                  apiProject.assignedEmployees,
+                ]
+
+          setSelectedEmployees(
+            assigned.map(
+              (employee) =>
+                employee._id
+            )
+          )
+        }
+      } catch (error) {
+        console.error(
+          "Load assigned employees error:",
+          error
+        )
+
+        setSelectedEmployees([])
+      }
+    }
+
+    loadAssignedEmployees()
+
+    setEditingProject(id)
+
     setFormError("")
+
     setShowForm(true)
 
     requestAnimationFrame(() => {
@@ -364,13 +605,20 @@ export default function Projects() {
     })
   }
 
-  // Create or update the project in MongoDB.
+  /*
+   * Create or update the project in MongoDB.
+   */
   async function handleCreateProject(
     event: FormEvent
   ) {
     event.preventDefault()
 
-    const error = validateForm()
+    if (!isAdmin) {
+      return
+    }
+
+    const error =
+      validateForm()
 
     if (error) {
       setFormError(error)
@@ -379,17 +627,33 @@ export default function Projects() {
 
     const projectData = {
       name: name.trim(),
-      description: description.trim(),
+
+      description:
+        description.trim(),
+
       client: client.trim(),
+
       manager: manager.trim(),
+
       startDate,
+
       endDate,
+
       budget: Number(budget),
+
       status,
+
+      assignedEmployees:
+        selectedEmployees,
     }
 
     try {
-      if (editingProject !== null) {
+      /*
+       * UPDATE
+       */
+      if (
+        editingProject !== null
+      ) {
         const updatedProject =
           (await updateProject(
             editingProject,
@@ -402,31 +666,50 @@ export default function Projects() {
           )
         }
 
-        const formattedProject: Project = {
-          id: updatedProject._id,
-          name:
-            updatedProject.name ?? "",
-          description:
-            updatedProject.description ?? "",
-          client:
-            updatedProject.client ?? "",
-          manager:
-            updatedProject.manager ?? "",
-          startDate:
-            updatedProject.startDate ?? "",
-          endDate:
-            updatedProject.endDate ?? "",
-          budget:
-            updatedProject.budget ?? 0,
-          status:
-            updatedProject.status ?? "Planned",
-        }
+        const formattedProject: Project =
+          {
+            id:
+              updatedProject._id,
+
+            name:
+              updatedProject.name ??
+              "",
+
+            description:
+              updatedProject.description ??
+              "",
+
+            client:
+              updatedProject.client ??
+              "",
+
+            manager:
+              updatedProject.manager ??
+              "",
+
+            startDate:
+              updatedProject.startDate ??
+              "",
+
+            endDate:
+              updatedProject.endDate ??
+              "",
+
+            budget:
+              updatedProject.budget ??
+              0,
+
+            status:
+              updatedProject.status ??
+              "Planned",
+          }
 
         setProjectList(
           (currentProjects) =>
             currentProjects.map(
               (project) =>
-                project.id === editingProject
+                project.id ===
+                editingProject
                   ? formattedProject
                   : project
             )
@@ -438,9 +721,13 @@ export default function Projects() {
         )
 
         resetForm()
+
         return
       }
 
+      /*
+       * CREATE
+       */
       const newProject =
         (await createProject(
           projectData
@@ -452,25 +739,43 @@ export default function Projects() {
         )
       }
 
-      const formattedProject: Project = {
-        id: newProject._id,
-        name:
-          newProject.name ?? "",
-        description:
-          newProject.description ?? "",
-        client:
-          newProject.client ?? "",
-        manager:
-          newProject.manager ?? "",
-        startDate:
-          newProject.startDate ?? "",
-        endDate:
-          newProject.endDate ?? "",
-        budget:
-          newProject.budget ?? 0,
-        status:
-          newProject.status ?? "Planned",
-      }
+      const formattedProject: Project =
+        {
+          id:
+            newProject._id,
+
+          name:
+            newProject.name ??
+            "",
+
+          description:
+            newProject.description ??
+            "",
+
+          client:
+            newProject.client ??
+            "",
+
+          manager:
+            newProject.manager ??
+            "",
+
+          startDate:
+            newProject.startDate ??
+            "",
+
+          endDate:
+            newProject.endDate ??
+            "",
+
+          budget:
+            newProject.budget ??
+            0,
+
+          status:
+            newProject.status ??
+            "Planned",
+        }
 
       setProjectList(
         (currentProjects) => [
@@ -504,41 +809,66 @@ export default function Projects() {
     }
   }
 
-  // Search and filter projects.
+  /*
+   * Search and filter projects.
+   */
   const filteredProjects =
-    projectList.filter((project) => {
-      const searchValue =
-        search.toLowerCase().trim()
+    projectList.filter(
+      (project) => {
+        const searchValue =
+          search
+            .toLowerCase()
+            .trim()
 
-      const projectName =
-        project.name.toLowerCase()
+        const projectName =
+          project.name.toLowerCase()
 
-      const projectDescription =
-        project.description.toLowerCase()
+        const projectDescription =
+          project.description.toLowerCase()
 
-      const projectClient =
-        project.client.toLowerCase()
+        const projectClient =
+          project.client.toLowerCase()
 
-      const projectManager =
-        project.manager.toLowerCase()
+        const projectManager =
+          project.manager.toLowerCase()
 
-      const matchesSearch =
-        projectName.includes(searchValue) ||
-        projectDescription.includes(searchValue) ||
-        projectClient.includes(searchValue) ||
-        projectManager.includes(searchValue)
+        const matchesSearch =
+          isAdmin
+            ? projectName.includes(
+                searchValue
+              ) ||
+              projectDescription.includes(
+                searchValue
+              ) ||
+              projectClient.includes(
+                searchValue
+              ) ||
+              projectManager.includes(
+                searchValue
+              )
+            : projectName.includes(
+                searchValue
+              ) ||
+              projectDescription.includes(
+                searchValue
+              )
 
-      const matchesStatus =
-        statusFilter === "All" ||
-        project.status === statusFilter
+        const matchesStatus =
+          statusFilter ===
+            "All" ||
+          project.status ===
+            statusFilter
 
-      return (
-        matchesSearch &&
-        matchesStatus
-      )
-    })
+        return (
+          matchesSearch &&
+          matchesStatus
+        )
+      }
+    )
 
-  // Sort projects by the selected option.
+  /*
+   * Sort projects.
+   */
   const sortedProjects = [
     ...filteredProjects,
   ].sort((a, b) => {
@@ -549,12 +879,22 @@ export default function Projects() {
         )
 
       case "Budget":
-        return b.budget - a.budget
+        if (!isAdmin) {
+          return 0
+        }
+
+        return (
+          b.budget - a.budget
+        )
 
       case "Start Date":
         return (
-          new Date(b.startDate).getTime() -
-          new Date(a.startDate).getTime()
+          new Date(
+            b.startDate
+          ).getTime() -
+          new Date(
+            a.startDate
+          ).getTime()
         )
 
       default:
@@ -562,7 +902,9 @@ export default function Projects() {
     }
   })
 
-  // Project statistics.
+  /*
+   * Project statistics.
+   */
   const totalProjects =
     projectList.length
 
@@ -603,12 +945,14 @@ export default function Projects() {
             </div>
 
             <h1>
-              Project <span>Workspace</span>
+              Project{" "}
+              <span>Workspace</span>
             </h1>
 
             <p>
-              Plan, monitor and manage your projects,
-              budgets and timelines in one place.
+              {isAdmin
+                ? "Plan, monitor and manage your projects, budgets and timelines in one place."
+                : "View your assigned projects, timelines and current progress."}
             </p>
           </div>
         </div>
@@ -617,7 +961,9 @@ export default function Projects() {
           <div className="hero-mini-stats">
             <div className="hero-mini-stat">
               <div className="hero-mini-icon">
-                <BriefcaseBusiness size={16} />
+                <BriefcaseBusiness
+                  size={16}
+                />
               </div>
 
               <div>
@@ -643,30 +989,34 @@ export default function Projects() {
                   {inProgressProjects}
                 </strong>
 
-                <span>Active</span>
+                <span>
+                  Active
+                </span>
               </div>
             </div>
           </div>
 
-          <button
-            type="button"
-            className="add-project-btn"
-            onClick={() => {
-              if (showForm) {
-                resetForm()
-              } else {
-                openProjectForm()
-              }
-            }}
-          >
-            <Plus size={18} />
+          {isAdmin && (
+            <button
+              type="button"
+              className="add-project-btn"
+              onClick={() => {
+                if (showForm) {
+                  resetForm()
+                } else {
+                  openProjectForm()
+                }
+              }}
+            >
+              <Plus size={18} />
 
-            <span>
-              {showForm
-                ? "Close Form"
-                : "Add Project"}
-            </span>
-          </button>
+              <span>
+                {showForm
+                  ? "Close Form"
+                  : "Add Project"}
+              </span>
+            </button>
+          )}
         </div>
       </section>
 
@@ -674,11 +1024,15 @@ export default function Projects() {
       <section className="project-stats">
         <div className="project-stat-card">
           <div className="project-stat-icon total">
-            <BriefcaseBusiness size={21} />
+            <BriefcaseBusiness
+              size={21}
+            />
           </div>
 
           <div>
-            <span>Total Projects</span>
+            <span>
+              Total Projects
+            </span>
 
             <strong>
               {totalProjects}
@@ -688,7 +1042,11 @@ export default function Projects() {
           <div className="stat-trend">
             <TrendingUp size={14} />
 
-            <span>All projects</span>
+            <span>
+              {isAdmin
+                ? "All projects"
+                : "Assigned"}
+            </span>
           </div>
         </div>
 
@@ -698,7 +1056,9 @@ export default function Projects() {
           </div>
 
           <div>
-            <span>In Progress</span>
+            <span>
+              In Progress
+            </span>
 
             <strong>
               {inProgressProjects}
@@ -721,11 +1081,15 @@ export default function Projects() {
 
         <div className="project-stat-card">
           <div className="project-stat-icon completed">
-            <CheckCircle2 size={21} />
+            <CheckCircle2
+              size={21}
+            />
           </div>
 
           <div>
-            <span>Completed</span>
+            <span>
+              Completed
+            </span>
 
             <strong>
               {completedProjects}
@@ -746,24 +1110,30 @@ export default function Projects() {
           </div>
         </div>
 
-        <div className="project-stat-card">
-          <div className="project-stat-icon budget">
-            <DollarSign size={21} />
-          </div>
+        {isAdmin && (
+          <div className="project-stat-card">
+            <div className="project-stat-icon budget">
+              <DollarSign size={21} />
+            </div>
 
-          <div>
-            <span>Total Budget</span>
+            <div>
+              <span>
+                Total Budget
+              </span>
 
-            <strong>
-              $
-              {totalBudget.toLocaleString()}
-            </strong>
-          </div>
+              <strong>
+                $
+                {totalBudget.toLocaleString()}
+              </strong>
+            </div>
 
-          <div className="stat-trend">
-            <span>Portfolio</span>
+            <div className="stat-trend">
+              <span>
+                Portfolio
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* Search and filters */}
@@ -773,7 +1143,11 @@ export default function Projects() {
 
           <input
             type="text"
-            placeholder="Search projects, clients or managers..."
+            placeholder={
+              isAdmin
+                ? "Search projects, clients or managers..."
+                : "Search your projects..."
+            }
             value={search}
             onChange={(event) =>
               setSearch(
@@ -788,7 +1162,8 @@ export default function Projects() {
             value={statusFilter}
             onChange={(event) =>
               setStatusFilter(
-                event.target.value as
+                event.target
+                  .value as
                   | "All"
                   | Project["status"]
               )
@@ -819,7 +1194,8 @@ export default function Projects() {
             value={sortBy}
             onChange={(event) =>
               setSortBy(
-                event.target.value as ProjectSortOption
+                event.target
+                  .value as ProjectSortOption
               )
             }
           >
@@ -831,9 +1207,11 @@ export default function Projects() {
               Name
             </option>
 
-            <option value="Budget">
-              Budget
-            </option>
+            {isAdmin && (
+              <option value="Budget">
+                Budget
+              </option>
+            )}
 
             <option value="Start Date">
               Start Date
@@ -842,8 +1220,8 @@ export default function Projects() {
         </div>
       </section>
 
-      {/* Add / edit project form */}
-      {showForm && (
+      {/* Add / edit project form - Admin only */}
+      {isAdmin && showForm && (
         <form
           ref={projectFormRef}
           className="project-form"
@@ -871,7 +1249,9 @@ export default function Projects() {
 
           <div className="project-form-grid">
             <div className="project-field">
-              <label>Project Name</label>
+              <label>
+                Project Name
+              </label>
 
               <input
                 type="text"
@@ -888,7 +1268,9 @@ export default function Projects() {
             </div>
 
             <div className="project-field">
-              <label>Client</label>
+              <label>
+                Client
+              </label>
 
               <input
                 type="text"
@@ -905,7 +1287,9 @@ export default function Projects() {
             </div>
 
             <div className="project-field">
-              <label>Manager</label>
+              <label>
+                Manager
+              </label>
 
               <input
                 type="text"
@@ -922,7 +1306,9 @@ export default function Projects() {
             </div>
 
             <div className="project-field">
-              <label>Budget</label>
+              <label>
+                Budget
+              </label>
 
               <input
                 type="number"
@@ -940,7 +1326,9 @@ export default function Projects() {
             </div>
 
             <div className="project-field">
-              <label>Start Date</label>
+              <label>
+                Start Date
+              </label>
 
               <input
                 type="date"
@@ -956,7 +1344,9 @@ export default function Projects() {
             </div>
 
             <div className="project-field">
-              <label>End Date</label>
+              <label>
+                End Date
+              </label>
 
               <input
                 type="date"
@@ -994,14 +1384,17 @@ export default function Projects() {
             </div>
 
             <div className="project-field">
-              <label>Status</label>
+              <label>
+                Status
+              </label>
 
               <select
                 value={status}
                 required
                 onChange={(event) => {
                   setStatus(
-                    event.target.value as
+                    event.target
+                      .value as
                       Project["status"]
                   )
 
@@ -1024,6 +1417,94 @@ export default function Projects() {
                   Cancelled
                 </option>
               </select>
+            </div>
+
+            {/* Assign employees */}
+            <div className="project-field project-field-full">
+              <label>
+                Assign Employees
+              </label>
+
+              <div className="project-employee-selector">
+                {employeeList.length ===
+                0 ? (
+                  <p>
+                    No employees available.
+                  </p>
+                ) : (
+                  employeeList.map(
+                    (employee) => {
+                      const isSelected =
+                        selectedEmployees.includes(
+                          employee._id
+                        )
+
+                      return (
+                        <label
+                          key={
+                            employee._id
+                          }
+                          className={`project-employee-option ${
+                            isSelected
+                              ? "selected"
+                              : ""
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={
+                              isSelected
+                            }
+                            onChange={() =>
+                              handleEmployeeToggle(
+                                employee._id
+                              )
+                            }
+                          />
+
+                          <div className="project-employee-icon">
+                            <UserRound
+                              size={16}
+                            />
+                          </div>
+
+                          <div className="project-employee-info">
+                            <strong>
+                              {
+                                employee.firstName
+                              }{" "}
+                              {
+                                employee.lastName
+                              }
+                            </strong>
+
+                            <span>
+                              {
+                                employee.position
+                              }
+                            </span>
+                          </div>
+                        </label>
+                      )
+                    }
+                  )
+                )}
+              </div>
+
+              {selectedEmployees.length >
+                0 && (
+                <small>
+                  {
+                    selectedEmployees.length
+                  }{" "}
+                  employee
+                  {selectedEmployees.length !==
+                  1
+                    ? "s"
+                    : ""}{" "}
+                  assigned
+                </small>
+              )}
             </div>
           </div>
 
@@ -1058,11 +1539,15 @@ export default function Projects() {
       <section className="projects-section">
         <div className="projects-section-header">
           <div>
-            <h2>Project Overview</h2>
+            <h2>
+              Project Overview
+            </h2>
 
             <p>
-              {sortedProjects.length} project
-              {sortedProjects.length !== 1
+              {sortedProjects.length}{" "}
+              project
+              {sortedProjects.length !==
+              1
                 ? "s"
                 : ""}{" "}
               displayed
@@ -1071,7 +1556,8 @@ export default function Projects() {
         </div>
 
         <div className="projects-grid">
-          {sortedProjects.length > 0 ? (
+          {sortedProjects.length >
+          0 ? (
             sortedProjects.map(
               (project) => (
                 <div
@@ -1081,11 +1567,16 @@ export default function Projects() {
                   <ProjectCard
                     project={project}
                     onDelete={
-                      handleDeleteProject
+                      isAdmin
+                        ? handleDeleteProject
+                        : () => {}
                     }
                     onEdit={
-                      handleEditProject
+                      isAdmin
+                        ? handleEditProject
+                        : () => {}
                     }
+                    isAdmin={isAdmin}
                   />
                 </div>
               )
@@ -1093,33 +1584,42 @@ export default function Projects() {
           ) : (
             <div className="project-empty-state">
               <div className="empty-icon">
-                <FolderKanban size={28} />
+                <FolderKanban
+                  size={28}
+                />
               </div>
 
-              <h2>No Projects Found</h2>
+              <h2>
+                No Projects Found
+              </h2>
 
               <p>
-                No projects match your current
-                search or filters.
+                {isAdmin
+                  ? "No projects match your current search or filters."
+                  : "You do not have any assigned projects yet."}
               </p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Delete confirmation */}
-      {projectToDelete !== null && (
-        <Modal
-          title="Delete Project"
-          message="Are you sure you want to move this project to Trash? You can recover it later from the Trash page."
-          onCancel={() =>
-            setProjectToDelete(null)
-          }
-          onConfirm={
-            confirmDeleteProject
-          }
-        />
-      )}
+      {/* Delete confirmation - Admin only */}
+      {isAdmin &&
+        projectToDelete !==
+          null && (
+          <Modal
+            title="Delete Project"
+            message="Are you sure you want to move this project to Trash? You can recover it later from the Trash page."
+            onCancel={() =>
+              setProjectToDelete(
+                null
+              )
+            }
+            onConfirm={
+              confirmDeleteProject
+            }
+          />
+        )}
     </main>
   )
 }

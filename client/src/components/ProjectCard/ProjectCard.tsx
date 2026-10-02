@@ -13,16 +13,20 @@ type ProjectCardProps = {
   project: Project
   onDelete: (id: string) => void
   onEdit: (id: string) => void
+  isAdmin?: boolean
 }
 
 export default function ProjectCard({
   project,
   onDelete,
   onEdit,
+  isAdmin: isAdminProp,
 }: ProjectCardProps) {
   const { user } = useAuth()
 
-  const isAdmin = user?.role === "Admin"
+  const isAdmin =
+    isAdminProp ??
+    user?.role === "Admin"
 
   const progress =
     project.status === "Completed"
@@ -51,32 +55,48 @@ export default function ProjectCard({
 
       <div className="project-card-title">
         <h2>{project.name}</h2>
-        <p>{project.description}</p>
+
+        <p>
+          {project.description}
+        </p>
       </div>
 
       <div className="project-details">
-        <div className="project-detail-item">
-          <div className="project-detail-icon">
-            <UserRound size={16} />
-          </div>
+        {/* Admin only: Client */}
+        {isAdmin && (
+          <div className="project-detail-item">
+            <div className="project-detail-icon">
+              <UserRound size={16} />
+            </div>
 
-          <div>
-            <span>Client</span>
-            <strong>{project.client}</strong>
-          </div>
-        </div>
+            <div>
+              <span>Client</span>
 
-        <div className="project-detail-item">
-          <div className="project-detail-icon">
-            <UserRound size={16} />
+              <strong>
+                {project.client}
+              </strong>
+            </div>
           </div>
+        )}
 
-          <div>
-            <span>Manager</span>
-            <strong>{project.manager}</strong>
+        {/* Admin only: Manager */}
+        {isAdmin && (
+          <div className="project-detail-item">
+            <div className="project-detail-icon">
+              <UserRound size={16} />
+            </div>
+
+            <div>
+              <span>Manager</span>
+
+              <strong>
+                {project.manager}
+              </strong>
+            </div>
           </div>
-        </div>
+        )}
 
+        {/* Employee + Admin */}
         <div className="project-detail-item">
           <div className="project-detail-icon">
             <CalendarDays size={16} />
@@ -84,31 +104,44 @@ export default function ProjectCard({
 
           <div>
             <span>Timeline</span>
+
             <strong>
-              {project.startDate} → {project.endDate}
+              {project.startDate} →{" "}
+              {project.endDate}
             </strong>
           </div>
         </div>
 
-        <div className="project-detail-item">
-          <div className="project-detail-icon budget-icon">
-            <CircleDollarSign size={16} />
-          </div>
+        {/* Admin only: Budget */}
+        {isAdmin && (
+          <div className="project-detail-item">
+            <div className="project-detail-icon budget-icon">
+              <CircleDollarSign
+                size={16}
+              />
+            </div>
 
-          <div>
-            <span>Budget</span>
-            <strong>
-              ${project.budget.toLocaleString()}
-            </strong>
+            <div>
+              <span>Budget</span>
+
+              <strong>
+                $
+                {project.budget.toLocaleString()}
+              </strong>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="project-progress-section">
         <div className="project-progress-header">
-          <span>Project Progress</span>
+          <span>
+            Project Progress
+          </span>
 
-          <strong>{progress}%</strong>
+          <strong>
+            {progress}%
+          </strong>
         </div>
 
         <div className="project-progress-track">
@@ -123,12 +156,15 @@ export default function ProjectCard({
         </div>
       </div>
 
+      {/* Admin only */}
       {isAdmin && (
         <div className="project-card-actions">
           <button
             type="button"
             className="project-edit-btn"
-            onClick={() => onEdit(project.id)}
+            onClick={() =>
+              onEdit(project.id)
+            }
           >
             <Pencil size={16} />
             Edit
@@ -137,7 +173,9 @@ export default function ProjectCard({
           <button
             type="button"
             className="project-delete-btn"
-            onClick={() => onDelete(project.id)}
+            onClick={() =>
+              onDelete(project.id)
+            }
           >
             <Trash2 size={16} />
             Delete

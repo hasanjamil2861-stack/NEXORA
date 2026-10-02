@@ -106,7 +106,7 @@
 }
 
 /* =========================================================
-   HERO LEFT
+   HERO CONTENT
 ========================================================= */
 
 .projects-hero-main {
@@ -178,9 +178,9 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
-/* =========================================================
-   HERO LABEL
-========================================================= */
+.projects-hero-content {
+    min-width: 0;
+}
 
 .projects-hero-label {
     display: flex;
@@ -193,7 +193,6 @@
 
     font-size: 9px;
     font-weight: 850;
-
     letter-spacing: 0.16em;
 }
 
@@ -238,14 +237,6 @@
     }
 }
 
-/* =========================================================
-   HERO TITLE
-========================================================= */
-
-.projects-hero-content {
-    min-width: 0;
-}
-
 .projects-hero-content h1 {
     margin: 0;
 
@@ -254,7 +245,6 @@
     font-size: 31px;
     line-height: 1.1;
     font-weight: 850;
-
     letter-spacing: -0.055em;
 }
 
@@ -298,10 +288,6 @@
 
     flex-shrink: 0;
 }
-
-/* =========================================================
-   HERO MINI STATS
-========================================================= */
 
 .hero-mini-stats {
     display: flex;
@@ -376,7 +362,6 @@
 
     font-size: 8px;
     font-weight: 750;
-
     letter-spacing: 0.02em;
 
     white-space: nowrap;
@@ -657,7 +642,6 @@
 
     font-size: 21px;
     font-weight: 850;
-
     letter-spacing: -0.025em;
 }
 
@@ -743,8 +727,6 @@
 
 .project-search svg {
     flex-shrink: 0;
-
-    color: #8b95a7;
 }
 
 .project-search input {
@@ -798,7 +780,6 @@
 
 .project-filter select:hover {
     border-color: #d7dce6;
-
     background: #ffffff;
 }
 
@@ -862,7 +843,6 @@
 
     font-size: 9px;
     font-weight: 850;
-
     letter-spacing: 0.15em;
 }
 
@@ -873,7 +853,6 @@
 
     font-size: 20px;
     font-weight: 850;
-
     letter-spacing: -0.025em;
 }
 
@@ -929,7 +908,6 @@
 .project-field textarea,
 .project-field select {
     width: 100%;
-
     box-sizing: border-box;
 
     border: 1px solid #dfe4eb;
@@ -1076,7 +1054,7 @@
 }
 
 /* =========================================================
-   PROJECT SECTION HEADER
+   PROJECT SECTION
 ========================================================= */
 
 .projects-section {
@@ -1098,7 +1076,6 @@
 
     font-size: 18px;
     font-weight: 850;
-
     letter-spacing: -0.025em;
 }
 
@@ -1109,10 +1086,6 @@
 
     font-size: 11px;
 }
-
-/* =========================================================
-   PROJECT GRID
-========================================================= */
 
 .projects-grid {
     display: grid;
@@ -1316,7 +1289,6 @@
     font-size: 17px;
     line-height: 1.3;
     font-weight: 850;
-
     letter-spacing: -0.02em;
 }
 
@@ -1811,7 +1783,6 @@
     .projects-hero-right {
         flex-direction: column;
         align-items: flex-end;
-
         gap: 12px;
     }
 }
@@ -1851,7 +1822,6 @@
 
     .project-filter {
         display: grid;
-
         grid-template-columns: 1fr 1fr;
     }
 
@@ -1876,7 +1846,6 @@
     .projects-hero {
         flex-direction: column;
         align-items: stretch;
-
         gap: 20px;
     }
 
@@ -1912,7 +1881,6 @@
 
     .projects-hero {
         padding: 20px;
-
         border-radius: 18px;
     }
 
@@ -1923,7 +1891,6 @@
     .projects-hero-icon {
         width: 51px;
         height: 51px;
-
         border-radius: 14px;
     }
 
