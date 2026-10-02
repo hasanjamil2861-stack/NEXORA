@@ -16,13 +16,28 @@ const getDocuments = async (
             "employeeId",
             "firstName lastName email position"
           )
+          .populate(
+            "projectId",
+            "name status"
+          )
+          .populate(
+            "taskId",
+            "title status"
+          )
+          .populate(
+            "uploadedBy",
+            "name email role"
+          )
 
       return res.json(documents)
     }
 
     const employee =
       await Employee.findOne({
-        email: req.user.email,
+        email:
+          req.user.email
+            .trim()
+            .toLowerCase(),
       })
 
     if (!employee) {
@@ -36,10 +51,23 @@ const getDocuments = async (
       await Document.find({
         employeeId:
           employee._id,
-      }).populate(
-        "employeeId",
-        "firstName lastName email position"
-      )
+      })
+        .populate(
+          "employeeId",
+          "firstName lastName email position"
+        )
+        .populate(
+          "projectId",
+          "name status"
+        )
+        .populate(
+          "taskId",
+          "title status"
+        )
+        .populate(
+          "uploadedBy",
+          "name email role"
+        )
 
     return res.json(documents)
   } catch (error) {
@@ -66,15 +94,64 @@ const postDocument = async (
       type,
       category,
       employeeId,
-      uploadedBy,
+      projectId,
+      taskId,
+      fileUrl,
       uploadDate,
       status,
     } = req.body
 
-    if (employeeId) {
+    if (!name || !type || !category) {
+      return res.status(400).json({
+        message:
+          "Name, type and category are required.",
+      })
+    }
+
+    if (!fileUrl) {
+      return res.status(400).json({
+        message:
+          "File URL is required.",
+      })
+    }
+
+    let finalEmployeeId =
+      employeeId || null
+
+    /*
+      Employee uploads:
+      automatically use their own employee profile.
+    */
+    if (req.user.role === "Employee") {
+      const employee =
+        await Employee.findOne({
+          email:
+            req.user.email
+              .trim()
+              .toLowerCase(),
+        })
+
+      if (!employee) {
+        return res.status(404).json({
+          message:
+            "Employee profile not found.",
+        })
+      }
+
+      finalEmployeeId =
+        employee._id
+    }
+
+    /*
+      Admin can upload for
+      any employee or leave it null.
+    */
+    if (
+      finalEmployeeId
+    ) {
       const employee =
         await Employee.findById(
-          employeeId
+          finalEmployeeId
         )
 
       if (!employee) {
@@ -91,10 +168,19 @@ const postDocument = async (
         type,
         category,
         employeeId:
-          employeeId || null,
-        uploadedBy,
-        uploadDate,
-        status,
+          finalEmployeeId,
+        projectId:
+          projectId || null,
+        taskId:
+          taskId || null,
+        uploadedBy:
+          req.user.userId,
+        fileUrl,
+        uploadDate:
+          uploadDate ||
+          new Date().toISOString(),
+        status:
+          status || "Active",
       })
 
     await newDocument.save()
@@ -102,10 +188,23 @@ const postDocument = async (
     const populatedDocument =
       await Document.findById(
         newDocument._id
-      ).populate(
-        "employeeId",
-        "firstName lastName email position"
       )
+        .populate(
+          "employeeId",
+          "firstName lastName email position"
+        )
+        .populate(
+          "projectId",
+          "name status"
+        )
+        .populate(
+          "taskId",
+          "title status"
+        )
+        .populate(
+          "uploadedBy",
+          "name email role"
+        )
 
     res.status(201).json(
       populatedDocument
@@ -137,10 +236,23 @@ const updateDocument = async (
           new: true,
           runValidators: true,
         }
-      ).populate(
-        "employeeId",
-        "firstName lastName email position"
       )
+        .populate(
+          "employeeId",
+          "firstName lastName email position"
+        )
+        .populate(
+          "projectId",
+          "name status"
+        )
+        .populate(
+          "taskId",
+          "title status"
+        )
+        .populate(
+          "uploadedBy",
+          "name email role"
+        )
 
     if (!updatedDocument) {
       return res.status(404).json({
@@ -181,7 +293,12 @@ const deleteDocument = async (
       })
     }
 
-    res.json(deletedDocument)
+    res.json({
+      message:
+        "Document deleted successfully.",
+      document:
+        deletedDocument,
+    })
   } catch (error) {
     console.error(
       "Delete document error:",

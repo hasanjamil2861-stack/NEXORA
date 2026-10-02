@@ -6,6 +6,7 @@ const documentSchema =
       name: {
         type: String,
         required: true,
+        trim: true,
       },
 
       type: {
@@ -37,7 +38,25 @@ const documentSchema =
         default: null,
       },
 
+      projectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Project",
+        default: null,
+      },
+
+      taskId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Task",
+        default: null,
+      },
+
       uploadedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+
+      fileUrl: {
         type: String,
         required: true,
       },
@@ -53,7 +72,7 @@ const documentSchema =
           "Active",
           "Archived",
         ],
-        required: true,
+        default: "Active",
       },
     },
     {

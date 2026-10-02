@@ -23,7 +23,6 @@ router.get(
 router.post(
   "/documents",
   protect,
-  adminOnly,
   postDocument
 )
 
