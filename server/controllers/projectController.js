@@ -1,19 +1,21 @@
 const Project = require("../models/Project")
 const Employee = require("../models/Employee")
 
+// Get projects
 const getProjects = async (req, res) => {
   try {
+    // Admin can see all projects
     if (req.user.role === "Admin") {
       const projects =
-        await Project.find()
-          .populate(
-            "assignedEmployees",
-            "firstName lastName email position"
-          )
+        await Project.find().populate(
+          "assignedEmployees",
+          "firstName lastName email position"
+        )
 
       return res.json(projects)
     }
 
+    // Find the Employee profile using the logged-in user's email
     const employee =
       await Employee.findOne({
         email: req.user.email,
@@ -22,14 +24,14 @@ const getProjects = async (req, res) => {
     if (!employee) {
       return res.status(404).json({
         message:
-          "Employee profile not found.",
+          "Employee profile not found for this account.",
       })
     }
 
+    // Employee sees only projects assigned to him
     const projects =
       await Project.find({
-        assignedEmployees:
-          employee._id,
+        assignedEmployees: employee._id,
       }).populate(
         "assignedEmployees",
         "firstName lastName email position"
@@ -50,6 +52,7 @@ const getProjects = async (req, res) => {
   }
 }
 
+// Create project - Admin only through route
 const postProject = async (req, res) => {
   try {
     const {
@@ -147,6 +150,7 @@ const postProject = async (req, res) => {
   }
 }
 
+// Update project - Admin only through route
 const updateProject = async (
   req,
   res
@@ -245,6 +249,7 @@ const updateProject = async (
   }
 }
 
+// Delete project - Admin only through route
 const deleteProject = async (
   req,
   res
