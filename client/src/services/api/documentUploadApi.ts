@@ -28,7 +28,7 @@ export async function uploadDocument(
 
   if (!token) {
     throw new Error(
-      "You are not authenticated. Please login again."
+      "Authentication required. Please login again."
     )
   }
 
@@ -83,12 +83,12 @@ export async function uploadDocument(
       )
   } catch (error) {
     console.error(
-      "Document upload network error:",
+      "UPLOAD FETCH ERROR:",
       error
     )
 
     throw new Error(
-      "Failed to connect to the server. Please check your internet connection and try again."
+      "Failed to connect to the server. Please check your internet connection."
     )
   }
 
@@ -97,7 +97,28 @@ export async function uploadDocument(
       "content-type"
     ) || ""
 
-  let result: any = null
+  const responseText =
+    await response.text()
+
+  console.log(
+    "UPLOAD STATUS:",
+    response.status
+  )
+
+  console.log(
+    "UPLOAD CONTENT TYPE:",
+    contentType
+  )
+
+  console.log(
+    "UPLOAD RESPONSE:",
+    responseText
+  )
+
+  let result: {
+    message?: string
+    [key: string]: unknown
+  } = {}
 
   if (
     contentType.includes(
@@ -106,37 +127,36 @@ export async function uploadDocument(
   ) {
     try {
       result =
-        await response.json()
+        responseText
+          ? JSON.parse(
+              responseText
+            )
+          : {}
     } catch (error) {
       console.error(
-        "Failed to parse JSON response:",
+        "JSON PARSE ERROR:",
         error
       )
 
       throw new Error(
-        "The server returned an invalid response."
+        "The server returned invalid JSON."
       )
     }
   } else {
-    const text =
-      await response.text()
-
     console.error(
-      "Server returned non-JSON response:",
-      text
+      "SERVER RETURNED NON-JSON RESPONSE:",
+      responseText
     )
 
     throw new Error(
-      response.ok
-        ? "The server returned an unexpected response."
-        : `Upload failed. Server returned status ${response.status}.`
+      `Server returned an unexpected response (${response.status}).`
     )
   }
 
   if (!response.ok) {
     throw new Error(
-      result?.message ||
-        "Failed to upload document."
+      result.message ||
+        `Upload failed (${response.status}).`
     )
   }
 
