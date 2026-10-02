@@ -5,12 +5,19 @@ const {
   adminOnly,
 } = require("../middleware/authMiddleware")
 
+const upload =
+  require("../middleware/uploadMiddleware")
+
 const {
   getDocuments,
   postDocument,
   updateDocument,
   deleteDocument,
 } = require("../controllers/documentController")
+
+const {
+  uploadDocument,
+} = require("../controllers/documentUploadController")
 
 const router = express.Router()
 
@@ -24,6 +31,13 @@ router.post(
   "/documents",
   protect,
   postDocument
+)
+
+router.post(
+  "/documents/upload",
+  protect,
+  upload.single("file"),
+  uploadDocument
 )
 
 router.put(
