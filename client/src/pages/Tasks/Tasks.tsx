@@ -8,27 +8,30 @@ import {
 import {
   Search,
   ClipboardList,
-  CircleCheck,
   Clock3,
+  CircleCheck,
   Activity,
-  Flag,
+  CircleAlert,
+  ListTodo,
   Plus,
-  ArrowUpDown,
-  Pencil,
-  
-  Users,
+  CalendarDays,
   FileText,
-  FolderKanban,
+  Save,
+  X,
+  Flag,
 } from "lucide-react"
-
-import { useAuth } from "../../context/AuthContext"
-import { useToast } from "../../context/ToastContext"
-import { useTrash } from "../../context/TrashContext"
-
-import type { Task } from "../../types/Task"
 
 import TaskCard from "../../components/TaskCard/TaskCard"
 import Modal from "../../components/Modal/Modal"
+
+import { useToast } from "../../context/ToastContext"
+import { useTrash } from "../../context/TrashContext"
+
+import type {
+  Task,
+  TaskEmployee,
+  TaskProject,
+} from "../../types/Task"
 
 import {
   getTasks,
@@ -36,15 +39,6 @@ import {
   updateTask,
   deleteTask,
 } from "../../services/api/taskApi"
-
-import { getEmployees } from "../../services/api/employeeApi"
-
-type EmployeeRecord = {
-  _id: string
-  firstName?: string
-  lastName?: string
-  email?: string
-}
 
 type TaskApiRecord = {
   _id: string
@@ -54,66 +48,61 @@ type TaskApiRecord = {
   priority?: Task["priority"]
   assignedTo?:
     | string
-    | {
-        _id: string
-      }
+    | TaskEmployee
   projectId?:
     | string
-    | {
-        _id: string
-      }
+    | TaskProject
   dueDate?: string
 }
 
-type TaskFormData = {
-  title: string
-  description: string
-  status: Task["status"]
-  priority: Task["priority"]
-  assignedTo: string
-  projectId: string
-  dueDate: string
-}
-
-const emptyTaskForm: TaskFormData = {
-  title: "",
-  description: "",
-  status: "Pending",
-  priority: "Medium",
-  assignedTo: "",
-  projectId: "",
-  dueDate: "",
-}
-
 export default function Tasks() {
-  const { user } = useAuth()
   const { showToast } = useToast()
   const { moveToTrash } = useTrash()
 
-  const isAdmin = user?.role === "Admin"
-
-  const [taskList, setTaskList] =
-    useState<Task[]>([])
-
-  const [employees, setEmployees] =
-    useState<EmployeeRecord[]>([])
+  // =========================================================
+  // FORM
+  // =========================================================
 
   const [showForm, setShowForm] =
     useState(false)
 
-  const [formData, setFormData] =
-    useState<TaskFormData>(
-      emptyTaskForm
-    )
+  const taskFormRef =
+    useRef<HTMLFormElement | null>(null)
+
+  const [title, setTitle] =
+    useState("")
+
+  const [description, setDescription] =
+    useState("")
+
+  const [status, setStatus] =
+    useState<Task["status"]>("Pending")
+
+  const [priority, setPriority] =
+    useState<Task["priority"]>("Medium")
+
+  const [dueDate, setDueDate] =
+    useState("")
+
+  // =========================================================
+  // TASK DATA
+  // =========================================================
+
+  const [taskList, setTaskList] =
+    useState<Task[]>([])
 
   const [editingTask, setEditingTask] =
     useState<string | null>(null)
 
-  const [taskToDelete, setTaskToDelete] =
-    useState<string | null>(null)
-
   const [newTaskId, setNewTaskId] =
     useState<string | null>(null)
+
+  const [formError, setFormError] =
+    useState("")
+
+  // =========================================================
+  // SEARCH / FILTER
+  // =========================================================
 
   const [search, setSearch] =
     useState("")
@@ -124,88 +113,36 @@ export default function Tasks() {
   const [priorityFilter, setPriorityFilter] =
     useState("All")
 
-  const [sortOption, setSortOption] =
-    useState("title-asc")
+  const [sortBy, setSortBy] =
+    useState("None")
 
-  const [formError, setFormError] =
-    useState("")
+  // =========================================================
+  // DELETE
+  // =========================================================
 
-  const taskFormRef =
-    useRef<HTMLFormElement | null>(null)
+  const [taskToDelete, setTaskToDelete] =
+    useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const data =
-          (await getTasks()) as TaskApiRecord[]
-
-        const formattedTasks: Task[] =
-          data.map((task) => ({
-            id: task._id,
-            title: task.title ?? "",
-            description:
-              task.description ?? "",
-            status:
-              task.status ?? "Pending",
-            priority:
-              task.priority ?? "Medium",
-            assignedTo:
-              typeof task.assignedTo ===
-              "object"
-                ? task.assignedTo._id
-                : task.assignedTo ?? "",
-            projectId:
-              typeof task.projectId ===
-              "object"
-                ? task.projectId._id
-                : task.projectId ?? "",
-            dueDate:
-              task.dueDate ?? "",
-          })) as Task[]
-
-        setTaskList(formattedTasks)
-      } catch (error) {
-        console.error(
-          "Fetch tasks error:",
-          error
-        )
-
-        showToast(
-          "Failed to load tasks",
-          "error"
-        )
-      }
-    }
-
-    fetchTasks()
-  }, [showToast])
+  // =========================================================
+  // SCROLL TO FORM
+  // =========================================================
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!showForm) {
       return
     }
 
-    const fetchEmployees = async () => {
-      try {
-        const data =
-          (await getEmployees()) as EmployeeRecord[]
+    requestAnimationFrame(() => {
+      taskFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+    })
+  }, [showForm])
 
-        setEmployees(data)
-      } catch (error) {
-        console.error(
-          "Fetch employees error:",
-          error
-        )
-
-        showToast(
-          "Failed to load employees",
-          "error"
-        )
-      }
-    }
-
-    fetchEmployees()
-  }, [isAdmin, showToast])
+  // =========================================================
+  // SCROLL TO NEW TASK
+  // =========================================================
 
   useEffect(() => {
     if (!newTaskId) {
@@ -233,262 +170,259 @@ export default function Tasks() {
       cancelAnimationFrame(frame)
   }, [newTaskId])
 
-  const resetForm = () => {
-    setFormData({
-      ...emptyTaskForm,
-    })
+  // =========================================================
+  // FETCH TASKS
+  // =========================================================
 
-    setEditingTask(null)
-    setFormError("")
-  }
-
-  const openTaskForm = () => {
-    resetForm()
-    setShowForm(true)
-
-    requestAnimationFrame(() => {
-      taskFormRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      })
-    })
-  }
-
-  const updateFormField = <
-    K extends keyof TaskFormData
-  >(
-    field: K,
-    value: TaskFormData[K]
-  ) => {
-    setFormData((current) => ({
-      ...current,
-      [field]: value,
-    }))
-
-    setFormError("")
-  }
-
-  const handleSubmit = async (
-    event: FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault()
-
-    if (!formData.title.trim()) {
-      setFormError(
-        "Task title is required."
-      )
-      return
-    }
-
-    if (!formData.description.trim()) {
-      setFormError(
-        "Task description is required."
-      )
-      return
-    }
-
-    if (!formData.status) {
-      setFormError(
-        "Task status is required."
-      )
-      return
-    }
-
-    if (!formData.priority) {
-      setFormError(
-        "Task priority is required."
-      )
-      return
-    }
-
-    if (!formData.dueDate) {
-      setFormError(
-        "Due date is required."
-      )
-      return
-    }
-
-    if (
-      isAdmin &&
-      !formData.assignedTo
-    ) {
-      setFormError(
-        "Please assign the task to an employee."
-      )
-      return
-    }
-
-    if (
-      isAdmin &&
-      !formData.projectId
-    ) {
-      setFormError(
-        "Project ID is required."
-      )
-      return
-    }
-
-    if (
-      !isAdmin &&
-      editingTask !== null
-    ) {
-      const currentTask =
-        taskList.find(
-          (task) =>
-            task.id === editingTask
+  useEffect(() => {
+    async function fetchTasks() {
+      try {
+        console.log(
+          "FETCH TASKS STARTED"
         )
 
-      if (!currentTask) {
-        return
-      }
+        const data =
+          (await getTasks()) as TaskApiRecord[]
 
-      try {
-        const updateData = {
-          status: formData.status,
-        }
-
-        const updatedTask =
-          (await updateTask(
-            editingTask,
-            updateData as Parameters<
-              typeof updateTask
-            >[1]
-          )) as TaskApiRecord
-
-        const formattedTask =
-          {
-            id:
-              updatedTask._id,
+        const formattedTasks: Task[] =
+          data.map((task) => ({
+            id: String(task._id),
             title:
-              updatedTask.title ??
-              currentTask.title,
+              task.title ?? "",
             description:
-              updatedTask.description ??
-              currentTask.description,
+              task.description ?? "",
             status:
-              updatedTask.status ??
-              formData.status,
+              task.status ?? "Pending",
             priority:
-              updatedTask.priority ??
-              currentTask.priority,
+              task.priority ?? "Medium",
             assignedTo:
-              typeof updatedTask.assignedTo ===
-              "object"
-                ? updatedTask.assignedTo._id
-                : updatedTask.assignedTo ??
-                  currentTask.assignedTo,
+              task.assignedTo ?? "",
             projectId:
-              typeof updatedTask.projectId ===
-              "object"
-                ? updatedTask.projectId._id
-                : updatedTask.projectId ??
-                  currentTask.projectId,
+              task.projectId ?? "",
             dueDate:
-              updatedTask.dueDate ??
-              currentTask.dueDate,
-          } as Task
+              task.dueDate ?? "",
+          }))
 
         setTaskList(
-          (currentTasks) =>
-            currentTasks.map(
-              (task) =>
-                task.id ===
-                editingTask
-                  ? formattedTask
-                  : task
-            )
+          formattedTasks
         )
 
-        showToast(
-          "Task status updated successfully",
-          "success"
+        console.log(
+          "TASKS LOADED:",
+          formattedTasks
         )
-
-        resetForm()
-        setShowForm(false)
       } catch (error) {
         console.error(
-          "Update task error:",
+          "Fetch tasks error:",
           error
         )
 
         showToast(
-          "Failed to update task",
+          "Failed to load tasks",
           "error"
         )
       }
+    }
 
+    fetchTasks()
+  }, [showToast])
+
+  // =========================================================
+  // STATISTICS
+  // =========================================================
+
+  const totalTasks =
+    taskList.length
+
+  const pendingTasks =
+    taskList.filter(
+      (task) =>
+        task.status === "Pending"
+    ).length
+
+  const inProgressTasks =
+    taskList.filter(
+      (task) =>
+        task.status ===
+        "In Progress"
+    ).length
+
+  const completedTasks =
+    taskList.filter(
+      (task) =>
+        task.status === "Completed"
+    ).length
+
+  const highPriorityTasks =
+    taskList.filter(
+      (task) =>
+        task.priority === "High"
+    ).length
+
+  const completionPercentage =
+    totalTasks > 0
+      ? Math.round(
+          (completedTasks /
+            totalTasks) *
+            100
+        )
+      : 0
+
+  const pendingPercentage =
+    totalTasks > 0
+      ? Math.round(
+          (pendingTasks /
+            totalTasks) *
+            100
+        )
+      : 0
+
+  const inProgressPercentage =
+    totalTasks > 0
+      ? Math.round(
+          (inProgressTasks /
+            totalTasks) *
+            100
+        )
+      : 0
+
+  const highPriorityPercentage =
+    totalTasks > 0
+      ? Math.round(
+          (highPriorityTasks /
+            totalTasks) *
+            100
+        )
+      : 0
+
+  // =========================================================
+  // RESET FORM
+  // =========================================================
+
+  function resetForm() {
+    setTitle("")
+    setDescription("")
+    setStatus("Pending")
+    setPriority("Medium")
+    setDueDate("")
+    setEditingTask(null)
+    setFormError("")
+    setShowForm(false)
+  }
+
+  // =========================================================
+  // VALIDATION
+  // =========================================================
+
+  function validateForm() {
+    if (!title.trim()) {
+      return "Task title is required."
+    }
+
+    if (!description.trim()) {
+      return "Task description is required."
+    }
+
+    if (!dueDate) {
+      return "Due date is required."
+    }
+
+    if (!status) {
+      return "Task status is required."
+    }
+
+    if (!priority) {
+      return "Task priority is required."
+    }
+
+    return ""
+  }
+
+  // =========================================================
+  // CREATE / UPDATE TASK
+  // =========================================================
+
+  async function handleCreateTask(
+    e: FormEvent
+  ) {
+    e.preventDefault()
+
+    const error =
+      validateForm()
+
+    if (error) {
+      setFormError(error)
       return
     }
 
-    if (!isAdmin) {
-      return
-    }
+    const isEditing =
+      editingTask !== null
 
-    const taskData = {
-      title:
-        formData.title.trim(),
-      description:
-        formData.description.trim(),
-      status:
-        formData.status,
-      priority:
-        formData.priority,
-      assignedTo:
-        formData.assignedTo,
-      projectId:
-        formData.projectId,
-      dueDate:
-        formData.dueDate,
-    }
+    try {
+      // =====================================================
+      // UPDATE
+      // =====================================================
 
-    if (editingTask !== null) {
-      try {
+      if (isEditing) {
+        const existingTask =
+          taskList.find(
+            (task) =>
+              task.id ===
+              editingTask
+          )
+
+        if (!existingTask) {
+          showToast(
+            "Task not found",
+            "error"
+          )
+
+          return
+        }
+
+        const taskData = {
+          title: title.trim(),
+          description:
+            description.trim(),
+          status,
+          priority,
+          assignedTo:
+            existingTask.assignedTo,
+          projectId:
+            existingTask.projectId,
+          dueDate,
+        }
+
         const updatedTask =
           (await updateTask(
             editingTask,
-            taskData as Parameters<
-              typeof updateTask
-            >[1]
+            taskData
           )) as TaskApiRecord
 
-        if (!updatedTask._id) {
-          throw new Error(
-            "MongoDB did not return the updated task."
-          )
+        const formattedTask: Task = {
+          id: String(
+            updatedTask._id
+          ),
+          title:
+            updatedTask.title ?? "",
+          description:
+            updatedTask.description ??
+            "",
+          status:
+            updatedTask.status ??
+            "Pending",
+          priority:
+            updatedTask.priority ??
+            "Medium",
+          assignedTo:
+            updatedTask.assignedTo ??
+            existingTask.assignedTo,
+          projectId:
+            updatedTask.projectId ??
+            existingTask.projectId,
+          dueDate:
+            updatedTask.dueDate ?? "",
         }
-
-        const formattedTask =
-          {
-            id:
-              updatedTask._id,
-            title:
-              updatedTask.title ?? "",
-            description:
-              updatedTask.description ??
-              "",
-            status:
-              updatedTask.status ??
-              "Pending",
-            priority:
-              updatedTask.priority ??
-              "Medium",
-            assignedTo:
-              typeof updatedTask.assignedTo ===
-              "object"
-                ? updatedTask.assignedTo._id
-                : updatedTask.assignedTo ??
-                  "",
-            projectId:
-              typeof updatedTask.projectId ===
-              "object"
-                ? updatedTask.projectId._id
-                : updatedTask.projectId ??
-                  "",
-            dueDate:
-              updatedTask.dueDate ??
-              "",
-          } as Task
 
         setTaskList(
           (currentTasks) =>
@@ -505,168 +439,98 @@ export default function Tasks() {
           "Task updated successfully",
           "success"
         )
+      }
 
-        resetForm()
-        setShowForm(false)
-      } catch (error) {
-        console.error(
-          "Update task error:",
-          error
+      // =====================================================
+      // CREATE
+      // =====================================================
+
+      else {
+        const newTaskData = {
+          title: title.trim(),
+          description:
+            description.trim(),
+          status,
+          priority,
+          dueDate,
+        }
+
+        const createdTask =
+          (await createTask(
+            newTaskData
+          )) as TaskApiRecord
+
+        const formattedTask: Task = {
+          id: String(
+            createdTask._id
+          ),
+          title:
+            createdTask.title ?? "",
+          description:
+            createdTask.description ??
+            "",
+          status:
+            createdTask.status ??
+            "Pending",
+          priority:
+            createdTask.priority ??
+            "Medium",
+          assignedTo:
+            createdTask.assignedTo ??
+            "",
+          projectId:
+            createdTask.projectId ??
+            "",
+          dueDate:
+            createdTask.dueDate ??
+            "",
+        }
+
+        setTaskList(
+          (currentTasks) => [
+            ...currentTasks,
+            formattedTask,
+          ]
+        )
+
+        setNewTaskId(
+          formattedTask.id
         )
 
         showToast(
-          "Failed to update task",
-          "error"
+          "Task added successfully",
+          "success"
         )
       }
-
-      return
-    }
-
-    try {
-      const newTask =
-        (await createTask(
-          taskData as Parameters<
-            typeof createTask
-          >[0]
-        )) as TaskApiRecord
-
-      if (!newTask._id) {
-        throw new Error(
-          "MongoDB did not return the created task."
-        )
-      }
-
-      const formattedTask =
-        {
-          id: newTask._id,
-          title:
-            newTask.title ?? "",
-          description:
-            newTask.description ??
-            "",
-          status:
-            newTask.status ??
-            "Pending",
-          priority:
-            newTask.priority ??
-            "Medium",
-          assignedTo:
-            typeof newTask.assignedTo ===
-            "object"
-              ? newTask.assignedTo._id
-              : newTask.assignedTo ??
-                "",
-          projectId:
-            typeof newTask.projectId ===
-            "object"
-              ? newTask.projectId._id
-              : newTask.projectId ??
-                "",
-          dueDate:
-            newTask.dueDate ?? "",
-        } as Task
-
-      setTaskList(
-        (currentTasks) => [
-          ...currentTasks,
-          formattedTask,
-        ]
-      )
-
-      setNewTaskId(
-        formattedTask.id
-      )
-
-      showToast(
-        "Task added successfully",
-        "success"
-      )
 
       resetForm()
-      setShowForm(false)
     } catch (error) {
       console.error(
-        "Create task error:",
+        "Create/update task error:",
         error
       )
 
       showToast(
-        "Failed to add task",
+        isEditing
+          ? "Failed to update task"
+          : "Failed to add task",
         "error"
       )
     }
   }
 
-  const handleEdit = (
+  // =========================================================
+  // DELETE
+  // =========================================================
+
+  function handleDeleteTask(
     id: string
-  ) => {
-    const taskToEdit =
-      taskList.find(
-        (task) =>
-          task.id === id
-      )
-
-    if (!taskToEdit) {
-      return
-    }
-
-    setEditingTask(id)
-
-    setFormData({
-      title:
-        String(
-          taskToEdit.title ?? ""
-        ),
-      description:
-        String(
-          taskToEdit.description ??
-            ""
-        ),
-      status:
-        taskToEdit.status ??
-        "Pending",
-      priority:
-        taskToEdit.priority ??
-        "Medium",
-      assignedTo:
-        String(
-          taskToEdit.assignedTo ??
-            ""
-        ),
-      projectId:
-        String(
-          taskToEdit.projectId ??
-            ""
-        ),
-      dueDate:
-        taskToEdit.dueDate ?? "",
-    })
-
-    setFormError("")
-    setShowForm(true)
-
-    requestAnimationFrame(() => {
-      taskFormRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      })
-    })
-  }
-
-  const handleDelete = (
-    id: string
-  ) => {
-    if (!isAdmin) {
-      return
-    }
-
+  ) {
     setTaskToDelete(id)
   }
 
-  const confirmDelete = async () => {
+  async function confirmDeleteTask() {
     if (
-      !isAdmin ||
       taskToDelete === null
     ) {
       return
@@ -674,8 +538,8 @@ export default function Tasks() {
 
     const task =
       taskList.find(
-        (item) =>
-          item.id ===
+        (currentTask) =>
+          currentTask.id ===
           taskToDelete
       )
 
@@ -693,18 +557,17 @@ export default function Tasks() {
         "Task",
         task.id,
         task.title,
-        `${task.priority} Priority`,
-        task as unknown as Record<
-          string,
-          unknown
-        >
+        `${task.priority} Priority • ${task.status}`,
+        {
+          ...task,
+        }
       )
 
       setTaskList(
         (currentTasks) =>
           currentTasks.filter(
-            (item) =>
-              item.id !==
+            (currentTask) =>
+              currentTask.id !==
               taskToDelete
           )
       )
@@ -725,39 +588,69 @@ export default function Tasks() {
         "Failed to delete task",
         "error"
       )
+
+      setTaskToDelete(null)
     }
   }
 
-  const handleCancelForm = () => {
-    resetForm()
-    setShowForm(false)
+  // =========================================================
+  // EDIT
+  // =========================================================
+
+  function handleEditTask(
+    id: string
+  ) {
+    const task =
+      taskList.find(
+        (currentTask) =>
+          currentTask.id === id
+      )
+
+    if (!task) {
+      return
+    }
+
+    setTitle(task.title)
+
+    setDescription(
+      task.description
+    )
+
+    setStatus(task.status)
+
+    setPriority(
+      task.priority
+    )
+
+    setDueDate(
+      task.dueDate
+    )
+
+    setEditingTask(
+      task.id
+    )
+
+    setFormError("")
+    setShowForm(true)
   }
 
-  const filteredTasks =
-    [...taskList]
-      .filter((task) => {
-        const searchValue =
-          search
-            .toLowerCase()
-            .trim()
+  // =========================================================
+  // FILTER
+  // =========================================================
 
-        const title =
+  const filteredTasks =
+    taskList.filter(
+      (task) => {
+        const taskTitle =
           String(
             task.title ?? ""
           ).toLowerCase()
 
-        const description =
-          String(
-            task.description ??
-              ""
-          ).toLowerCase()
-
         const matchesSearch =
-          title.includes(
-            searchValue
-          ) ||
-          description.includes(
-            searchValue
+          taskTitle.includes(
+            search
+              .toLowerCase()
+              .trim()
           )
 
         const matchesStatus =
@@ -777,246 +670,515 @@ export default function Tasks() {
           matchesStatus &&
           matchesPriority
         )
-      })
-      .sort((a, b) => {
-        switch (sortOption) {
-          case "title-asc":
-            return a.title.localeCompare(
-              b.title
-            )
+      }
+    )
 
-          case "title-desc":
-            return b.title.localeCompare(
-              a.title
-            )
+  // =========================================================
+  // SORT
+  // =========================================================
 
-          case "date-newest":
-            return (
-              new Date(
-                b.dueDate
-              ).getTime() -
-              new Date(
-                a.dueDate
-              ).getTime()
-            )
+  const sortedTasks = [
+    ...filteredTasks,
+  ].sort((a, b) => {
+    const dateA =
+      new Date(
+        a.dueDate ?? ""
+      ).getTime()
 
-          case "date-oldest":
-            return (
-              new Date(
-                a.dueDate
-              ).getTime() -
-              new Date(
-                b.dueDate
-              ).getTime()
-            )
+    const dateB =
+      new Date(
+        b.dueDate ?? ""
+      ).getTime()
 
-          case "priority-high": {
-            const priorityOrder = {
-              High: 1,
-              Medium: 2,
-              Low: 3,
-            }
+    if (
+      sortBy === "Newest"
+    ) {
+      return dateB - dateA
+    }
 
-            return (
-              priorityOrder[
-                a.priority
-              ] -
-              priorityOrder[
-                b.priority
-              ]
-            )
-          }
+    if (
+      sortBy === "Oldest"
+    ) {
+      return dateA - dateB
+    }
 
-          default:
-            return 0
-        }
-      })
+    return 0
+  })
 
-  const totalTasks =
-    taskList.length
-
-  const completedTasks =
-    taskList.filter(
-      (task) =>
-        task.status ===
-        "Completed"
-    ).length
-
-  const inProgressTasks =
-    taskList.filter(
-      (task) =>
-        task.status ===
-        "In Progress"
-    ).length
-
- 
-
-  const highPriorityTasks =
-    taskList.filter(
-      (task) =>
-        task.priority ===
-        "High"
-    ).length
-
-  const completedPercentage =
-    totalTasks > 0
-      ? Math.round(
-          (completedTasks /
-            totalTasks) *
-            100
-        )
-      : 0
+  // =========================================================
+  // JSX
+  // =========================================================
 
   return (
     <main className="tasks-page">
-      <section className="tasks-hero">
-        <div className="tasks-hero-content">
-          <div className="tasks-eyebrow">
-            <span className="tasks-live-dot" />
-            NEXORA TASK CENTER
+
+      {/* =====================================================
+          PAGE HEADER
+          ===================================================== */}
+
+      <header className="tasks-header">
+
+        <div className="tasks-header-main">
+
+          <div className="tasks-title-content">
+
+            <span className="tasks-eyebrow">
+              WORKFLOW MANAGEMENT
+            </span>
+
+            <h1>
+              <span className="tasks-title-icon">
+                <ClipboardList size={28} />
+              </span>
+
+              Tasks
+            </h1>
+
+            <p>
+              Plan, organize, and monitor your team&apos;s
+              workload with a centralized task management
+              workspace.
+            </p>
+
           </div>
 
-          <div className="tasks-title-row">
-            <div className="tasks-title-icon">
-              <ClipboardList
-                size={31}
-                strokeWidth={2.2}
-              />
-            </div>
-
-            <div className="tasks-title-content">
-              <h1>Tasks</h1>
-
-              <p>
-                {isAdmin
-                  ? "Create, assign and manage company tasks."
-                  : "View and manage the tasks assigned to you."}
-              </p>
-            </div>
-          </div>
         </div>
 
-        {isAdmin && (
-          <div className="tasks-hero-right">
-            <button
-              type="button"
-              className="tasks-add-btn"
-              onClick={() => {
-                if (showForm) {
-                  handleCancelForm()
-                } else {
-                  openTaskForm()
-                }
-              }}
-            >
-              <Plus size={19} />
+        <div className="tasks-header-right">
 
-              {showForm
-                ? "Close Form"
-                : "Add Task"}
-            </button>
+          <div className="tasks-header-summary">
+
+            <div className="tasks-summary-icon">
+              <Activity size={17} />
+            </div>
+
+            <div>
+
+              <span>
+                Completion Rate
+              </span>
+
+              <strong>
+                {completionPercentage}%
+              </strong>
+
+              <small>
+                {completedTasks} of{" "}
+                {totalTasks} completed
+              </small>
+
+            </div>
+
           </div>
-        )}
-      </section>
 
-      <section className="tasks-stats">
-        <article className="task-stat-card">
-          <div className="task-stat-icon">
-            <ClipboardList size={21} />
+          <button
+            type="button"
+            className="add-task-btn"
+            onClick={() => {
+              if (showForm) {
+                resetForm()
+              } else {
+                setShowForm(true)
+                setFormError("")
+              }
+            }}
+          >
+
+            {showForm ? (
+              <>
+                <X size={18} />
+                <span>
+                  Close Form
+                </span>
+              </>
+            ) : (
+              <>
+                <Plus size={18} />
+                <span>
+                  Add Task
+                </span>
+              </>
+            )}
+
+          </button>
+
+        </div>
+
+      </header>
+
+      {/* =====================================================
+          STATISTICS
+          ===================================================== */}
+
+      <section className="task-statistics">
+
+        <div className="task-stat-card">
+
+          <div className="task-stat-icon total">
+            <ListTodo size={20} />
           </div>
 
           <div className="task-stat-content">
-            <span>Total Tasks</span>
+
+            <span>
+              Total Tasks
+            </span>
 
             <strong>
               {totalTasks}
             </strong>
 
             <small>
-              <Activity size={12} />
-              Complete task inventory
+              Current workload
             </small>
-          </div>
-        </article>
 
-        <article className="task-stat-card">
-          <div className="task-stat-icon">
-            <CircleCheck size={21} />
+          </div>
+
+        </div>
+
+        <div className="task-stat-card">
+
+          <div className="task-stat-icon pending">
+            <Clock3 size={20} />
           </div>
 
           <div className="task-stat-content">
-            <span>Completed</span>
+
+            <span>
+              Pending
+            </span>
 
             <strong>
-              {completedTasks}
+              {pendingTasks}
             </strong>
 
             <small>
-              <CircleCheck size={12} />
-              {completedPercentage}%
-              completed
+              {pendingPercentage}% of all tasks
             </small>
-          </div>
-        </article>
 
-        <article className="task-stat-card">
-          <div className="task-stat-icon">
-            <Activity size={21} />
+          </div>
+
+        </div>
+
+        <div className="task-stat-card">
+
+          <div className="task-stat-icon progress">
+            <Activity size={20} />
           </div>
 
           <div className="task-stat-content">
-            <span>In Progress</span>
+
+            <span>
+              In Progress
+            </span>
 
             <strong>
               {inProgressTasks}
             </strong>
 
             <small>
-              <Activity size={12} />
-              Currently active
+              {inProgressPercentage}% active
             </small>
-          </div>
-        </article>
 
-        <article className="task-stat-card">
-          <div className="task-stat-icon">
-            <Flag size={21} />
+          </div>
+
+        </div>
+
+        <div className="task-stat-card">
+
+          <div className="task-stat-icon completed">
+            <CircleCheck size={20} />
           </div>
 
           <div className="task-stat-content">
-            <span>High Priority</span>
+
+            <span>
+              Completed
+            </span>
 
             <strong>
-              {highPriorityTasks}
+              {completedTasks}
             </strong>
 
             <small>
-              <Clock3 size={12} />
-              Requires attention
+              {completionPercentage}% completion
             </small>
+
           </div>
-        </article>
+
+        </div>
+
       </section>
 
-      {isAdmin && showForm && (
-        <section className="tasks-form-card">
-          <div className="tasks-form-header">
-            <div className="tasks-form-heading">
-              <div className="tasks-form-icon">
+      {/* =====================================================
+          TASK PROGRESS
+          ===================================================== */}
+
+      <section className="task-overview">
+
+        <div className="task-overview-header">
+
+          <div className="task-overview-title">
+
+            <div className="task-overview-icon">
+              <ClipboardList size={18} />
+            </div>
+
+            <div>
+
+              <h2>
+                Task Progress
+              </h2>
+
+              <p>
+                Overall completion and workload distribution
+              </p>
+
+            </div>
+
+          </div>
+
+          <strong>
+            {completionPercentage}% Completed
+          </strong>
+
+        </div>
+
+        <div className="task-progress-track">
+
+          <div
+            className="task-progress-bar"
+            style={{
+              width: `${completionPercentage}%`,
+            }}
+          />
+
+        </div>
+
+        <div className="task-overview-footer">
+
+          <span>
+            <Clock3 size={14} />
+            {pendingTasks} Pending (
+            {pendingPercentage}%)
+          </span>
+
+          <span>
+            <Activity size={14} />
+            {inProgressTasks} In Progress (
+            {inProgressPercentage}%)
+          </span>
+
+          <span>
+            <CircleCheck size={14} />
+            {completedTasks} Completed (
+            {completionPercentage}%)
+          </span>
+
+          <span>
+            <CircleAlert size={14} />
+            {highPriorityTasks} High Priority (
+            {highPriorityPercentage}%)
+          </span>
+
+        </div>
+
+      </section>
+
+      {/* =====================================================
+          SEARCH / FILTERS
+          ===================================================== */}
+
+      <section className="task-search-container">
+
+        <div className="task-search-box">
+
+          <Search
+            className="task-search-icon"
+            size={19}
+          />
+
+          <input
+            type="text"
+            className="task-search"
+            placeholder="Search tasks by title..."
+            value={search}
+            onChange={(e) =>
+              setSearch(
+                e.target.value
+              )
+            }
+          />
+
+        </div>
+
+        <div className="task-filter-group">
+
+          <label htmlFor="task-status-filter">
+            Status
+          </label>
+
+          <select
+            id="task-status-filter"
+            className="task-status-filter"
+            value={statusFilter}
+            onChange={(e) =>
+              setStatusFilter(
+                e.target.value
+              )
+            }
+          >
+
+            <option value="All">
+              All Status
+            </option>
+
+            <option value="Pending">
+              Pending
+            </option>
+
+            <option value="In Progress">
+              In Progress
+            </option>
+
+            <option value="Completed">
+              Completed
+            </option>
+
+          </select>
+
+        </div>
+
+        <div className="task-filter-group">
+
+          <label htmlFor="task-priority-filter">
+            Priority
+          </label>
+
+          <select
+            id="task-priority-filter"
+            className="task-priority-filter"
+            value={priorityFilter}
+            onChange={(e) =>
+              setPriorityFilter(
+                e.target.value
+              )
+            }
+          >
+
+            <option value="All">
+              All Priority
+            </option>
+
+            <option value="Low">
+              Low
+            </option>
+
+            <option value="Medium">
+              Medium
+            </option>
+
+            <option value="High">
+              High
+            </option>
+
+          </select>
+
+        </div>
+
+        <div className="task-filter-group">
+
+          <label htmlFor="task-sort">
+            Sort By
+          </label>
+
+          <select
+            id="task-sort"
+            className="task-sort"
+            value={sortBy}
+            onChange={(e) =>
+              setSortBy(
+                e.target.value
+              )
+            }
+          >
+
+            <option value="None">
+              No Sort
+            </option>
+
+            <option value="Newest">
+              Newest Due Date
+            </option>
+
+            <option value="Oldest">
+              Oldest Due Date
+            </option>
+
+          </select>
+
+        </div>
+
+      </section>
+
+      {/* =====================================================
+          RESULTS
+          ===================================================== */}
+
+      <div className="task-results-info">
+
+        <div className="task-results-left">
+
+          <span className="task-results-icon">
+            <ListTodo size={15} />
+          </span>
+
+          <span>
+            Showing{" "}
+            <strong>
+              {sortedTasks.length}
+            </strong>{" "}
+            {sortedTasks.length === 1
+              ? "task"
+              : "tasks"}
+          </span>
+
+        </div>
+
+      </div>
+
+      {/* =====================================================
+          ADD / EDIT FORM
+          ===================================================== */}
+
+      {showForm && (
+        <form
+          ref={taskFormRef}
+          className="task-form"
+          onSubmit={
+            handleCreateTask
+          }
+        >
+
+          <div className="task-form-header">
+
+            <div className="task-form-title">
+
+              <div className="task-form-icon">
+
                 {editingTask !==
                 null ? (
-                  <Pencil size={20} />
+                  <Save size={19} />
                 ) : (
-                  <Plus size={20} />
+                  <Plus size={19} />
                 )}
+
               </div>
 
               <div>
-                <span>
-                  {editingTask !==
-                  null
-                    ? "TASK EDITOR"
-                    : "TASK CREATOR"}
+
+                <span className="task-form-eyebrow">
+                  TASK RECORD
                 </span>
 
                 <h2>
@@ -1025,512 +1187,204 @@ export default function Tasks() {
                     ? "Edit Task"
                     : "Add New Task"}
                 </h2>
+
+                <p>
+                  Enter the task information below.
+                </p>
+
               </div>
+
             </div>
+
           </div>
 
-          <form
-            ref={taskFormRef}
-            onSubmit={handleSubmit}
-          >
-            <div className="tasks-field">
-              <label>
+          {formError && (
+            <p className="form-error">
+              {formError}
+            </p>
+          )}
+
+          <div className="task-form-grid">
+
+            <div className="task-form-field">
+
+              <label htmlFor="task-title">
+                <ClipboardList size={15} />
                 Task Title
               </label>
 
-              <div className="tasks-input-wrapper">
-                <ClipboardList size={17} />
+              <input
+                id="task-title"
+                type="text"
+                placeholder="Enter task title"
+                value={title}
+                required
+                onChange={(e) => {
+                  setTitle(
+                    e.target.value
+                  )
+                  setFormError("")
+                }}
+              />
 
-                <input
-                  type="text"
-                  placeholder="Enter task title"
-                  value={formData.title}
-                  required
-                  onChange={(event) =>
-                    updateFormField(
-                      "title",
-                      event.target.value
-                    )
-                  }
-                />
-              </div>
             </div>
 
-            <div className="tasks-field">
-              <label>
+            <div className="task-form-field">
+
+              <label htmlFor="task-due-date">
+                <CalendarDays size={15} />
+                Due Date
+              </label>
+
+              <input
+                id="task-due-date"
+                type="date"
+                value={dueDate}
+                required
+                onChange={(e) => {
+                  setDueDate(
+                    e.target.value
+                  )
+                  setFormError("")
+                }}
+              />
+
+            </div>
+
+            <div className="task-form-field task-description-field">
+
+              <label htmlFor="task-description">
+                <FileText size={15} />
                 Description
               </label>
 
-              <div className="tasks-input-wrapper">
-                <FileText size={17} />
+              <textarea
+                id="task-description"
+                placeholder="Enter task description"
+                value={description}
+                required
+                onChange={(e) => {
+                  setDescription(
+                    e.target.value
+                  )
+                  setFormError("")
+                }}
+              />
 
-                <textarea
-                  placeholder="Enter task description"
-                  value={
-                    formData.description
-                  }
-                  required
-                  onChange={(event) =>
-                    updateFormField(
-                      "description",
-                      event.target.value
-                    )
-                  }
-                />
-              </div>
             </div>
 
-            <div className="tasks-field">
-              <label>
-                Assigned Employee
+            <div className="task-form-field">
+
+              <label htmlFor="task-status">
+                <Activity size={15} />
+                Status
               </label>
 
-              <div className="tasks-input-wrapper">
-                <Users size={17} />
+              <select
+                id="task-status"
+                value={status}
+                required
+                onChange={(e) => {
+                  setStatus(
+                    e.target.value as Task["status"]
+                  )
+                  setFormError("")
+                }}
+              >
 
-                <select
-                  value={
-                    formData.assignedTo
-                  }
-                  required
-                  onChange={(event) =>
-                    updateFormField(
-                      "assignedTo",
-                      event.target.value
-                    )
-                  }
-                >
-                  <option value="">
-                    Select employee
-                  </option>
+                <option value="Pending">
+                  Pending
+                </option>
 
-                  {employees.map(
-                    (employee) => (
-                      <option
-                        key={
-                          employee._id
-                        }
-                        value={
-                          employee._id
-                        }
-                      >
-                        {employee.firstName ??
-                          ""}{" "}
-                        {employee.lastName ??
-                          ""}
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
+                <option value="In Progress">
+                  In Progress
+                </option>
+
+                <option value="Completed">
+                  Completed
+                </option>
+
+              </select>
+
             </div>
 
-            <div className="tasks-field">
-              <label>
-                Project ID
+            <div className="task-form-field">
+
+              <label htmlFor="task-priority">
+                <Flag size={15} />
+                Priority
               </label>
 
-              <div className="tasks-input-wrapper">
-                <FolderKanban size={17} />
-
-                <input
-                  type="text"
-                  placeholder="Enter project ID"
-                  value={
-                    formData.projectId
-                  }
-                  required
-                  onChange={(event) =>
-                    updateFormField(
-                      "projectId",
-                      event.target.value
-                    )
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="tasks-field">
-              <label>Status</label>
-
-              <div className="tasks-input-wrapper">
-                <Activity size={17} />
-
-                <select
-                  value={
-                    formData.status
-                  }
-                  required
-                  onChange={(event) =>
-                    updateFormField(
-                      "status",
-                      event.target.value as Task["status"]
-                    )
-                  }
-                >
-                  <option value="Pending">
-                    Pending
-                  </option>
-
-                  <option value="In Progress">
-                    In Progress
-                  </option>
-
-                  <option value="Completed">
-                    Completed
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <div className="tasks-field">
-              <label>Priority</label>
-
-              <div className="tasks-input-wrapper">
-                <Flag size={17} />
-
-                <select
-                  value={
-                    formData.priority
-                  }
-                  required
-                  onChange={(event) =>
-                    updateFormField(
-                      "priority",
-                      event.target.value as Task["priority"]
-                    )
-                  }
-                >
-                  <option value="Low">
-                    Low
-                  </option>
-
-                  <option value="Medium">
-                    Medium
-                  </option>
-
-                  <option value="High">
-                    High
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <div className="tasks-field">
-              <label>Due Date</label>
-
-              <div className="tasks-input-wrapper">
-                <Clock3 size={17} />
-
-                <input
-                  type="date"
-                  value={
-                    formData.dueDate
-                  }
-                  required
-                  onChange={(event) =>
-                    updateFormField(
-                      "dueDate",
-                      event.target.value
-                    )
-                  }
-                />
-              </div>
-            </div>
-
-            {formError && (
-              <div className="tasks-form-error">
-                <Clock3 size={16} />
-
-                <span>
-                  {formError}
-                </span>
-              </div>
-            )}
-
-            <div className="tasks-form-actions">
-              <button
-                type="submit"
-                className="tasks-submit-btn"
+              <select
+                id="task-priority"
+                value={priority}
+                required
+                onChange={(e) => {
+                  setPriority(
+                    e.target.value as Task["priority"]
+                  )
+                  setFormError("")
+                }}
               >
-                {editingTask !==
-                null ? (
-                  <>
-                    <Pencil size={17} />
-                    Update Task
-                  </>
-                ) : (
-                  <>
-                    <Plus size={17} />
-                    Add Task
-                  </>
-                )}
-              </button>
 
-              <button
-                type="button"
-                className="tasks-cancel-btn"
-                onClick={
-                  handleCancelForm
-                }
-              >
-                Cancel
-              </button>
+                <option value="Low">
+                  Low
+                </option>
+
+                <option value="Medium">
+                  Medium
+                </option>
+
+                <option value="High">
+                  High
+                </option>
+
+              </select>
+
             </div>
-          </form>
-        </section>
+
+          </div>
+
+          <div className="task-form-actions">
+
+            <button
+              type="button"
+              className="task-cancel-btn"
+              onClick={
+                resetForm
+              }
+            >
+              <X size={17} />
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              className="create-task-btn"
+            >
+              <Save size={17} />
+
+              {editingTask !==
+              null
+                ? "Update Task"
+                : "Create Task"}
+
+            </button>
+
+          </div>
+
+        </form>
       )}
 
-      {!isAdmin && showForm && (
-        <section className="tasks-form-card">
-          <div className="tasks-form-header">
-            <div className="tasks-form-heading">
-              <div className="tasks-form-icon">
-                <Pencil size={20} />
-              </div>
-
-              <div>
-                <span>
-                  TASK UPDATE
-                </span>
-
-                <h2>
-                  Update Task Status
-                </h2>
-              </div>
-            </div>
-          </div>
-
-          <form
-            ref={taskFormRef}
-            onSubmit={handleSubmit}
-          >
-            <div className="tasks-field">
-              <label>Task</label>
-
-              <div className="tasks-input-wrapper">
-                <ClipboardList size={17} />
-
-                <input
-                  type="text"
-                  value={
-                    formData.title
-                  }
-                  disabled
-                />
-              </div>
-            </div>
-
-            <div className="tasks-field">
-              <label>Status</label>
-
-              <div className="tasks-input-wrapper">
-                <Activity size={17} />
-
-                <select
-                  value={
-                    formData.status
-                  }
-                  required
-                  onChange={(event) =>
-                    updateFormField(
-                      "status",
-                      event.target.value as Task["status"]
-                    )
-                  }
-                >
-                  <option value="Pending">
-                    Pending
-                  </option>
-
-                  <option value="In Progress">
-                    In Progress
-                  </option>
-
-                  <option value="Completed">
-                    Completed
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            {formError && (
-              <div className="tasks-form-error">
-                <Clock3 size={16} />
-
-                <span>
-                  {formError}
-                </span>
-              </div>
-            )}
-
-            <div className="tasks-form-actions">
-              <button
-                type="submit"
-                className="tasks-submit-btn"
-              >
-                <Pencil size={17} />
-                Update Status
-              </button>
-
-              <button
-                type="button"
-                className="tasks-cancel-btn"
-                onClick={
-                  handleCancelForm
-                }
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </section>
-      )}
-
-      <section className="tasks-controls">
-        <div className="tasks-controls-header">
-          <div>
-            <span className="tasks-controls-eyebrow">
-              TASK EXPLORER
-            </span>
-
-            <h2>
-              {isAdmin
-                ? "Browse All Tasks"
-                : "Your Assigned Tasks"}
-            </h2>
-          </div>
-
-          <div className="tasks-result-count">
-            <ClipboardList size={15} />
-
-            {filteredTasks.length}{" "}
-            result
-            {filteredTasks.length !==
-            1
-              ? "s"
-              : ""}
-          </div>
-        </div>
-
-        <div className="tasks-controls-row">
-          <div className="tasks-search">
-            <Search size={18} />
-
-            <input
-              type="text"
-              placeholder="Search by task title or description..."
-              value={search}
-              onChange={(event) =>
-                setSearch(
-                  event.target.value
-                )
-              }
-            />
-          </div>
-
-          <div className="tasks-filter">
-            <Activity size={16} />
-
-            <select
-              value={
-                statusFilter
-              }
-              onChange={(event) =>
-                setStatusFilter(
-                  event.target.value
-                )
-              }
-            >
-              <option value="All">
-                All Statuses
-              </option>
-
-              <option value="Pending">
-                Pending
-              </option>
-
-              <option value="In Progress">
-                In Progress
-              </option>
-
-              <option value="Completed">
-                Completed
-              </option>
-            </select>
-          </div>
-
-          <div className="tasks-filter">
-            <Flag size={16} />
-
-            <select
-              value={
-                priorityFilter
-              }
-              onChange={(event) =>
-                setPriorityFilter(
-                  event.target.value
-                )
-              }
-            >
-              <option value="All">
-                All Priorities
-              </option>
-
-              <option value="Low">
-                Low
-              </option>
-
-              <option value="Medium">
-                Medium
-              </option>
-
-              <option value="High">
-                High
-              </option>
-            </select>
-          </div>
-
-          <div className="tasks-filter">
-            <ArrowUpDown size={16} />
-
-            <select
-              value={
-                sortOption
-              }
-              onChange={(event) =>
-                setSortOption(
-                  event.target.value
-                )
-              }
-            >
-              <option value="title-asc">
-                Title: A → Z
-              </option>
-
-              <option value="title-desc">
-                Title: Z → A
-              </option>
-
-              <option value="date-newest">
-                Due Date: Newest
-              </option>
-
-              <option value="date-oldest">
-                Due Date: Oldest
-              </option>
-
-              <option value="priority-high">
-                Priority: High → Low
-              </option>
-            </select>
-          </div>
-        </div>
-      </section>
+      {/* =====================================================
+          TASK CARDS
+          ===================================================== */}
 
       <section className="tasks-grid">
-        {filteredTasks.length > 0 ? (
-          filteredTasks.map(
+
+        {sortedTasks.length >
+        0 ? (
+          sortedTasks.map(
             (task) => (
               <div
                 key={task.id}
@@ -1539,33 +1393,34 @@ export default function Tasks() {
                 <TaskCard
                   task={task}
                   onDelete={
-                    isAdmin
-                      ? handleDelete
-                      : () => {}
+                    handleDeleteTask
                   }
                   onEdit={
-                    handleEdit
+                    handleEditTask
                   }
                 />
               </div>
             )
           )
         ) : (
-          <div className="tasks-empty">
-            <div className="tasks-empty-icon">
-              <ClipboardList size={32} />
+          <div className="task-empty-state">
+
+            <div className="task-empty-icon">
+              <Search size={26} />
             </div>
 
-            <h2>No Tasks Found</h2>
+            <h2>
+              No Tasks Found
+            </h2>
 
             <p>
-              No tasks match your
-              current search or
-              filters.
+              No tasks match your current
+              search or filters.
             </p>
 
             <button
               type="button"
+              className="clear-task-filters-btn"
               onClick={() => {
                 setSearch("")
                 setStatusFilter(
@@ -1574,28 +1429,35 @@ export default function Tasks() {
                 setPriorityFilter(
                   "All"
                 )
+                setSortBy("None")
               }}
             >
-              <Search size={16} />
               Clear Filters
             </button>
+
           </div>
         )}
+
       </section>
 
-      {isAdmin &&
-        taskToDelete !== null && (
-          <Modal
-            title="Delete Task"
-            message="Are you sure you want to move this task to Trash? You can recover it later from the Trash page."
-            onCancel={() =>
-              setTaskToDelete(null)
-            }
-            onConfirm={
-              confirmDelete
-            }
-          />
-        )}
+      {/* =====================================================
+          DELETE MODAL
+          ===================================================== */}
+
+      {taskToDelete !==
+        null && (
+        <Modal
+          title="Delete Task"
+          message="Are you sure you want to move this task to Trash? You can recover it later from the Trash page."
+          onCancel={() =>
+            setTaskToDelete(null)
+          }
+          onConfirm={
+            confirmDeleteTask
+          }
+        />
+      )}
+
     </main>
   )
 }
