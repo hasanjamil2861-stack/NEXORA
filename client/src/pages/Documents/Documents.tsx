@@ -25,6 +25,7 @@ import {
   CircleCheck,
   Clock3,
   HardDrive,
+  X,
 } from "lucide-react"
 
 import { useToast } from "../../context/ToastContext"
@@ -37,10 +38,13 @@ import Modal from "../../components/Modal/Modal"
 
 import {
   getDocuments,
-  createDocument,
   updateDocument,
   deleteDocument,
 } from "../../services/api/documentApi"
+
+import {
+  uploadDocument,
+} from "../../services/api/documentUploadApi"
 
 type DocumentEmployee = {
   _id: string
@@ -68,6 +72,7 @@ type DocumentApiRecord = {
   }
   uploadDate?: string
   status?: Document["status"]
+  fileUrl?: string
 }
 
 type DocumentFormData = {
@@ -109,6 +114,9 @@ export default function Documents() {
       emptyDocumentForm
     )
 
+  const [selectedFile, setSelectedFile] =
+    useState<File | null>(null)
+
   const [editingDocument, setEditingDocument] =
     useState<string | null>(null)
 
@@ -138,6 +146,9 @@ export default function Documents() {
 
   const documentFormRef =
     useRef<HTMLFormElement | null>(null)
+
+  const fileInputRef =
+    useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -215,8 +226,13 @@ export default function Documents() {
       ...emptyDocumentForm,
     })
 
+    setSelectedFile(null)
     setEditingDocument(null)
     setFormError("")
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
   }
 
   const openDocumentForm = () => {
@@ -245,6 +261,75 @@ export default function Documents() {
     setFormError("")
   }
 
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file =
+      event.target.files?.[0] ?? null
+
+    if (!file) {
+      setSelectedFile(null)
+      return
+    }
+
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ]
+
+    if (
+      !allowedTypes.includes(
+        file.type
+      )
+    ) {
+      setSelectedFile(null)
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+
+      setFormError(
+        "Only PDF, Word, Excel and image files are allowed."
+      )
+
+      return
+    }
+
+    const maxSize =
+      10 * 1024 * 1024
+
+    if (file.size > maxSize) {
+      setSelectedFile(null)
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+
+      setFormError(
+        "File size must be 10MB or less."
+      )
+
+      return
+    }
+
+    setSelectedFile(file)
+    setFormError("")
+  }
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null)
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement>
   ) => {
@@ -264,10 +349,6 @@ export default function Documents() {
       return
     }
 
-    /*
-      Employee can only create documents.
-      Edit remains Admin-only.
-    */
     if (
       editingDocument !== null &&
       !isAdmin
@@ -275,9 +356,16 @@ export default function Documents() {
       return
     }
 
-    /*
-      Admin validation.
-    */
+    if (
+      editingDocument === null &&
+      !selectedFile
+    ) {
+      setFormError(
+        "Please select a file to upload."
+      )
+      return
+    }
+
     if (
       isAdmin &&
       formData.category ===
@@ -291,45 +379,6 @@ export default function Documents() {
     }
 
     /*
-      The backend automatically determines:
-      - employeeId for Employee
-      - uploadedBy from logged-in User
-
-      fileUrl is temporary until real
-      Cloudinary upload is implemented.
-    */
-    const documentData = {
-      name: formData.name.trim(),
-      type: formData.type,
-      category: formData.category,
-
-      employeeId:
-        isAdmin &&
-        formData.category === "Employee"
-          ? formData.employeeId.trim()
-          : null,
-
-      uploadedBy:
-        isAdmin
-          ? formData.uploadedBy.trim()
-          : undefined,
-
-      uploadDate:
-        formData.uploadDate,
-
-      status:
-        formData.status,
-
-      fileUrl:
-        "pending-upload",
-    }
-
-    const documentPayload =
-      documentData as Parameters<
-        typeof createDocument
-      >[0]
-
-    /*
       UPDATE
       Admin only.
     */
@@ -338,7 +387,27 @@ export default function Documents() {
         const updatedDocument =
           (await updateDocument(
             editingDocument,
-            documentPayload
+            {
+              name: formData.name.trim(),
+              type: formData.type,
+              category: formData.category,
+              employeeId:
+                isAdmin &&
+                formData.category ===
+                  "Employee"
+                  ? formData.employeeId.trim()
+                  : null,
+              uploadedBy:
+                isAdmin
+                  ? formData.uploadedBy.trim()
+                  : undefined,
+              uploadDate:
+                formData.uploadDate,
+              status:
+                formData.status,
+            } as Parameters<
+              typeof updateDocument
+            >[1]
           )) as DocumentApiRecord
 
         const formattedDocument:
@@ -396,39 +465,74 @@ export default function Documents() {
     }
 
     /*
-      CREATE
+      REAL FILE UPLOAD
       Admin + Employee.
     */
+    if (!selectedFile) {
+      setFormError(
+        "Please select a file to upload."
+      )
+      return
+    }
+
     try {
-      const newDocument =
-        (await createDocument(
-          documentPayload
-        )) as DocumentApiRecord
+      const uploadedDocument =
+        (await uploadDocument({
+          name:
+            formData.name.trim(),
+
+          category:
+            formData.category,
+
+          file:
+            selectedFile,
+
+          /*
+            Employee uploads are automatically
+            linked to their own employee profile
+            by the backend.
+          */
+          projectId:
+            undefined,
+
+          taskId:
+            undefined,
+        })) as DocumentApiRecord
 
       const formattedDocument:
         DocumentWithEmployee = {
-        id: newDocument._id,
+        id:
+          uploadedDocument._id,
+
         name:
-          newDocument.name ?? "",
+          uploadedDocument.name ??
+          formData.name.trim(),
+
         type:
-          newDocument.type ?? "PDF",
+          uploadedDocument.type ??
+          "PDF",
+
         category:
-          newDocument.category ??
-          "Employee",
+          uploadedDocument.category ??
+          formData.category,
+
         employeeId:
-          newDocument.employeeId ??
+          uploadedDocument.employeeId ??
           null,
+
         uploadedBy:
-          typeof newDocument.uploadedBy ===
+          typeof uploadedDocument.uploadedBy ===
           "string"
-            ? newDocument.uploadedBy
-            : newDocument.uploadedBy?.name ??
+            ? uploadedDocument.uploadedBy
+            : uploadedDocument.uploadedBy?.name ??
               "",
+
         uploadDate:
-          newDocument.uploadDate ??
-          "",
+          uploadedDocument.uploadDate ??
+          formData.uploadDate,
+
         status:
-          newDocument.status ??
+          uploadedDocument.status ??
           "Active",
       }
 
@@ -442,15 +546,17 @@ export default function Documents() {
       )
 
       showToast(
-        "Document added successfully",
+        "Document uploaded successfully",
         "success"
       )
 
       resetForm()
       setShowForm(false)
-    } catch {
+    } catch (error) {
       showToast(
-        "Failed to add document",
+        error instanceof Error
+          ? error.message
+          : "Failed to upload document",
         "error"
       )
     }
@@ -481,6 +587,8 @@ export default function Documents() {
           ""
 
     setEditingDocument(id)
+
+    setSelectedFile(null)
 
     setFormData({
       name:
@@ -1114,13 +1222,13 @@ export default function Documents() {
                 <span>
                   {editingDocument !== null
                     ? "DOCUMENT EDITOR"
-                    : "DOCUMENT CREATOR"}
+                    : "DOCUMENT UPLOAD"}
                 </span>
 
                 <h2>
                   {editingDocument !== null
                     ? "Edit Document"
-                    : "Add New Document"}
+                    : "Upload New Document"}
                 </h2>
               </div>
             </div>
@@ -1158,42 +1266,92 @@ export default function Documents() {
               </div>
             </div>
 
-            <div className="documents-field">
-              <label>
-                Document Type
-              </label>
+            {editingDocument === null && (
+              <div className="documents-field">
+                <label>
+                  File
+                </label>
 
-              <div className="documents-input-wrapper">
-                <FileType2 size={17} />
+                <div className="documents-input-wrapper">
+                  <UploadCloud size={17} />
 
-                <select
-                  value={formData.type}
-                  required
-                  onChange={(event) =>
-                    updateFormField(
-                      "type",
-                      event.target.value as Document["type"]
-                    )
-                  }
-                >
-                  <option value="PDF">
-                    PDF
-                  </option>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    required
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
+                    onChange={
+                      handleFileChange
+                    }
+                  />
+                </div>
 
-                  <option value="Word">
-                    Word
-                  </option>
+                <small>
+                  PDF, Word, Excel or Image • Maximum 10MB
+                </small>
 
-                  <option value="Excel">
-                    Excel
-                  </option>
+                {selectedFile && (
+                  <div className="documents-selected-file">
+                    <div>
+                      <FileText size={16} />
 
-                  <option value="Image">
-                    Image
-                  </option>
-                </select>
+                      <span>
+                        {selectedFile.name}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleRemoveFile
+                      }
+                      title="Remove file"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
+
+            {editingDocument !== null && (
+              <div className="documents-field">
+                <label>
+                  Document Type
+                </label>
+
+                <div className="documents-input-wrapper">
+                  <FileType2 size={17} />
+
+                  <select
+                    value={formData.type}
+                    required
+                    onChange={(event) =>
+                      updateFormField(
+                        "type",
+                        event.target.value as Document["type"]
+                      )
+                    }
+                  >
+                    <option value="PDF">
+                      PDF
+                    </option>
+
+                    <option value="Word">
+                      Word
+                    </option>
+
+                    <option value="Excel">
+                      Excel
+                    </option>
+
+                    <option value="Image">
+                      Image
+                    </option>
+                  </select>
+                </div>
+              </div>
+            )}
 
             <div className="documents-field">
               <label>
@@ -1376,8 +1534,8 @@ export default function Documents() {
                   </>
                 ) : (
                   <>
-                    <Plus size={17} />
-                    Add Document
+                    <UploadCloud size={17} />
+                    Upload Document
                   </>
                 )}
               </button>

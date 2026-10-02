@@ -3,6 +3,7 @@ import {
   ArrowUpRight,
   CalendarDays,
   CircleCheck,
+  ExternalLink,
   FilePenLine,
   FileSpreadsheet,
   FileText,
@@ -30,7 +31,8 @@ export default function DocumentCard({
 }: DocumentCardProps) {
   const { user } = useAuth()
 
-  const isAdmin = user?.role === "Admin"
+  const isAdmin =
+    user?.role === "Admin"
 
   const getTypeIcon = () => {
     switch (document.type) {
@@ -51,8 +53,23 @@ export default function DocumentCard({
     }
   }
 
-  const typeClass = document.type.toLowerCase()
-  const isActive = document.status === "Active"
+  const typeClass =
+    document.type.toLowerCase()
+
+  const isActive =
+    document.status === "Active"
+
+  const handleViewDocument = () => {
+    if (!document.fileUrl) {
+      return
+    }
+
+    window.open(
+      document.fileUrl,
+      "_blank",
+      "noopener,noreferrer"
+    )
+  }
 
   return (
     <article
@@ -86,7 +103,9 @@ export default function DocumentCard({
             <Archive size={14} />
           )}
 
-          <span>{document.status}</span>
+          <span>
+            {document.status}
+          </span>
         </div>
       </div>
 
@@ -98,7 +117,10 @@ export default function DocumentCard({
 
           <div>
             <span>Type</span>
-            <strong>{document.type}</strong>
+
+            <strong>
+              {document.type}
+            </strong>
           </div>
         </div>
 
@@ -109,7 +131,10 @@ export default function DocumentCard({
 
           <div>
             <span>Category</span>
-            <strong>{document.category}</strong>
+
+            <strong>
+              {document.category}
+            </strong>
           </div>
         </div>
       </div>
@@ -118,19 +143,29 @@ export default function DocumentCard({
         <div className="document-detail-row">
           <div className="document-detail-left">
             <UserRound size={16} />
-            <span>Uploaded By</span>
+
+            <span>
+              Uploaded By
+            </span>
           </div>
 
-          <strong>{document.uploadedBy}</strong>
+          <strong>
+            {document.uploadedBy}
+          </strong>
         </div>
 
         <div className="document-detail-row">
           <div className="document-detail-left">
             <CalendarDays size={16} />
-            <span>Upload Date</span>
+
+            <span>
+              Upload Date
+            </span>
           </div>
 
-          <strong>{document.uploadDate}</strong>
+          <strong>
+            {document.uploadDate}
+          </strong>
         </div>
       </div>
 
@@ -139,33 +174,65 @@ export default function DocumentCard({
           <FileText size={14} />
 
           <span>
-            DOC-{document.id.slice(-4).toUpperCase()}
+            DOC-
+            {document.id
+              .slice(-4)
+              .toUpperCase()}
           </span>
         </div>
 
-        {isAdmin && (
-          <div className="document-card-actions">
+        <div className="document-card-actions">
+          {document.fileUrl && (
             <button
               type="button"
-              className="document-edit-btn"
-              onClick={() => onEdit(document.id)}
-              title="Edit Document"
+              className="document-view-btn"
+              onClick={
+                handleViewDocument
+              }
+              title="View Document"
             >
-              <Pencil size={15} />
-              <span>Edit</span>
-            </button>
+              <ExternalLink size={15} />
 
-            <button
-              type="button"
-              className="document-delete-btn"
-              onClick={() => onDelete(document.id)}
-              title="Delete Document"
-            >
-              <Trash2 size={15} />
-              <span>Delete</span>
+              <span>
+                View
+              </span>
             </button>
-          </div>
-        )}
+          )}
+
+          {isAdmin && (
+            <>
+              <button
+                type="button"
+                className="document-edit-btn"
+                onClick={() =>
+                  onEdit(document.id)
+                }
+                title="Edit Document"
+              >
+                <Pencil size={15} />
+
+                <span>
+                  Edit
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="document-delete-btn"
+                onClick={() =>
+                  onDelete(document.id)
+                }
+                title="Delete Document"
+              >
+                <Trash2 size={15} />
+
+                <span>
+                  Delete
+                </span>
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="document-card-hover-icon">
