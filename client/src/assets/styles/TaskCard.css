@@ -949,12 +949,12 @@
   gap: 15px;
 }
 
-.task-form-field {
-  min-width: 0;
-}
-
 .task-description-field {
   grid-row: span 2;
+}
+
+.task-form-field {
+  min-width: 0;
 }
 
 .task-form-field label {
