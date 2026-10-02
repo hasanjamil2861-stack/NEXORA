@@ -60,7 +60,12 @@ type DocumentApiRecord = {
   type?: Document["type"]
   category?: Document["category"]
   employeeId?: string | DocumentEmployee | null
-  uploadedBy?: string
+  uploadedBy?: string | {
+    _id: string
+    name: string
+    email: string
+    role: string
+  }
   uploadDate?: string
   status?: Document["status"]
 }
@@ -90,13 +95,14 @@ export default function Documents() {
   const { moveToTrash } = useTrash()
   const { user } = useAuth()
 
-  const isAdmin = user?.role === "Admin"
+  const isAdmin =
+    user?.role === "Admin"
 
-  const [documentList, setDocumentList] = useState<
-    DocumentWithEmployee[]
-  >([])
+  const [documentList, setDocumentList] =
+    useState<DocumentWithEmployee[]>([])
 
-  const [showForm, setShowForm] = useState(false)
+  const [showForm, setShowForm] =
+    useState(false)
 
   const [formData, setFormData] =
     useState<DocumentFormData>(
@@ -112,7 +118,8 @@ export default function Documents() {
   const [newDocumentId, setNewDocumentId] =
     useState<string | null>(null)
 
-  const [search, setSearch] = useState("")
+  const [search, setSearch] =
+    useState("")
 
   const [typeFilter, setTypeFilter] =
     useState("All")
@@ -143,13 +150,20 @@ export default function Documents() {
           data.map((document) => ({
             id: document._id,
             name: document.name ?? "",
-            type: document.type ?? "PDF",
+            type:
+              document.type ?? "PDF",
             category:
-              document.category ?? "Employee",
+              document.category ??
+              "Employee",
             employeeId:
-              document.employeeId ?? null,
+              document.employeeId ??
+              null,
             uploadedBy:
-              document.uploadedBy ?? "",
+              typeof document.uploadedBy ===
+              "string"
+                ? document.uploadedBy
+                : document.uploadedBy?.name ??
+                  "",
             uploadDate:
               document.uploadDate ?? "",
             status:
@@ -175,21 +189,22 @@ export default function Documents() {
       return
     }
 
-    const frame = requestAnimationFrame(() => {
-      const newDocument =
-        document.getElementById(
-          `document-${newDocumentId}`
-        )
+    const frame =
+      requestAnimationFrame(() => {
+        const newDocument =
+          document.getElementById(
+            `document-${newDocumentId}`
+          )
 
-      if (newDocument) {
-        newDocument.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        })
-      }
+        if (newDocument) {
+          newDocument.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          })
+        }
 
-      setNewDocumentId(null)
-    })
+        setNewDocumentId(null)
+      })
 
     return () =>
       cancelAnimationFrame(frame)
@@ -235,20 +250,9 @@ export default function Documents() {
   ) => {
     event.preventDefault()
 
-    if (!isAdmin) {
-      return
-    }
-
     if (!formData.name.trim()) {
       setFormError(
         "Document name is required."
-      )
-      return
-    }
-
-    if (!formData.uploadedBy.trim()) {
-      setFormError(
-        "Uploaded by is required."
       )
       return
     }
@@ -260,8 +264,24 @@ export default function Documents() {
       return
     }
 
+    /*
+      Employee can only create documents.
+      Edit remains Admin-only.
+    */
     if (
-      formData.category === "Employee" &&
+      editingDocument !== null &&
+      !isAdmin
+    ) {
+      return
+    }
+
+    /*
+      Admin validation.
+    */
+    if (
+      isAdmin &&
+      formData.category ===
+        "Employee" &&
       !formData.employeeId.trim()
     ) {
       setFormError(
@@ -270,18 +290,38 @@ export default function Documents() {
       return
     }
 
+    /*
+      The backend automatically determines:
+      - employeeId for Employee
+      - uploadedBy from logged-in User
+
+      fileUrl is temporary until real
+      Cloudinary upload is implemented.
+    */
     const documentData = {
       name: formData.name.trim(),
       type: formData.type,
       category: formData.category,
+
       employeeId:
+        isAdmin &&
         formData.category === "Employee"
           ? formData.employeeId.trim()
           : null,
+
       uploadedBy:
-        formData.uploadedBy.trim(),
-      uploadDate: formData.uploadDate,
-      status: formData.status,
+        isAdmin
+          ? formData.uploadedBy.trim()
+          : undefined,
+
+      uploadDate:
+        formData.uploadDate,
+
+      status:
+        formData.status,
+
+      fileUrl:
+        "pending-upload",
     }
 
     const documentPayload =
@@ -289,6 +329,10 @@ export default function Documents() {
         typeof createDocument
       >[0]
 
+    /*
+      UPDATE
+      Admin only.
+    */
     if (editingDocument !== null) {
       try {
         const updatedDocument =
@@ -303,7 +347,8 @@ export default function Documents() {
           name:
             updatedDocument.name ?? "",
           type:
-            updatedDocument.type ?? "PDF",
+            updatedDocument.type ??
+            "PDF",
           category:
             updatedDocument.category ??
             "Employee",
@@ -311,8 +356,11 @@ export default function Documents() {
             updatedDocument.employeeId ??
             null,
           uploadedBy:
-            updatedDocument.uploadedBy ??
-            "",
+            typeof updatedDocument.uploadedBy ===
+            "string"
+              ? updatedDocument.uploadedBy
+              : updatedDocument.uploadedBy?.name ??
+                "",
           uploadDate:
             updatedDocument.uploadDate ??
             "",
@@ -323,7 +371,8 @@ export default function Documents() {
 
         setDocumentList((current) =>
           current.map((document) =>
-            document.id === editingDocument
+            document.id ===
+            editingDocument
               ? formattedDocument
               : document
           )
@@ -346,6 +395,10 @@ export default function Documents() {
       return
     }
 
+    /*
+      CREATE
+      Admin + Employee.
+    */
     try {
       const newDocument =
         (await createDocument(
@@ -355,7 +408,8 @@ export default function Documents() {
       const formattedDocument:
         DocumentWithEmployee = {
         id: newDocument._id,
-        name: newDocument.name ?? "",
+        name:
+          newDocument.name ?? "",
         type:
           newDocument.type ?? "PDF",
         category:
@@ -365,11 +419,17 @@ export default function Documents() {
           newDocument.employeeId ??
           null,
         uploadedBy:
-          newDocument.uploadedBy ?? "",
+          typeof newDocument.uploadedBy ===
+          "string"
+            ? newDocument.uploadedBy
+            : newDocument.uploadedBy?.name ??
+              "",
         uploadDate:
-          newDocument.uploadDate ?? "",
+          newDocument.uploadDate ??
+          "",
         status:
-          newDocument.status ?? "Active",
+          newDocument.status ??
+          "Active",
       }
 
       setDocumentList((current) => [
@@ -396,7 +456,9 @@ export default function Documents() {
     }
   }
 
-  const handleEdit = (id: string) => {
+  const handleEdit = (
+    id: string
+  ) => {
     if (!isAdmin) {
       return
     }
@@ -421,8 +483,10 @@ export default function Documents() {
     setEditingDocument(id)
 
     setFormData({
-      name: documentToEdit.name,
-      type: documentToEdit.type,
+      name:
+        documentToEdit.name,
+      type:
+        documentToEdit.type,
       category:
         documentToEdit.category,
       employeeId,
@@ -430,7 +494,8 @@ export default function Documents() {
         documentToEdit.uploadedBy,
       uploadDate:
         documentToEdit.uploadDate,
-      status: documentToEdit.status,
+      status:
+        documentToEdit.status,
     })
 
     setFormError("")
@@ -444,7 +509,9 @@ export default function Documents() {
     })
   }
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (
+    id: string
+  ) => {
     if (!isAdmin) {
       return
     }
@@ -463,7 +530,8 @@ export default function Documents() {
     const document =
       documentList.find(
         (item) =>
-          item.id === documentToDelete
+          item.id ===
+          documentToDelete
       )
 
     if (!document) {
@@ -517,7 +585,9 @@ export default function Documents() {
     [...documentList]
       .filter((document) => {
         const searchValue =
-          search.toLowerCase().trim()
+          search
+            .toLowerCase()
+            .trim()
 
         const documentName =
           document.name.toLowerCase()
@@ -535,7 +605,8 @@ export default function Documents() {
 
         const matchesType =
           typeFilter === "All" ||
-          document.type === typeFilter
+          document.type ===
+            typeFilter
 
         const matchesCategory =
           categoryFilter === "All" ||
@@ -612,13 +683,15 @@ export default function Documents() {
   const activeDocuments =
     documentList.filter(
       (document) =>
-        document.status === "Active"
+        document.status ===
+        "Active"
     ).length
 
   const archivedDocuments =
     documentList.filter(
       (document) =>
-        document.status === "Archived"
+        document.status ===
+        "Archived"
     ).length
 
   const pdfDocuments =
@@ -648,31 +721,36 @@ export default function Documents() {
   const employeeDocuments =
     documentList.filter(
       (document) =>
-        document.category === "Employee"
+        document.category ===
+        "Employee"
     ).length
 
   const contractDocuments =
     documentList.filter(
       (document) =>
-        document.category === "Contract"
+        document.category ===
+        "Contract"
     ).length
 
   const invoiceDocuments =
     documentList.filter(
       (document) =>
-        document.category === "Invoice"
+        document.category ===
+        "Invoice"
     ).length
 
   const projectDocuments =
     documentList.filter(
       (document) =>
-        document.category === "Project"
+        document.category ===
+        "Project"
     ).length
 
   const companyDocuments =
     documentList.filter(
       (document) =>
-        document.category === "Company"
+        document.category ===
+        "Company"
     ).length
 
   const activePercentage =
@@ -748,25 +826,23 @@ export default function Documents() {
             />
           </div>
 
-          {isAdmin && (
-            <button
-              type="button"
-              className="documents-add-btn"
-              onClick={() => {
-                if (showForm) {
-                  handleCancelForm()
-                } else {
-                  openDocumentForm()
-                }
-              }}
-            >
-              <Plus size={19} />
+          <button
+            type="button"
+            className="documents-add-btn"
+            onClick={() => {
+              if (showForm) {
+                handleCancelForm()
+              } else {
+                openDocumentForm()
+              }
+            }}
+          >
+            <Plus size={19} />
 
-              {showForm
-                ? "Close Form"
-                : "Add Document"}
-            </button>
-          )}
+            {showForm
+              ? "Close Form"
+              : "Add Document"}
+          </button>
         </div>
       </section>
 
@@ -777,7 +853,9 @@ export default function Documents() {
           </div>
 
           <div className="document-stat-content">
-            <span>Total Documents</span>
+            <span>
+              Total Documents
+            </span>
 
             <strong>
               {totalDocuments}
@@ -796,7 +874,9 @@ export default function Documents() {
           </div>
 
           <div className="document-stat-content">
-            <span>Active Documents</span>
+            <span>
+              Active Documents
+            </span>
 
             <strong>
               {activeDocuments}
@@ -815,7 +895,9 @@ export default function Documents() {
           </div>
 
           <div className="document-stat-content">
-            <span>Archived</span>
+            <span>
+              Archived
+            </span>
 
             <strong>
               {archivedDocuments}
@@ -834,7 +916,9 @@ export default function Documents() {
           </div>
 
           <div className="document-stat-content">
-            <span>PDF Documents</span>
+            <span>
+              PDF Documents
+            </span>
 
             <strong>
               {pdfDocuments}
@@ -856,7 +940,9 @@ export default function Documents() {
             </div>
 
             <div>
-              <h2>Document Overview</h2>
+              <h2>
+                Document Overview
+              </h2>
 
               <p>
                 Current document distribution
@@ -891,7 +977,12 @@ export default function Documents() {
                 <Image size={16} />,
               ],
             ].map(
-              ([label, count, className, icon]) => (
+              ([
+                label,
+                count,
+                className,
+                icon,
+              ]) => (
                 <div
                   className="documents-type-row"
                   key={String(label)}
@@ -938,7 +1029,9 @@ export default function Documents() {
             </div>
 
             <div>
-              <h2>Categories</h2>
+              <h2>
+                Categories
+              </h2>
 
               <p>
                 Documents by business area
@@ -1005,7 +1098,7 @@ export default function Documents() {
         </div>
       </section>
 
-      {showForm && isAdmin && (
+      {showForm && (
         <section className="documents-form-card">
           <div className="documents-form-header">
             <div className="documents-form-heading">
@@ -1043,7 +1136,9 @@ export default function Documents() {
             onSubmit={handleSubmit}
           >
             <div className="documents-field">
-              <label>Document Name</label>
+              <label>
+                Document Name
+              </label>
 
               <div className="documents-input-wrapper">
                 <FileText size={17} />
@@ -1064,7 +1159,9 @@ export default function Documents() {
             </div>
 
             <div className="documents-field">
-              <label>Document Type</label>
+              <label>
+                Document Type
+              </label>
 
               <div className="documents-input-wrapper">
                 <FileType2 size={17} />
@@ -1079,16 +1176,29 @@ export default function Documents() {
                     )
                   }
                 >
-                  <option value="PDF">PDF</option>
-                  <option value="Word">Word</option>
-                  <option value="Excel">Excel</option>
-                  <option value="Image">Image</option>
+                  <option value="PDF">
+                    PDF
+                  </option>
+
+                  <option value="Word">
+                    Word
+                  </option>
+
+                  <option value="Excel">
+                    Excel
+                  </option>
+
+                  <option value="Image">
+                    Image
+                  </option>
                 </select>
               </div>
             </div>
 
             <div className="documents-field">
-              <label>Category</label>
+              <label>
+                Category
+              </label>
 
               <div className="documents-input-wrapper">
                 <FolderOpen size={17} />
@@ -1107,40 +1217,76 @@ export default function Documents() {
                     Employee
                   </option>
 
-                  <option value="Contract">
-                    Contract
-                  </option>
+                  {isAdmin && (
+                    <>
+                      <option value="Contract">
+                        Contract
+                      </option>
 
-                  <option value="Invoice">
-                    Invoice
-                  </option>
+                      <option value="Invoice">
+                        Invoice
+                      </option>
 
-                  <option value="Project">
-                    Project
-                  </option>
+                      <option value="Project">
+                        Project
+                      </option>
 
-                  <option value="Company">
-                    Company
-                  </option>
+                      <option value="Company">
+                        Company
+                      </option>
+                    </>
+                  )}
                 </select>
               </div>
             </div>
 
-            {formData.category === "Employee" && (
+            {isAdmin &&
+              formData.category ===
+                "Employee" && (
+                <div className="documents-field">
+                  <label>
+                    Employee ID
+                  </label>
+
+                  <div className="documents-input-wrapper">
+                    <FileText size={17} />
+
+                    <input
+                      type="text"
+                      placeholder="Enter employee MongoDB ID"
+                      value={
+                        formData.employeeId
+                      }
+                      required
+                      onChange={(event) =>
+                        updateFormField(
+                          "employeeId",
+                          event.target.value
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+
+            {isAdmin && (
               <div className="documents-field">
-                <label>Employee ID</label>
+                <label>
+                  Uploaded By
+                </label>
 
                 <div className="documents-input-wrapper">
-                  <FileText size={17} />
+                  <FilePenLine size={17} />
 
                   <input
                     type="text"
-                    placeholder="Enter employee MongoDB ID"
-                    value={formData.employeeId}
-                    required
+                    placeholder="Enter uploader name"
+                    value={
+                      formData.uploadedBy
+                    }
                     onChange={(event) =>
                       updateFormField(
-                        "employeeId",
+                        "uploadedBy",
                         event.target.value
                       )
                     }
@@ -1150,35 +1296,18 @@ export default function Documents() {
             )}
 
             <div className="documents-field">
-              <label>Uploaded By</label>
-
-              <div className="documents-input-wrapper">
-                <FilePenLine size={17} />
-
-                <input
-                  type="text"
-                  placeholder="Enter uploader name"
-                  value={formData.uploadedBy}
-                  required
-                  onChange={(event) =>
-                    updateFormField(
-                      "uploadedBy",
-                      event.target.value
-                    )
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="documents-field">
-              <label>Upload Date</label>
+              <label>
+                Upload Date
+              </label>
 
               <div className="documents-input-wrapper">
                 <Clock3 size={17} />
 
                 <input
                   type="date"
-                  value={formData.uploadDate}
+                  value={
+                    formData.uploadDate
+                  }
                   required
                   onChange={(event) =>
                     updateFormField(
@@ -1191,14 +1320,19 @@ export default function Documents() {
             </div>
 
             <div className="documents-field">
-              <label>Status</label>
+              <label>
+                Status
+              </label>
 
               <div className="documents-input-wrapper">
                 <Activity size={17} />
 
                 <select
-                  value={formData.status}
+                  value={
+                    formData.status
+                  }
                   required
+                  disabled={!isAdmin}
                   onChange={(event) =>
                     updateFormField(
                       "status",
@@ -1210,9 +1344,11 @@ export default function Documents() {
                     Active
                   </option>
 
-                  <option value="Archived">
-                    Archived
-                  </option>
+                  {isAdmin && (
+                    <option value="Archived">
+                      Archived
+                    </option>
+                  )}
                 </select>
               </div>
             </div>
@@ -1221,7 +1357,9 @@ export default function Documents() {
               <div className="documents-form-error">
                 <Clock3 size={16} />
 
-                <span>{formError}</span>
+                <span>
+                  {formError}
+                </span>
               </div>
             )}
 
@@ -1230,7 +1368,8 @@ export default function Documents() {
                 type="submit"
                 className="documents-submit-btn"
               >
-                {editingDocument !== null ? (
+                {editingDocument !==
+                null ? (
                   <>
                     <FileCheck2 size={17} />
                     Update Document
@@ -1246,7 +1385,9 @@ export default function Documents() {
               <button
                 type="button"
                 className="documents-cancel-btn"
-                onClick={handleCancelForm}
+                onClick={
+                  handleCancelForm
+                }
               >
                 Cancel
               </button>
@@ -1262,7 +1403,9 @@ export default function Documents() {
               DOCUMENT EXPLORER
             </span>
 
-            <h2>Browse Documents</h2>
+            <h2>
+              Browse Documents
+            </h2>
           </div>
 
           <div className="documents-result-count">
@@ -1270,7 +1413,8 @@ export default function Documents() {
 
             {filteredDocuments.length}{" "}
             result
-            {filteredDocuments.length !== 1
+            {filteredDocuments.length !==
+            1
               ? "s"
               : ""}
           </div>
@@ -1306,11 +1450,19 @@ export default function Documents() {
               <option value="All">
                 All Types
               </option>
-              <option value="PDF">PDF</option>
-              <option value="Word">Word</option>
+
+              <option value="PDF">
+                PDF
+              </option>
+
+              <option value="Word">
+                Word
+              </option>
+
               <option value="Excel">
                 Excel
               </option>
+
               <option value="Image">
                 Image
               </option>
@@ -1331,21 +1483,30 @@ export default function Documents() {
               <option value="All">
                 All Categories
               </option>
+
               <option value="Employee">
                 Employee
               </option>
-              <option value="Contract">
-                Contract
-              </option>
-              <option value="Invoice">
-                Invoice
-              </option>
-              <option value="Project">
-                Project
-              </option>
-              <option value="Company">
-                Company
-              </option>
+
+              {isAdmin && (
+                <>
+                  <option value="Contract">
+                    Contract
+                  </option>
+
+                  <option value="Invoice">
+                    Invoice
+                  </option>
+
+                  <option value="Project">
+                    Project
+                  </option>
+
+                  <option value="Company">
+                    Company
+                  </option>
+                </>
+              )}
             </select>
           </div>
 
@@ -1363,9 +1524,11 @@ export default function Documents() {
               <option value="All">
                 All Statuses
               </option>
+
               <option value="Active">
                 Active
               </option>
+
               <option value="Archived">
                 Archived
               </option>
@@ -1416,7 +1579,8 @@ export default function Documents() {
       </section>
 
       <section className="documents-grid">
-        {filteredDocuments.length > 0 ? (
+        {filteredDocuments.length >
+        0 ? (
           filteredDocuments.map(
             (document) => (
               <div
@@ -1425,7 +1589,9 @@ export default function Documents() {
               >
                 <DocumentCard
                   document={document}
-                  onDelete={handleDelete}
+                  onDelete={
+                    handleDelete
+                  }
                   onEdit={handleEdit}
                 />
               </div>
@@ -1437,7 +1603,9 @@ export default function Documents() {
               <Files size={32} />
             </div>
 
-            <h2>No Documents Found</h2>
+            <h2>
+              No Documents Found
+            </h2>
 
             <p>
               No documents match your
@@ -1449,7 +1617,9 @@ export default function Documents() {
               onClick={() => {
                 setSearch("")
                 setTypeFilter("All")
-                setCategoryFilter("All")
+                setCategoryFilter(
+                  "All"
+                )
                 setStatusFilter("All")
               }}
             >
@@ -1460,15 +1630,20 @@ export default function Documents() {
         )}
       </section>
 
-      {documentToDelete !== null &&
+      {documentToDelete !==
+        null &&
         isAdmin && (
           <Modal
             title="Delete Document"
             message="Are you sure you want to move this document to Trash? You can recover it later from the Trash page."
             onCancel={() =>
-              setDocumentToDelete(null)
+              setDocumentToDelete(
+                null
+              )
             }
-            onConfirm={confirmDelete}
+            onConfirm={
+              confirmDelete
+            }
           />
         )}
     </main>
