@@ -6,7 +6,7 @@ type EmployeePayload = {
     email: string
     phone: string
     position: string
-    departmentId: number
+    departmentId: string
     salary: number
     hireDate: string
     status: "Active" | "Inactive"

@@ -35,33 +35,21 @@ export default function EmployeeCard({
 
     const isAdmin = user?.role === "Admin"
 
-    /* =========================================================
-       FIND EMPLOYEE DEPARTMENT
-       ========================================================= */
-
     const department = departments.find(
         (department) =>
             String(department.id) ===
             String(employee.departmentId)
     )
 
-    /* =========================================================
-       CREATE AVATAR INITIALS
-       ========================================================= */
-
     const initials =
         `${employee.firstName.charAt(0)}${employee.lastName.charAt(0)}`
             .toUpperCase()
 
-    const isActive = employee.status === "Active"
+    const isActive =
+        employee.status === "Active"
 
     return (
-
         <article className="employee-card">
-
-            {/* =================================================
-               EMPLOYEE HEADER
-               ================================================= */}
 
             <div className="employee-card-header">
 
@@ -72,12 +60,10 @@ export default function EmployeeCard({
                 <div className="employee-main-info">
 
                     <div className="employee-name-row">
-
                         <h2>
                             {employee.firstName}{" "}
                             {employee.lastName}
                         </h2>
-
                     </div>
 
                     <p className="employee-position">
@@ -107,11 +93,6 @@ export default function EmployeeCard({
 
             </div>
 
-
-            {/* =================================================
-               EMPLOYEE DETAILS
-               ================================================= */}
-
             <div className="employee-details">
 
                 <div className="employee-detail-row">
@@ -121,19 +102,14 @@ export default function EmployeeCard({
                     </div>
 
                     <div className="employee-detail-content">
-
-                        <span>
-                            Email
-                        </span>
+                        <span>Email</span>
 
                         <strong>
                             {employee.email}
                         </strong>
-
                     </div>
 
                 </div>
-
 
                 <div className="employee-detail-row">
 
@@ -142,19 +118,14 @@ export default function EmployeeCard({
                     </div>
 
                     <div className="employee-detail-content">
-
-                        <span>
-                            Phone
-                        </span>
+                        <span>Phone</span>
 
                         <strong>
                             {employee.phone}
                         </strong>
-
                     </div>
 
                 </div>
-
 
                 <div className="employee-detail-row">
 
@@ -163,26 +134,17 @@ export default function EmployeeCard({
                     </div>
 
                     <div className="employee-detail-content">
-
-                        <span>
-                            Department
-                        </span>
+                        <span>Department</span>
 
                         <strong>
                             {department?.name ||
                                 "Not Assigned"}
                         </strong>
-
                     </div>
 
                 </div>
 
             </div>
-
-
-            {/* =================================================
-               EMPLOYEE SUMMARY
-               ================================================= */}
 
             <div className="employee-summary">
 
@@ -193,20 +155,15 @@ export default function EmployeeCard({
                     </div>
 
                     <div>
-
-                        <span>
-                            Salary
-                        </span>
+                        <span>Salary</span>
 
                         <strong>
                             $
                             {employee.salary.toLocaleString()}
                         </strong>
-
                     </div>
 
                 </div>
-
 
                 <div className="employee-summary-item">
 
@@ -215,25 +172,16 @@ export default function EmployeeCard({
                     </div>
 
                     <div>
-
-                        <span>
-                            Hired
-                        </span>
+                        <span>Hired</span>
 
                         <strong>
                             {employee.hireDate}
                         </strong>
-
                     </div>
 
                 </div>
 
             </div>
-
-
-            {/* =================================================
-               CRUD ACTIONS
-               ================================================= */}
 
             <div className="employee-actions">
 

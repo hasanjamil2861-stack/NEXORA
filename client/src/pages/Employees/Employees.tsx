@@ -30,7 +30,6 @@ import {
     deleteEmployee,
 } from "../../services/api/employeeApi"
 
-// Backend employee response
 type EmployeeApiRecord = {
     _id: string
     firstName?: string
@@ -38,24 +37,35 @@ type EmployeeApiRecord = {
     email?: string
     phone?: string
     position?: string
-    departmentId?: number
+    departmentId?: string
     salary?: number
     hireDate?: string
     status?: Employee["status"]
 }
 
-// Convert MongoDB employee data into frontend Employee type
+type EmployeeFormData = {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    position: string
+    departmentId: string
+    salary: number
+    hireDate: string
+    status: Employee["status"]
+}
+
 function formatEmployee(
     employee: EmployeeApiRecord
 ): Employee {
     return {
-        id: employee._id,
+        id: String(employee._id),
         firstName: employee.firstName ?? "",
         lastName: employee.lastName ?? "",
         email: employee.email ?? "",
         phone: employee.phone ?? "",
         position: employee.position ?? "",
-        departmentId: employee.departmentId ?? 0,
+        departmentId: employee.departmentId ?? "",
         salary: employee.salary ?? 0,
         hireDate: employee.hireDate ?? "",
         status: employee.status ?? "Active",
@@ -106,7 +116,7 @@ export default function Employees() {
         >("All")
 
     const [departmentFilter, setDepartmentFilter] =
-        useState("All")
+        useState<string>("All")
 
     const [sortBy, setSortBy] =
         useState("None")
@@ -129,7 +139,6 @@ export default function Employees() {
     const { showToast } = useToast()
     const { moveToTrash } = useTrash()
 
-    // Scroll to newly created employee
     useEffect(() => {
         if (!newEmployeeId) {
             return
@@ -155,7 +164,6 @@ export default function Employees() {
             cancelAnimationFrame(frame)
     }, [newEmployeeId])
 
-    // Fetch employees from MongoDB
     useEffect(() => {
         async function fetchEmployees() {
             try {
@@ -173,7 +181,6 @@ export default function Employees() {
         fetchEmployees()
     }, [])
 
-    // Employee statistics
     const totalEmployees =
         employeeList.length
 
@@ -207,7 +214,6 @@ export default function Employees() {
               )
             : 0
 
-    // Reset employee form
     function resetForm() {
         setFirstName("")
         setLastName("")
@@ -223,7 +229,6 @@ export default function Employees() {
         setShowForm(false)
     }
 
-    // Open employee form
     function openEmployeeForm() {
         if (!isAdmin) {
             return
@@ -240,7 +245,6 @@ export default function Employees() {
         })
     }
 
-    // Validate employee form
     function validateForm() {
         if (!firstName.trim()) {
             setFormError(
@@ -310,7 +314,6 @@ export default function Employees() {
         return true
     }
 
-    // Open delete confirmation
     function handleDeleteEmployee(
         id: string
     ) {
@@ -321,7 +324,6 @@ export default function Employees() {
         setEmployeeToDelete(id)
     }
 
-    // Delete employee from MongoDB
     async function confirmDeleteEmployee() {
         if (!isAdmin) {
             return
@@ -380,7 +382,6 @@ export default function Employees() {
         }
     }
 
-    // Load employee data into edit form
     function handleEditEmployee(
         id: string
     ) {
@@ -445,7 +446,6 @@ export default function Employees() {
         })
     }
 
-    // Create or update employee
     async function handleCreateEmployee() {
         if (!isAdmin) {
             return
@@ -455,19 +455,18 @@ export default function Employees() {
             return
         }
 
-        const employeeData = {
+        const employeeData: EmployeeFormData = {
             firstName: firstName.trim(),
             lastName: lastName.trim(),
             email: email.trim(),
             phone: phone.trim(),
             position: position.trim(),
-            departmentId: 1,
+            departmentId: "1",
             salary: Number(salary),
             hireDate,
             status,
         }
 
-        // Update existing employee
         if (editingEmployee !== null) {
             try {
                 const data =
@@ -506,7 +505,6 @@ export default function Employees() {
             return
         }
 
-        // Create new employee
         try {
             const data =
                 (await createEmployee(
@@ -541,7 +539,6 @@ export default function Employees() {
         }
     }
 
-    // Filter employees
     const filteredEmployees =
         employeeList.filter(
             (employee) => {
@@ -553,38 +550,26 @@ export default function Employees() {
                 const matchesSearch =
                     employee.firstName
                         .toLowerCase()
-                        .includes(
-                            searchValue
-                        ) ||
+                        .includes(searchValue) ||
                     employee.lastName
                         .toLowerCase()
-                        .includes(
-                            searchValue
-                        ) ||
+                        .includes(searchValue) ||
                     employee.email
                         .toLowerCase()
-                        .includes(
-                            searchValue
-                        ) ||
+                        .includes(searchValue) ||
                     employee.position
                         .toLowerCase()
-                        .includes(
-                            searchValue
-                        )
+                        .includes(searchValue)
 
                 const matchesStatus =
-                    statusFilter ===
-                        "All" ||
+                    statusFilter === "All" ||
                     employee.status ===
                         statusFilter
 
                 const matchesDepartment =
-                    departmentFilter ===
-                        "All" ||
+                    departmentFilter === "All" ||
                     employee.departmentId ===
-                        Number(
-                            departmentFilter
-                        )
+                        departmentFilter
 
                 return (
                     matchesSearch &&
@@ -594,7 +579,6 @@ export default function Employees() {
             }
         )
 
-    // Sort employees
     const sortedEmployees = [
         ...filteredEmployees,
     ].sort((a, b) => {
@@ -624,14 +608,9 @@ export default function Employees() {
 
     return (
         <main className="employees-page">
-
-            {/* Header */}
             <header className="employees-header">
-
                 <div>
-                    <h1>
-                        Employees
-                    </h1>
+                    <h1>Employees</h1>
 
                     <p>
                         Manage your workforce,
@@ -657,12 +636,9 @@ export default function Employees() {
                             : "Add Employee"}
                     </button>
                 )}
-
             </header>
 
-            {/* Statistics */}
             <section className="employee-statistics">
-
                 <div className="employee-stat-card">
                     <div className="employee-stat-icon total">
                         <Users size={20} />
@@ -750,14 +726,10 @@ export default function Employees() {
                         </small>
                     </div>
                 </div>
-
             </section>
 
-            {/* Search and filters */}
             <section className="employee-controls">
-
                 <div className="employee-search">
-
                     <Search
                         className="employee-search-icon"
                         size={20}
@@ -773,11 +745,9 @@ export default function Employees() {
                             )
                         }
                     />
-
                 </div>
 
                 <div className="employee-filter">
-
                     <select
                         value={statusFilter}
                         onChange={(e) =>
@@ -788,7 +758,6 @@ export default function Employees() {
                             )
                         }
                     >
-
                         <option value="All">
                             All Status
                         </option>
@@ -800,24 +769,18 @@ export default function Employees() {
                         <option value="Inactive">
                             Inactive
                         </option>
-
                     </select>
-
                 </div>
 
                 <div className="employee-filter">
-
                     <select
-                        value={
-                            departmentFilter
-                        }
+                        value={departmentFilter}
                         onChange={(e) =>
                             setDepartmentFilter(
                                 e.target.value
                             )
                         }
                     >
-
                         <option value="All">
                             All Departments
                         </option>
@@ -838,13 +801,10 @@ export default function Employees() {
                                 </option>
                             )
                         )}
-
                     </select>
-
                 </div>
 
                 <div className="employee-filter">
-
                     <select
                         value={sortBy}
                         onChange={(e) =>
@@ -853,7 +813,6 @@ export default function Employees() {
                             )
                         }
                     >
-
                         <option value="None">
                             No Sort
                         </option>
@@ -869,16 +828,11 @@ export default function Employees() {
                         <option value="Hire Date">
                             Hire Date
                         </option>
-
                     </select>
-
                 </div>
-
             </section>
 
-            {/* Results information */}
             <div className="employee-results-info">
-
                 <span>
                     Showing{" "}
                     <strong>
@@ -887,25 +841,21 @@ export default function Employees() {
                         }
                     </strong>{" "}
                     {
-                        sortedEmployees.length === 1
+                        sortedEmployees.length ===
+                        1
                             ? "employee"
                             : "employees"
                     }
                 </span>
-
             </div>
 
-            {/* Add / edit employee form */}
             {showForm && isAdmin && (
                 <section
                     ref={employeeFormRef}
                     className="employee-form"
                 >
-
                     <div className="employee-form-header">
-
                         <div>
-
                             <h2>
                                 {
                                     editingEmployee !==
@@ -919,25 +869,19 @@ export default function Employees() {
                                 Enter the employee
                                 information below.
                             </p>
-
                         </div>
-
                     </div>
 
                     <div className="form-error-container">
-
                         {formError && (
                             <p className="form-error">
                                 {formError}
                             </p>
                         )}
-
                     </div>
 
                     <div className="employee-form-grid">
-
                         <div className="employee-form-field">
-
                             <label htmlFor="employee-first-name">
                                 First Name
                             </label>
@@ -955,11 +899,9 @@ export default function Employees() {
                                 }}
                                 required
                             />
-
                         </div>
 
                         <div className="employee-form-field">
-
                             <label htmlFor="employee-last-name">
                                 Last Name
                             </label>
@@ -977,11 +919,9 @@ export default function Employees() {
                                 }}
                                 required
                             />
-
                         </div>
 
                         <div className="employee-form-field">
-
                             <label htmlFor="employee-email">
                                 Email
                             </label>
@@ -999,11 +939,9 @@ export default function Employees() {
                                 }}
                                 required
                             />
-
                         </div>
 
                         <div className="employee-form-field">
-
                             <label htmlFor="employee-phone">
                                 Phone
                             </label>
@@ -1021,11 +959,9 @@ export default function Employees() {
                                 }}
                                 required
                             />
-
                         </div>
 
                         <div className="employee-form-field">
-
                             <label htmlFor="employee-position">
                                 Position
                             </label>
@@ -1043,11 +979,9 @@ export default function Employees() {
                                 }}
                                 required
                             />
-
                         </div>
 
                         <div className="employee-form-field">
-
                             <label htmlFor="employee-salary">
                                 Salary
                             </label>
@@ -1066,11 +1000,9 @@ export default function Employees() {
                                 }}
                                 required
                             />
-
                         </div>
 
                         <div className="employee-form-field">
-
                             <label htmlFor="employee-hire-date">
                                 Hire Date
                             </label>
@@ -1087,11 +1019,9 @@ export default function Employees() {
                                 }}
                                 required
                             />
-
                         </div>
 
                         <div className="employee-form-field">
-
                             <label htmlFor="employee-status">
                                 Status
                             </label>
@@ -1108,7 +1038,6 @@ export default function Employees() {
                                 }}
                                 required
                             >
-
                                 <option value="Active">
                                     Active
                                 </option>
@@ -1116,15 +1045,11 @@ export default function Employees() {
                                 <option value="Inactive">
                                     Inactive
                                 </option>
-
                             </select>
-
                         </div>
-
                     </div>
 
                     <div className="employee-form-actions">
-
                         <button
                             type="button"
                             className="create-employee-btn"
@@ -1149,25 +1074,18 @@ export default function Employees() {
                         >
                             Cancel
                         </button>
-
                     </div>
-
                 </section>
             )}
 
-            {/* Employee grid */}
             <section className="employees-grid">
-
                 {sortedEmployees.length > 0 ? (
-
                     sortedEmployees.map(
                         (employee) => (
-
                             <div
                                 key={employee.id}
                                 id={`employee-${employee.id}`}
                             >
-
                                 <EmployeeCard
                                     employee={
                                         employee
@@ -1179,16 +1097,11 @@ export default function Employees() {
                                         handleEditEmployee
                                     }
                                 />
-
                             </div>
-
                         )
                     )
-
                 ) : (
-
                     <div className="employee-empty-state">
-
                         <div className="employee-empty-icon">
                             <Search size={26} />
                         </div>
@@ -1220,14 +1133,10 @@ export default function Employees() {
                         >
                             Clear Filters
                         </button>
-
                     </div>
-
                 )}
-
             </section>
 
-            {/* Delete confirmation */}
             {employeeToDelete !== null &&
                 isAdmin && (
                     <Modal
@@ -1243,7 +1152,6 @@ export default function Employees() {
                         }
                     />
                 )}
-
         </main>
     )
 }

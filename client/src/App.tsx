@@ -1,3 +1,5 @@
+// App.tsx
+
 import {
   BrowserRouter,
   Route,
@@ -73,8 +75,6 @@ export default function App() {
               <Route
                 element={<MainLayout />}
               >
-                {/* Admin + Employee */}
-
                 <Route
                   path="/tasks"
                   element={<Tasks />}
@@ -82,9 +82,7 @@ export default function App() {
 
                 <Route
                   path="/leave-requests"
-                  element={
-                    <LeaveRequests />
-                  }
+                  element={<LeaveRequests />}
                 />
 
                 <Route
@@ -98,82 +96,64 @@ export default function App() {
                 />
 
                 <Route
-                  path="/attendance"
                   element={
-                    <Attendance />
+                    <ProtectedRoute adminOnly />
                   }
-                />
+                >
+                  <Route
+                    path="/attendance"
+                    element={<Attendance />}
+                  />
+
+                  <Route
+                    path="/contracts"
+                    element={<Contracts />}
+                  />
+                </Route>
 
                 <Route
-                  path="/contracts"
                   element={
-                    <Contracts />
-                  }
-                />
-
-                {/* Admin Only */}
-
-                <Route
-                  element={
-                    <ProtectedRoute
-                      adminOnly
-                    />
+                    <ProtectedRoute adminOnly />
                   }
                 >
                   <Route
                     path="/"
-                    element={
-                      <Dashboard />
-                    }
+                    element={<Dashboard />}
                   />
 
                   <Route
                     path="/employees"
-                    element={
-                      <Employees />
-                    }
+                    element={<Employees />}
                   />
 
                   <Route
                     path="/employees/:id"
-                    element={
-                      <EmployeeDetails />
-                    }
+                    element={<EmployeeDetails />}
                   />
 
                   <Route
                     path="/departments"
-                    element={
-                      <Departments />
-                    }
+                    element={<Departments />}
                   />
 
                   <Route
                     path="/clients"
-                    element={
-                      <Clients />
-                    }
+                    element={<Clients />}
                   />
 
                   <Route
                     path="/invoices"
-                    element={
-                      <Invoices />
-                    }
+                    element={<Invoices />}
                   />
 
                   <Route
                     path="/reports"
-                    element={
-                      <Reports />
-                    }
+                    element={<Reports />}
                   />
 
                   <Route
                     path="/trash"
-                    element={
-                      <Trash />
-                    }
+                    element={<Trash />}
                   />
                 </Route>
               </Route>

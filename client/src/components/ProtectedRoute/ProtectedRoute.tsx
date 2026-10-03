@@ -1,3 +1,5 @@
+// ProtectedRoute.tsx
+
 import {
   Navigate,
   Outlet,
@@ -17,7 +19,6 @@ export default function ProtectedRoute({
     user,
   } = useAuth()
 
-  // User must be logged in
   if (!isAuthenticated) {
     return (
       <Navigate
@@ -27,7 +28,6 @@ export default function ProtectedRoute({
     )
   }
 
-  // Admin-only route
   if (
     adminOnly &&
     user?.role !== "Admin"

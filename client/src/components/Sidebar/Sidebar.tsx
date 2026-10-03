@@ -1,3 +1,5 @@
+// Sidebar.tsx
+
 import { useState } from "react"
 
 import {
@@ -185,23 +187,27 @@ export default function Sidebar() {
             </span>
           </NavLink>
 
-          <NavLink
-            to="/attendance"
-            title="Attendance"
-            onClick={closeMobileMenu}
-          >
-            <CalendarCheck className="sidebar-icon" />
-            <span>Attendance</span>
-          </NavLink>
+          {isAdmin && (
+            <>
+              <NavLink
+                to="/attendance"
+                title="Attendance"
+                onClick={closeMobileMenu}
+              >
+                <CalendarCheck className="sidebar-icon" />
+                <span>Attendance</span>
+              </NavLink>
 
-          <NavLink
-            to="/contracts"
-            title="Contracts"
-            onClick={closeMobileMenu}
-          >
-            <FileSignature className="sidebar-icon" />
-            <span>Contracts</span>
-          </NavLink>
+              <NavLink
+                to="/contracts"
+                title="Contracts"
+                onClick={closeMobileMenu}
+              >
+                <FileSignature className="sidebar-icon" />
+                <span>Contracts</span>
+              </NavLink>
+            </>
+          )}
 
           {isAdmin && (
             <NavLink

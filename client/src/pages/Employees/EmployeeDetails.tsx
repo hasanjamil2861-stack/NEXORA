@@ -22,7 +22,6 @@ import type { Employee } from "../../types/Employee"
 
 import { getEmployees } from "../../services/api/employeeApi"
 
-// Backend employee response
 type EmployeeApiRecord = {
   _id: string
   firstName?: string
@@ -30,7 +29,7 @@ type EmployeeApiRecord = {
   email?: string
   phone?: string
   position?: string
-  departmentId?: number
+  departmentId?: string
   salary?: number
   hireDate?: string
   status?: "Active" | "Inactive"
@@ -46,7 +45,6 @@ export default function EmployeeDetails() {
   const [loading, setLoading] =
     useState(true)
 
-  // Load employee details from MongoDB
   useEffect(() => {
     async function fetchEmployee() {
       try {
@@ -66,7 +64,7 @@ export default function EmployeeDetails() {
         }
 
         const formattedEmployee: Employee = {
-          id: foundEmployee._id,
+          id: String(foundEmployee._id),
           firstName:
             foundEmployee.firstName ?? "",
           lastName:
@@ -78,7 +76,9 @@ export default function EmployeeDetails() {
           position:
             foundEmployee.position ?? "",
           departmentId:
-            foundEmployee.departmentId ?? 0,
+            String(
+              foundEmployee.departmentId ?? ""
+            ),
           salary:
             foundEmployee.salary ?? 0,
           hireDate:
@@ -98,13 +98,10 @@ export default function EmployeeDetails() {
     fetchEmployee()
   }, [id])
 
-  // Loading state
   if (loading) {
     return (
       <main className="employee-details-page">
-
         <div className="employee-not-found">
-
           <div className="employee-not-found-icon">
             <UserRound size={28} />
           </div>
@@ -121,20 +118,15 @@ export default function EmployeeDetails() {
             Please wait while we load the
             employee information.
           </p>
-
         </div>
-
       </main>
     )
   }
 
-  // Employee not found state
   if (!employee) {
     return (
       <main className="employee-details-page">
-
         <div className="employee-not-found">
-
           <div className="employee-not-found-icon">
             <UserRound size={28} />
           </div>
@@ -162,14 +154,11 @@ export default function EmployeeDetails() {
             <ArrowLeft size={17} />
             Back to Employees
           </button>
-
         </div>
-
       </main>
     )
   }
 
-  // Find department from current department data
   const department =
     departments.find(
       (item) =>
@@ -187,9 +176,7 @@ export default function EmployeeDetails() {
   return (
     <main className="employee-details-page">
 
-      {/* Page header */}
       <header className="employee-details-header">
-
         <div className="employee-details-header-content">
 
           <div className="employee-details-header-icon">
@@ -197,7 +184,6 @@ export default function EmployeeDetails() {
           </div>
 
           <div>
-
             <span className="employee-details-eyebrow">
               WORKFORCE MANAGEMENT
             </span>
@@ -210,7 +196,6 @@ export default function EmployeeDetails() {
               View detailed information and
               employment data for this team member.
             </p>
-
           </div>
 
         </div>
@@ -225,10 +210,8 @@ export default function EmployeeDetails() {
           <ArrowLeft size={17} />
           Back to Employees
         </button>
-
       </header>
 
-      {/* Employee profile */}
       <section className="employee-details-profile">
 
         <div className="employee-profile-main">
@@ -242,7 +225,6 @@ export default function EmployeeDetails() {
             <div className="employee-profile-name-row">
 
               <div>
-
                 <span className="employee-profile-label">
                   EMPLOYEE PROFILE
                 </span>
@@ -251,7 +233,6 @@ export default function EmployeeDetails() {
                   {employee.firstName}{" "}
                   {employee.lastName}
                 </h2>
-
               </div>
 
               <span
@@ -273,11 +254,9 @@ export default function EmployeeDetails() {
             </div>
 
             <p className="employee-profile-position">
-
               <BriefcaseBusiness size={15} />
 
               {employee.position}
-
             </p>
 
             <span className="employee-profile-id">
@@ -297,7 +276,6 @@ export default function EmployeeDetails() {
             </div>
 
             <div>
-
               <span>
                 Monthly Salary
               </span>
@@ -306,7 +284,6 @@ export default function EmployeeDetails() {
                 $
                 {employee.salary.toLocaleString()}
               </strong>
-
             </div>
 
           </div>
@@ -318,7 +295,6 @@ export default function EmployeeDetails() {
             </div>
 
             <div>
-
               <span>
                 Department
               </span>
@@ -327,7 +303,6 @@ export default function EmployeeDetails() {
                 {department?.name ||
                   "Not Assigned"}
               </strong>
-
             </div>
 
           </div>
@@ -336,7 +311,6 @@ export default function EmployeeDetails() {
 
       </section>
 
-      {/* Employee information */}
       <section className="employee-information-section">
 
         <div className="employee-section-heading">
@@ -346,7 +320,6 @@ export default function EmployeeDetails() {
           </div>
 
           <div>
-
             <span>
               EMPLOYEE INFORMATION
             </span>
@@ -354,7 +327,6 @@ export default function EmployeeDetails() {
             <h2>
               Personal & Employment Details
             </h2>
-
           </div>
 
         </div>
@@ -368,7 +340,6 @@ export default function EmployeeDetails() {
             </div>
 
             <div>
-
               <span>
                 Email Address
               </span>
@@ -376,7 +347,6 @@ export default function EmployeeDetails() {
               <strong className="employee-details-email">
                 {employee.email}
               </strong>
-
             </div>
 
           </div>
@@ -388,7 +358,6 @@ export default function EmployeeDetails() {
             </div>
 
             <div>
-
               <span>
                 Phone Number
               </span>
@@ -396,7 +365,6 @@ export default function EmployeeDetails() {
               <strong>
                 {employee.phone}
               </strong>
-
             </div>
 
           </div>
@@ -408,7 +376,6 @@ export default function EmployeeDetails() {
             </div>
 
             <div>
-
               <span>
                 Position
               </span>
@@ -416,7 +383,6 @@ export default function EmployeeDetails() {
               <strong>
                 {employee.position}
               </strong>
-
             </div>
 
           </div>
@@ -428,7 +394,6 @@ export default function EmployeeDetails() {
             </div>
 
             <div>
-
               <span>
                 Department
               </span>
@@ -437,7 +402,6 @@ export default function EmployeeDetails() {
                 {department?.name ||
                   "Not Assigned"}
               </strong>
-
             </div>
 
           </div>
@@ -449,7 +413,6 @@ export default function EmployeeDetails() {
             </div>
 
             <div>
-
               <span>
                 Salary
               </span>
@@ -458,7 +421,6 @@ export default function EmployeeDetails() {
                 $
                 {employee.salary.toLocaleString()}
               </strong>
-
             </div>
 
           </div>
@@ -470,7 +432,6 @@ export default function EmployeeDetails() {
             </div>
 
             <div>
-
               <span>
                 Hire Date
               </span>
@@ -478,7 +439,6 @@ export default function EmployeeDetails() {
               <strong>
                 {employee.hireDate}
               </strong>
-
             </div>
 
           </div>
@@ -486,17 +446,14 @@ export default function EmployeeDetails() {
           <div className="employee-details-item">
 
             <div className="employee-details-item-icon status">
-
               {isActive ? (
                 <CircleCheck size={17} />
               ) : (
                 <CircleX size={17} />
               )}
-
             </div>
 
             <div>
-
               <span>
                 Employment Status
               </span>
@@ -510,7 +467,6 @@ export default function EmployeeDetails() {
               >
                 {employee.status}
               </strong>
-
             </div>
 
           </div>
@@ -519,7 +475,6 @@ export default function EmployeeDetails() {
 
       </section>
 
-      {/* Employee record footer */}
       <div className="employee-details-footer">
 
         <div className="employee-details-footer-left">
@@ -529,7 +484,6 @@ export default function EmployeeDetails() {
           </div>
 
           <div>
-
             <strong>
               Employee Record
             </strong>
@@ -538,7 +492,6 @@ export default function EmployeeDetails() {
               Information shown from the current
               NEXORA employee workspace.
             </span>
-
           </div>
 
         </div>

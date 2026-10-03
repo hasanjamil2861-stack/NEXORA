@@ -14,6 +14,7 @@ import ContractCard from "../../components/ContractCard/ContractCard"
 import Modal from "../../components/Modal/Modal"
 import { useToast } from "../../context/ToastContext"
 import { useTrash } from "../../context/TrashContext"
+import { useAuth } from "../../context/AuthContext"
 import type { Contract } from "../../types/Contract"
 
 import {
@@ -23,7 +24,6 @@ import {
   deleteContract,
 } from "../../services/api/contractApi"
 
-// Form values used by both Add and Edit
 type ContractForm = {
   partyName: string
   contractType: "Employee" | "Client"
@@ -33,7 +33,6 @@ type ContractForm = {
   status: "Active" | "Expired" | "Pending"
 }
 
-// MongoDB contract returned by the API
 type ContractApiRecord = {
   _id: string
   partyName?: string
@@ -44,12 +43,14 @@ type ContractApiRecord = {
   status?: "Active" | "Expired" | "Pending"
 }
 
-// Convert MongoDB data into the frontend Contract type
-function formatContract(contract: ContractApiRecord): Contract {
+function formatContract(
+  contract: ContractApiRecord
+): Contract {
   return {
     id: contract._id,
     partyName: contract.partyName ?? "",
-    contractType: contract.contractType ?? "Employee",
+    contractType:
+      contract.contractType ?? "Employee",
     startDate: contract.startDate ?? "",
     endDate: contract.endDate ?? "",
     value: contract.value ?? 0,
@@ -58,94 +59,126 @@ function formatContract(contract: ContractApiRecord): Contract {
 }
 
 export default function Contracts() {
-  const [contractList, setContractList] = useState<Contract[]>([])
+  const { user } = useAuth()
 
-  const [searchTerm, setSearchTerm] = useState("")
+  const isAdmin =
+    user?.role === "Admin"
 
-  const [statusFilter, setStatusFilter] = useState<
-    "All" | "Active" | "Expired" | "Pending"
-  >("All")
+  const [contractList, setContractList] =
+    useState<Contract[]>([])
 
-  const [typeFilter, setTypeFilter] = useState<
-    "All" | "Employee" | "Client"
-  >("All")
+  const [searchTerm, setSearchTerm] =
+    useState("")
 
-  const [sortOption, setSortOption] = useState<
-    | "default"
-    | "name-asc"
-    | "name-desc"
-    | "date-asc"
-    | "date-desc"
-    | "value-asc"
-    | "value-desc"
-  >("default")
+  const [statusFilter, setStatusFilter] =
+    useState<
+      "All" | "Active" | "Expired" | "Pending"
+    >("All")
 
-  const [editingContractId, setEditingContractId] =
-    useState<string | null>(null)
+  const [typeFilter, setTypeFilter] =
+    useState<
+      "All" | "Employee" | "Client"
+    >("All")
 
-  const [contractToDelete, setContractToDelete] =
-    useState<string | null>(null)
+  const [sortOption, setSortOption] =
+    useState<
+      | "default"
+      | "name-asc"
+      | "name-desc"
+      | "date-asc"
+      | "date-desc"
+      | "value-asc"
+      | "value-desc"
+    >("default")
 
-  const [isAdding, setIsAdding] = useState(false)
+  const [
+    editingContractId,
+    setEditingContractId,
+  ] = useState<string | null>(null)
 
-  const [addError, setAddError] = useState("")
-  const [editError, setEditError] = useState("")
+  const [
+    contractToDelete,
+    setContractToDelete,
+  ] = useState<string | null>(null)
+
+  const [isAdding, setIsAdding] =
+    useState(false)
+
+  const [addError, setAddError] =
+    useState("")
+
+  const [editError, setEditError] =
+    useState("")
 
   const [newContractId, setNewContractId] =
     useState<string | null>(null)
 
-  const addFormRef = useRef<HTMLFormElement | null>(null)
-  const editFormRef = useRef<HTMLFormElement | null>(null)
+  const addFormRef =
+    useRef<HTMLFormElement | null>(null)
+
+  const editFormRef =
+    useRef<HTMLFormElement | null>(null)
 
   const { showToast } = useToast()
   const { moveToTrash } = useTrash()
 
-  const [editForm, setEditForm] = useState<ContractForm>({
-    partyName: "",
-    contractType: "Employee",
-    startDate: "",
-    endDate: "",
-    value: "",
-    status: "Pending",
-  })
+  const [editForm, setEditForm] =
+    useState<ContractForm>({
+      partyName: "",
+      contractType: "Employee",
+      startDate: "",
+      endDate: "",
+      value: "",
+      status: "Pending",
+    })
 
-  const [addForm, setAddForm] = useState<ContractForm>({
-    partyName: "",
-    contractType: "Employee",
-    startDate: "",
-    endDate: "",
-    value: "",
-    status: "Pending",
-  })
+  const [addForm, setAddForm] =
+    useState<ContractForm>({
+      partyName: "",
+      contractType: "Employee",
+      startDate: "",
+      endDate: "",
+      value: "",
+      status: "Pending",
+    })
 
-  // Fetch contracts from MongoDB
   useEffect(() => {
+    if (!isAdmin) {
+      return
+    }
+
     async function fetchContracts() {
       try {
         const data =
           (await getContracts()) as ContractApiRecord[]
 
-        const formattedContracts = data.map(formatContract)
+        const formattedContracts =
+          data.map(formatContract)
 
-        setContractList(formattedContracts)
+        setContractList(
+          formattedContracts
+        )
       } catch {
-        showToast("Failed to load contracts", "error")
+        showToast(
+          "Failed to load contracts",
+          "error"
+        )
       }
     }
 
     fetchContracts()
-  }, [showToast])
+  }, [isAdmin, showToast])
 
-  // Scroll to a newly created contract
   useEffect(() => {
     if (!newContractId) {
       return
     }
 
     const frame = requestAnimationFrame(() => {
-      const newContract = document.getElementById(
-        `contract-${newContractId}`
-      )
+      const newContract =
+        document.getElementById(
+          `contract-${newContractId}`
+        )
 
       if (newContract) {
         newContract.scrollIntoView({
@@ -157,11 +190,15 @@ export default function Contracts() {
       setNewContractId(null)
     })
 
-    return () => cancelAnimationFrame(frame)
+    return () =>
+      cancelAnimationFrame(frame)
   }, [newContractId])
 
-  // Open the Add Contract form
   function openContractForm() {
+    if (!isAdmin) {
+      return
+    }
+
     setIsAdding(true)
     setAddError("")
 
@@ -173,20 +210,28 @@ export default function Contracts() {
     })
   }
 
-  // Prepare a contract for deletion
   function handleDelete(id: string) {
+    if (!isAdmin) {
+      return
+    }
+
     setContractToDelete(id)
   }
 
-  // Delete from MongoDB, then move the contract to Trash
   async function confirmDelete() {
+    if (!isAdmin) {
+      return
+    }
+
     if (contractToDelete === null) {
       return
     }
 
-    const contract = contractList.find(
-      (item) => item.id === contractToDelete
-    )
+    const contract =
+      contractList.find(
+        (item) =>
+          item.id === contractToDelete
+      )
 
     if (!contract) {
       return
@@ -200,29 +245,44 @@ export default function Contracts() {
         contract.id,
         contract.partyName,
         `${contract.contractType} Contract`,
-        contract as unknown as Record<string, unknown>
+        contract as unknown as Record<
+          string,
+          unknown
+        >
       )
 
-      setContractList((currentContracts) =>
-        currentContracts.filter(
-          (currentContract) =>
-            currentContract.id !== contract.id
-        )
+      setContractList(
+        (currentContracts) =>
+          currentContracts.filter(
+            (currentContract) =>
+              currentContract.id !==
+              contract.id
+          )
       )
 
       setContractToDelete(null)
 
-      showToast("Contract moved to Trash", "success")
+      showToast(
+        "Contract moved to Trash",
+        "success"
+      )
     } catch {
-      showToast("Failed to delete contract", "error")
+      showToast(
+        "Failed to delete contract",
+        "error"
+      )
     }
   }
 
-  // Load the selected contract into the Edit form
   function handleEdit(id: string) {
-    const contract = contractList.find(
-      (item) => item.id === id
-    )
+    if (!isAdmin) {
+      return
+    }
+
+    const contract =
+      contractList.find(
+        (item) => item.id === id
+      )
 
     if (!contract) {
       return
@@ -233,7 +293,8 @@ export default function Contracts() {
 
     setEditForm({
       partyName: contract.partyName,
-      contractType: contract.contractType,
+      contractType:
+        contract.contractType,
       startDate: contract.startDate,
       endDate: contract.endDate,
       value: contract.value,
@@ -248,8 +309,9 @@ export default function Contracts() {
     })
   }
 
-  // Validate common Add/Edit contract fields
-  function validateForm(form: ContractForm) {
+  function validateForm(
+    form: ContractForm
+  ) {
     if (!form.partyName.trim()) {
       return "Party name is required."
     }
@@ -277,13 +339,17 @@ export default function Contracts() {
     return ""
   }
 
-  // Update the contract in MongoDB
   async function handleSave() {
+    if (!isAdmin) {
+      return
+    }
+
     if (editingContractId === null) {
       return
     }
 
-    const error = validateForm(editForm)
+    const error =
+      validateForm(editForm)
 
     if (error) {
       setEditError(error)
@@ -295,24 +361,35 @@ export default function Contracts() {
         (await updateContract(
           editingContractId,
           {
-            partyName: editForm.partyName.trim(),
-            contractType: editForm.contractType,
-            startDate: editForm.startDate,
-            endDate: editForm.endDate,
-            value: Number(editForm.value),
-            status: editForm.status,
+            partyName:
+              editForm.partyName.trim(),
+            contractType:
+              editForm.contractType,
+            startDate:
+              editForm.startDate,
+            endDate:
+              editForm.endDate,
+            value:
+              Number(editForm.value),
+            status:
+              editForm.status,
           }
         )) as ContractApiRecord
 
       const formattedContract =
-        formatContract(updatedContract)
-
-      setContractList((currentContracts) =>
-        currentContracts.map((contract) =>
-          contract.id === editingContractId
-            ? formattedContract
-            : contract
+        formatContract(
+          updatedContract
         )
+
+      setContractList(
+        (currentContracts) =>
+          currentContracts.map(
+            (contract) =>
+              contract.id ===
+              editingContractId
+                ? formattedContract
+                : contract
+          )
       )
 
       setEditingContractId(null)
@@ -330,15 +407,18 @@ export default function Contracts() {
     }
   }
 
-  // Close the Edit form
   function handleCancel() {
     setEditingContractId(null)
     setEditError("")
   }
 
-  // Create a new contract in MongoDB
   async function handleAdd() {
-    const error = validateForm(addForm)
+    if (!isAdmin) {
+      return
+    }
+
+    const error =
+      validateForm(addForm)
 
     if (error) {
       setAddError(error)
@@ -348,23 +428,35 @@ export default function Contracts() {
     try {
       const newContract =
         (await createContract({
-          partyName: addForm.partyName.trim(),
-          contractType: addForm.contractType,
-          startDate: addForm.startDate,
-          endDate: addForm.endDate,
-          value: Number(addForm.value),
-          status: addForm.status,
+          partyName:
+            addForm.partyName.trim(),
+          contractType:
+            addForm.contractType,
+          startDate:
+            addForm.startDate,
+          endDate:
+            addForm.endDate,
+          value:
+            Number(addForm.value),
+          status:
+            addForm.status,
         })) as ContractApiRecord
 
       const formattedContract =
-        formatContract(newContract)
+        formatContract(
+          newContract
+        )
 
-      setContractList((currentContracts) => [
-        ...currentContracts,
-        formattedContract,
-      ])
+      setContractList(
+        (currentContracts) => [
+          ...currentContracts,
+          formattedContract,
+        ]
+      )
 
-      setNewContractId(formattedContract.id)
+      setNewContractId(
+        formattedContract.id
+      )
 
       setAddForm({
         partyName: "",
@@ -390,98 +482,137 @@ export default function Contracts() {
     }
   }
 
-  // Close the Add form
   function handleCancelAdd() {
     setIsAdding(false)
     setAddError("")
   }
 
-  // Calculate contract statistics
-  const totalContracts = contractList.length
+  if (!isAdmin) {
+    return null
+  }
 
-  const activeContracts = contractList.filter(
-    (contract) => contract.status === "Active"
-  ).length
+  const totalContracts =
+    contractList.length
 
-  const pendingContracts = contractList.filter(
-    (contract) => contract.status === "Pending"
-  ).length
+  const activeContracts =
+    contractList.filter(
+      (contract) =>
+        contract.status === "Active"
+    ).length
 
-  const expiredContracts = contractList.filter(
-    (contract) => contract.status === "Expired"
-  ).length
+  const pendingContracts =
+    contractList.filter(
+      (contract) =>
+        contract.status === "Pending"
+    ).length
 
-  const totalContractValue = contractList.reduce(
-    (total, contract) =>
-      total + contract.value,
-    0
-  )
+  const expiredContracts =
+    contractList.filter(
+      (contract) =>
+        contract.status === "Expired"
+    ).length
+
+  const totalContractValue =
+    contractList.reduce(
+      (total, contract) =>
+        total + contract.value,
+      0
+    )
 
   const activePercentage =
     totalContracts > 0
       ? Math.round(
-          (activeContracts / totalContracts) * 100
+          (activeContracts /
+            totalContracts) *
+            100
         )
       : 0
 
-  // Apply search, filters, and sorting
-  const filteredContracts = [...contractList]
-    .filter((contract) =>
-      contract.partyName
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-    )
-    .filter((contract) =>
-      statusFilter === "All"
-        ? true
-        : contract.status === statusFilter
-    )
-    .filter((contract) =>
-      typeFilter === "All"
-        ? true
-        : contract.contractType === typeFilter
-    )
-    .sort((a, b) => {
-      if (sortOption === "name-asc") {
-        return a.partyName.localeCompare(
-          b.partyName
-        )
-      }
+  const filteredContracts =
+    [...contractList]
+      .filter((contract) =>
+        contract.partyName
+          .toLowerCase()
+          .includes(
+            searchTerm.toLowerCase()
+          )
+      )
+      .filter((contract) =>
+        statusFilter === "All"
+          ? true
+          : contract.status ===
+            statusFilter
+      )
+      .filter((contract) =>
+        typeFilter === "All"
+          ? true
+          : contract.contractType ===
+            typeFilter
+      )
+      .sort((a, b) => {
+        if (
+          sortOption === "name-asc"
+        ) {
+          return a.partyName.localeCompare(
+            b.partyName
+          )
+        }
 
-      if (sortOption === "name-desc") {
-        return b.partyName.localeCompare(
-          a.partyName
-        )
-      }
+        if (
+          sortOption === "name-desc"
+        ) {
+          return b.partyName.localeCompare(
+            a.partyName
+          )
+        }
 
-      if (sortOption === "date-asc") {
-        return (
-          new Date(a.startDate).getTime() -
-          new Date(b.startDate).getTime()
-        )
-      }
+        if (
+          sortOption === "date-asc"
+        ) {
+          return (
+            new Date(
+              a.startDate
+            ).getTime() -
+            new Date(
+              b.startDate
+            ).getTime()
+          )
+        }
 
-      if (sortOption === "date-desc") {
-        return (
-          new Date(b.startDate).getTime() -
-          new Date(a.startDate).getTime()
-        )
-      }
+        if (
+          sortOption === "date-desc"
+        ) {
+          return (
+            new Date(
+              b.startDate
+            ).getTime() -
+            new Date(
+              a.startDate
+            ).getTime()
+          )
+        }
 
-      if (sortOption === "value-asc") {
-        return a.value - b.value
-      }
+        if (
+          sortOption === "value-asc"
+        ) {
+          return (
+            a.value - b.value
+          )
+        }
 
-      if (sortOption === "value-desc") {
-        return b.value - a.value
-      }
+        if (
+          sortOption === "value-desc"
+        ) {
+          return (
+            b.value - a.value
+          )
+        }
 
-      return 0
-    })
+        return 0
+      })
 
   return (
     <main className="contracts-page">
-      {/* Page header and contract statistics */}
       <header className="contracts-page-header">
         <div className="contracts-header-main">
           <span className="contracts-eyebrow">
@@ -497,9 +628,11 @@ export default function Contracts() {
               <h1>Contracts</h1>
 
               <p>
-                Manage employee and client agreements,
-                monitor contract status, and track financial
-                value from one centralized workspace.
+                Manage employee and client
+                agreements, monitor contract
+                status, and track financial
+                value from one centralized
+                workspace.
               </p>
             </div>
           </div>
@@ -514,7 +647,9 @@ export default function Contracts() {
 
               <div>
                 <span>Total</span>
-                <strong>{totalContracts}</strong>
+                <strong>
+                  {totalContracts}
+                </strong>
               </div>
             </div>
 
@@ -525,7 +660,9 @@ export default function Contracts() {
 
               <div>
                 <span>Active</span>
-                <strong>{activeContracts}</strong>
+                <strong>
+                  {activeContracts}
+                </strong>
               </div>
             </div>
 
@@ -536,7 +673,9 @@ export default function Contracts() {
 
               <div>
                 <span>Pending</span>
-                <strong>{pendingContracts}</strong>
+                <strong>
+                  {pendingContracts}
+                </strong>
               </div>
             </div>
 
@@ -547,8 +686,10 @@ export default function Contracts() {
 
               <div>
                 <span>Value</span>
+
                 <strong>
-                  ${totalContractValue.toLocaleString()}
+                  $
+                  {totalContractValue.toLocaleString()}
                 </strong>
               </div>
             </div>
@@ -561,6 +702,7 @@ export default function Contracts() {
 
             <div>
               <span>Portfolio Health</span>
+
               <strong>
                 {activePercentage}% Active
               </strong>
@@ -582,7 +724,6 @@ export default function Contracts() {
         </div>
       </header>
 
-      {/* Add contract form */}
       {isAdding && (
         <form
           ref={addFormRef}
@@ -602,8 +743,10 @@ export default function Contracts() {
             onChange={(e) => {
               setAddForm({
                 ...addForm,
-                partyName: e.target.value,
+                partyName:
+                  e.target.value,
               })
+
               setAddError("")
             }}
           />
@@ -619,11 +762,17 @@ export default function Contracts() {
                     | "Employee"
                     | "Client",
               })
+
               setAddError("")
             }}
           >
-            <option value="Employee">Employee</option>
-            <option value="Client">Client</option>
+            <option value="Employee">
+              Employee
+            </option>
+
+            <option value="Client">
+              Client
+            </option>
           </select>
 
           <input
@@ -633,8 +782,10 @@ export default function Contracts() {
             onChange={(e) => {
               setAddForm({
                 ...addForm,
-                startDate: e.target.value,
+                startDate:
+                  e.target.value,
               })
+
               setAddError("")
             }}
           />
@@ -642,13 +793,18 @@ export default function Contracts() {
           <input
             type="date"
             value={addForm.endDate}
-            min={addForm.startDate || undefined}
+            min={
+              addForm.startDate ||
+              undefined
+            }
             required
             onChange={(e) => {
               setAddForm({
                 ...addForm,
-                endDate: e.target.value,
+                endDate:
+                  e.target.value,
               })
+
               setAddError("")
             }}
           />
@@ -666,8 +822,11 @@ export default function Contracts() {
                 value:
                   e.target.value === ""
                     ? ""
-                    : Number(e.target.value),
+                    : Number(
+                        e.target.value
+                      ),
               })
+
               setAddError("")
             }}
           />
@@ -684,12 +843,21 @@ export default function Contracts() {
                     | "Expired"
                     | "Pending",
               })
+
               setAddError("")
             }}
           >
-            <option value="Active">Active</option>
-            <option value="Expired">Expired</option>
-            <option value="Pending">Pending</option>
+            <option value="Active">
+              Active
+            </option>
+
+            <option value="Expired">
+              Expired
+            </option>
+
+            <option value="Pending">
+              Pending
+            </option>
           </select>
 
           {addError && (
@@ -711,7 +879,6 @@ export default function Contracts() {
         </form>
       )}
 
-      {/* Edit contract form */}
       {editingContractId !== null && (
         <form
           ref={editFormRef}
@@ -731,8 +898,10 @@ export default function Contracts() {
             onChange={(e) => {
               setEditForm({
                 ...editForm,
-                partyName: e.target.value,
+                partyName:
+                  e.target.value,
               })
+
               setEditError("")
             }}
           />
@@ -748,11 +917,17 @@ export default function Contracts() {
                     | "Employee"
                     | "Client",
               })
+
               setEditError("")
             }}
           >
-            <option value="Employee">Employee</option>
-            <option value="Client">Client</option>
+            <option value="Employee">
+              Employee
+            </option>
+
+            <option value="Client">
+              Client
+            </option>
           </select>
 
           <input
@@ -762,8 +937,10 @@ export default function Contracts() {
             onChange={(e) => {
               setEditForm({
                 ...editForm,
-                startDate: e.target.value,
+                startDate:
+                  e.target.value,
               })
+
               setEditError("")
             }}
           />
@@ -771,13 +948,18 @@ export default function Contracts() {
           <input
             type="date"
             value={editForm.endDate}
-            min={editForm.startDate || undefined}
+            min={
+              editForm.startDate ||
+              undefined
+            }
             required
             onChange={(e) => {
               setEditForm({
                 ...editForm,
-                endDate: e.target.value,
+                endDate:
+                  e.target.value,
               })
+
               setEditError("")
             }}
           />
@@ -795,8 +977,11 @@ export default function Contracts() {
                 value:
                   e.target.value === ""
                     ? ""
-                    : Number(e.target.value),
+                    : Number(
+                        e.target.value
+                      ),
               })
+
               setEditError("")
             }}
           />
@@ -813,12 +998,21 @@ export default function Contracts() {
                     | "Expired"
                     | "Pending",
               })
+
               setEditError("")
             }}
           >
-            <option value="Active">Active</option>
-            <option value="Expired">Expired</option>
-            <option value="Pending">Pending</option>
+            <option value="Active">
+              Active
+            </option>
+
+            <option value="Expired">
+              Expired
+            </option>
+
+            <option value="Pending">
+              Pending
+            </option>
           </select>
 
           {editError && (
@@ -840,7 +1034,6 @@ export default function Contracts() {
         </form>
       )}
 
-      {/* Search, filters, and sorting */}
       <div className="contracts-controls">
         <div className="contracts-search">
           <Search size={18} />
@@ -850,7 +1043,9 @@ export default function Contracts() {
             placeholder="Search employee or client..."
             value={searchTerm}
             onChange={(e) =>
-              setSearchTerm(e.target.value)
+              setSearchTerm(
+                e.target.value
+              )
             }
           />
         </div>
@@ -867,10 +1062,21 @@ export default function Contracts() {
             )
           }
         >
-          <option value="All">All Statuses</option>
-          <option value="Active">Active</option>
-          <option value="Expired">Expired</option>
-          <option value="Pending">Pending</option>
+          <option value="All">
+            All Statuses
+          </option>
+
+          <option value="Active">
+            Active
+          </option>
+
+          <option value="Expired">
+            Expired
+          </option>
+
+          <option value="Pending">
+            Pending
+          </option>
         </select>
 
         <select
@@ -884,9 +1090,17 @@ export default function Contracts() {
             )
           }
         >
-          <option value="All">All Types</option>
-          <option value="Employee">Employee</option>
-          <option value="Client">Client</option>
+          <option value="All">
+            All Types
+          </option>
+
+          <option value="Employee">
+            Employee
+          </option>
+
+          <option value="Client">
+            Client
+          </option>
         </select>
 
         <select
@@ -904,51 +1118,66 @@ export default function Contracts() {
             )
           }
         >
-          <option value="default">Default Order</option>
-          <option value="name-asc">Name A-Z</option>
-          <option value="name-desc">Name Z-A</option>
+          <option value="default">
+            Default Order
+          </option>
+
+          <option value="name-asc">
+            Name A-Z
+          </option>
+
+          <option value="name-desc">
+            Name Z-A
+          </option>
+
           <option value="date-asc">
             Start Date: Oldest
           </option>
+
           <option value="date-desc">
             Start Date: Newest
           </option>
+
           <option value="value-asc">
             Value: Lowest
           </option>
+
           <option value="value-desc">
             Value: Highest
           </option>
         </select>
       </div>
 
-      {/* Contract cards */}
       <div className="contracts-grid">
         {filteredContracts.length > 0 ? (
-          filteredContracts.map((contract) => (
-            <div
-              key={contract.id}
-              id={`contract-${contract.id}`}
-            >
-              <ContractCard
-                contract={contract}
-                onDelete={handleDelete}
-                onEdit={handleEdit}
-              />
-            </div>
-          ))
+          filteredContracts.map(
+            (contract) => (
+              <div
+                key={contract.id}
+                id={`contract-${contract.id}`}
+              >
+                <ContractCard
+                  contract={contract}
+                  onDelete={handleDelete}
+                  onEdit={handleEdit}
+                />
+              </div>
+            )
+          )
         ) : (
           <div className="contract-empty">
-            <h2>No contracts found</h2>
+            <h2>
+              No contracts found
+            </h2>
 
             <p>
-              Try changing your search or filters.
+              Try changing your search
+              or filters.
             </p>
           </div>
         )}
       </div>
 
-      {/* Delete confirmation */}
       {contractToDelete !== null && (
         <Modal
           title="Delete Contract"
