@@ -26,6 +26,7 @@ import {
   Trash2,
   Menu,
   X,
+  UserRound,
 } from "lucide-react"
 
 export default function Sidebar() {
@@ -118,6 +119,16 @@ export default function Sidebar() {
         <nav className="sidebar-navigation">
           {isAdmin && (
             <>
+                  <NavLink
+            to="/profile"
+            title="My Profile"
+            onClick={closeMobileMenu}
+          >
+            <UserRound className="sidebar-icon" />
+            <span>My Profile</span>
+          </NavLink>
+
+
               <NavLink
                 to="/"
                 title="Dashboard"
@@ -250,6 +261,8 @@ export default function Sidebar() {
               </NavLink>
             </>
           )}
+
+        
         </nav>
 
         <button

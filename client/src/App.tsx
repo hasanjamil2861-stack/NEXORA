@@ -1,5 +1,3 @@
-// App.tsx
-
 import {
   BrowserRouter,
   Route,
@@ -29,6 +27,7 @@ import "@assets/styles/Toast.css"
 import "@assets/styles/Trash.css"
 import "@assets/styles/TrashCard.css"
 import "@assets/styles/Register.css"
+import "@assets/styles/Profile.css"
 
 import { TrashProvider } from "./context/TrashContext"
 import { AuthProvider } from "./context/AuthContext"
@@ -52,6 +51,7 @@ import Reports from "./pages/Reports/Reports"
 import Tasks from "./pages/Tasks/Tasks"
 import Trash from "./pages/Trash/Trash"
 import Register from "./pages/Register/Register"
+import Profile from "./pages/Profile/Profile"
 
 export default function App() {
   return (
@@ -70,7 +70,9 @@ export default function App() {
             />
 
             <Route
-              element={<ProtectedRoute />}
+              element={
+                <ProtectedRoute />
+              }
             >
               <Route
                 element={<MainLayout />}
@@ -82,78 +84,113 @@ export default function App() {
 
                 <Route
                   path="/leave-requests"
-                  element={<LeaveRequests />}
+                  element={
+                    <LeaveRequests />
+                  }
                 />
 
                 <Route
                   path="/documents"
-                  element={<Documents />}
+                  element={
+                    <Documents />
+                  }
                 />
 
                 <Route
                   path="/projects"
-                  element={<Projects />}
+                  element={
+                    <Projects />
+                  }
+                />
+
+                <Route
+                  path="/profile"
+                  element={<Profile />}
                 />
 
                 <Route
                   element={
-                    <ProtectedRoute adminOnly />
+                    <ProtectedRoute
+                      adminOnly
+                    />
                   }
                 >
                   <Route
                     path="/attendance"
-                    element={<Attendance />}
+                    element={
+                      <Attendance />
+                    }
                   />
 
                   <Route
                     path="/contracts"
-                    element={<Contracts />}
+                    element={
+                      <Contracts />
+                    }
                   />
                 </Route>
 
                 <Route
                   element={
-                    <ProtectedRoute adminOnly />
+                    <ProtectedRoute
+                      adminOnly
+                    />
                   }
                 >
                   <Route
                     path="/"
-                    element={<Dashboard />}
+                    element={
+                      <Dashboard />
+                    }
                   />
 
                   <Route
                     path="/employees"
-                    element={<Employees />}
+                    element={
+                      <Employees />
+                    }
                   />
 
                   <Route
                     path="/employees/:id"
-                    element={<EmployeeDetails />}
+                    element={
+                      <EmployeeDetails />
+                    }
                   />
 
                   <Route
                     path="/departments"
-                    element={<Departments />}
+                    element={
+                      <Departments />
+                    }
                   />
 
                   <Route
                     path="/clients"
-                    element={<Clients />}
+                    element={
+                      <Clients />
+                    }
                   />
 
                   <Route
                     path="/invoices"
-                    element={<Invoices />}
+                    element={
+                      <Invoices />
+                    }
                   />
 
                   <Route
                     path="/reports"
-                    element={<Reports />}
+                    element={
+                      <Reports />
+                    }
                   />
 
                   <Route
                     path="/trash"
-                    element={<Trash />}
+                    element={
+                      <Trash />
+                    }
                   />
                 </Route>
               </Route>

@@ -16,6 +16,7 @@ const invoiceRoutes = require("./routes/invoiceRoutes")
 const documentRoutes = require("./routes/documentRoutes")
 const reportRoutes = require("./routes/reportRoutes")
 const authRoutes = require("./routes/authRoutes")
+const profileRoutes = require("./routes/profileRoutes")
 
 const app = express()
 
@@ -55,6 +56,7 @@ app.use(contractRoutes)
 app.use(invoiceRoutes)
 app.use(documentRoutes)
 app.use(reportRoutes)
+app.use(profileRoutes)
 app.use("/auth", authRoutes)
 
 // Health check
