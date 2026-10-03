@@ -27,10 +27,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 28px;
-
   padding: 26px 28px;
   margin-bottom: 24px;
-
   overflow: hidden;
 
   background:
@@ -56,15 +54,11 @@
 .departments-header::before {
   content: "";
   position: absolute;
-
   width: 190px;
   height: 190px;
-
   top: -115px;
   right: -65px;
-
   border-radius: 50%;
-
   background: rgba(37, 99, 235, 0.07);
 }
 
@@ -74,14 +68,15 @@
 
   display: flex;
   align-items: center;
-  gap: 17px;
 
+  gap: 17px;
   min-width: 0;
 }
 
 .departments-title-icon {
   width: 58px;
   height: 58px;
+
   flex-shrink: 0;
 
   display: flex;
@@ -116,6 +111,7 @@
 
   font-size: 10px;
   font-weight: 800;
+
   letter-spacing: 1.5px;
 }
 
@@ -126,6 +122,7 @@
 
   font-size: 30px;
   font-weight: 800;
+
   letter-spacing: -0.5px;
 }
 
@@ -146,6 +143,7 @@
 
   display: flex;
   align-items: center;
+
   gap: 13px;
 
   flex-shrink: 0;
@@ -161,7 +159,8 @@
   border: 1px solid #e1e7f0;
   border-radius: 13px;
 
-  box-shadow: 0 5px 15px rgba(31, 41, 55, 0.04);
+  box-shadow:
+    0 5px 15px rgba(31, 41, 55, 0.04);
 }
 
 .departments-header-summary span {
@@ -171,6 +170,7 @@
 
   font-size: 10px;
   font-weight: 700;
+
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -200,6 +200,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   gap: 8px;
 
   padding: 0 18px;
@@ -245,7 +246,10 @@
 
 .department-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
   gap: 16px;
 
   margin-bottom: 22px;
@@ -254,6 +258,7 @@
 .department-stat-card {
   display: flex;
   align-items: center;
+
   gap: 14px;
 
   min-width: 0;
@@ -281,6 +286,7 @@
 .department-stat-icon {
   width: 44px;
   height: 44px;
+
   flex-shrink: 0;
 
   display: flex;
@@ -365,6 +371,7 @@
 .department-overview-header h2 {
   display: flex;
   align-items: center;
+
   gap: 8px;
 
   margin: 0;
@@ -428,7 +435,9 @@
 .department-toolbar {
   display: flex;
   align-items: center;
+
   gap: 11px;
+
   flex-wrap: wrap;
 
   margin-bottom: 14px;
@@ -436,12 +445,13 @@
 
 .department-search {
   flex: 1;
-  min-width: 220px;
 
+  min-width: 220px;
   height: 44px;
 
   display: flex;
   align-items: center;
+
   gap: 9px;
 
   padding: 0 13px;
@@ -463,6 +473,7 @@
 
 .department-search svg {
   flex-shrink: 0;
+
   color: #98a2b3;
 }
 
@@ -473,6 +484,7 @@
   padding: 0;
 
   color: #1f2937;
+
   background: transparent;
 
   border: none;
@@ -491,6 +503,7 @@
 
   display: flex;
   align-items: center;
+
   gap: 7px;
 
   background: #ffffff;
@@ -509,6 +522,7 @@
   outline: none;
 
   font-size: 13px;
+
   cursor: pointer;
 }
 
@@ -526,12 +540,14 @@
   padding: 0;
 
   color: #344054;
+
   background: transparent;
 
   border: none;
   outline: none;
 
   font-size: 13px;
+
   cursor: pointer;
 }
 
@@ -569,9 +585,16 @@
   margin-bottom: 24px;
   padding: 24px;
 
-  background: #ffffff;
+  background:
+    linear-gradient(
+      135deg,
+      #fffdf8 0%,
+      #fff7e8 38%,
+      #fff1cc 68%,
+      #ffedbd 100%
+    );
 
-  border: 1px solid #dfe6f1;
+  border: 1px solid #f3dfb2;
   border-radius: 18px;
 
   box-shadow:
@@ -593,10 +616,11 @@
 
   margin-bottom: 5px;
 
-  color: #6366f1;
+  color: #d97706;
 
   font-size: 9px;
   font-weight: 800;
+
   letter-spacing: 1.3px;
 }
 
@@ -612,7 +636,7 @@
 .department-form-header p {
   margin: 5px 0 0;
 
-  color: #98a2b3;
+  color: #8a6a32;
 
   font-size: 12px;
 }
@@ -620,15 +644,23 @@
 .department-form-icon {
   width: 42px;
   height: 42px;
+
   flex-shrink: 0;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  color: #4f46e5;
-  background: #eef2ff;
+  color: #d97706;
 
+  background:
+    linear-gradient(
+      135deg,
+      #fff7ed,
+      #fef3c7
+    );
+
+  border: 1px solid #fed7aa;
   border-radius: 11px;
 }
 
@@ -637,6 +669,7 @@
   padding: 11px 13px;
 
   color: #b42318;
+
   background: #fef3f2;
 
   border: 1px solid #fecdca;
@@ -662,6 +695,7 @@
 .department-form-field label {
   display: flex;
   align-items: center;
+
   gap: 6px;
 
   margin-bottom: 7px;
@@ -673,21 +707,23 @@
 }
 
 .department-form-field label svg {
-  color: #6366f1;
+  color: #d97706;
 }
 
 .department-form-field input,
 .department-form-field select,
 .department-form-field textarea {
   width: 100%;
+
   box-sizing: border-box;
 
   padding: 11px 12px;
 
   color: #1f2937;
-  background: #ffffff;
 
-  border: 1px solid #d9e1ec;
+  background: rgba(255, 255, 255, 0.9);
+
+  border: 1px solid #e7d8b8;
   border-radius: 10px;
 
   outline: none;
@@ -712,10 +748,10 @@
 .department-form-field input:focus,
 .department-form-field select:focus,
 .department-form-field textarea:focus {
-  border-color: #6366f1;
+  border-color: #f59e0b;
 
   box-shadow:
-    0 0 0 3px rgba(99, 102, 241, 0.09);
+    0 0 0 3px rgba(245, 158, 11, 0.13);
 }
 
 .department-description-field {
@@ -724,7 +760,9 @@
 
 .department-form-actions {
   display: flex;
+
   justify-content: flex-end;
+
   gap: 9px;
 
   margin-top: 20px;
@@ -736,6 +774,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   gap: 7px;
 
   padding: 0 16px;
@@ -768,21 +807,21 @@
   background:
     linear-gradient(
       135deg,
-      #2563eb,
-      #4f46e5
+      #f59e0b,
+      #f97316
     );
 
   border: none;
 
   box-shadow:
-    0 6px 15px rgba(37, 99, 235, 0.18);
+    0 7px 17px rgba(245, 158, 11, 0.22);
 }
 
 .department-submit-btn:hover {
   transform: translateY(-1px);
 
   box-shadow:
-    0 9px 20px rgba(37, 99, 235, 0.24);
+    0 10px 22px rgba(245, 158, 11, 0.28);
 }
 
 
@@ -845,6 +884,7 @@
 .department-card-title {
   display: flex;
   align-items: center;
+
   gap: 11px;
 
   min-width: 0;
@@ -853,6 +893,7 @@
 .department-card-icon {
   width: 40px;
   height: 40px;
+
   flex-shrink: 0;
 
   display: flex;
@@ -898,6 +939,7 @@
 
   display: inline-flex;
   align-items: center;
+
   gap: 5px;
 
   padding: 5px 8px;
@@ -910,13 +952,17 @@
 
 .department-status-badge.active {
   color: #15803d;
+
   background: #f0fdf4;
+
   border: 1px solid #bbf7d0;
 }
 
 .department-status-badge.inactive {
   color: #b91c1c;
+
   background: #fef2f2;
+
   border: 1px solid #fecaca;
 }
 
@@ -928,6 +974,7 @@
 .department-description {
   display: flex;
   align-items: flex-start;
+
   gap: 9px;
 
   min-height: 58px;
@@ -941,6 +988,7 @@
 .department-description-icon {
   width: 29px;
   height: 29px;
+
   flex-shrink: 0;
 
   display: flex;
@@ -948,6 +996,7 @@
   justify-content: center;
 
   color: #667085;
+
   background: #f4f6f8;
 
   border-radius: 8px;
@@ -983,6 +1032,7 @@
 .department-info-item {
   display: flex;
   align-items: center;
+
   gap: 8px;
 
   min-width: 0;
@@ -998,6 +1048,7 @@
 .department-info-icon {
   width: 29px;
   height: 29px;
+
   flex-shrink: 0;
 
   display: flex;
@@ -1005,6 +1056,7 @@
   justify-content: center;
 
   color: #4f46e5;
+
   background: #eef2ff;
 
   border-radius: 8px;
@@ -1042,6 +1094,7 @@
 
 .department-card-actions {
   display: flex;
+
   gap: 8px;
 }
 
@@ -1053,6 +1106,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   gap: 6px;
 
   border-radius: 9px;
@@ -1156,11 +1210,13 @@
 @media (max-width: 1000px) {
   .departments-header {
     align-items: flex-start;
+
     flex-direction: column;
   }
 
   .departments-header-right {
     width: 100%;
+
     justify-content: space-between;
   }
 }
@@ -1177,6 +1233,7 @@
 
   .departments-header {
     padding: 21px;
+
     border-radius: 18px;
   }
 
@@ -1214,6 +1271,7 @@
   .departments-title-icon {
     width: 47px;
     height: 47px;
+
     border-radius: 13px;
   }
 
@@ -1227,11 +1285,13 @@
 
   .departments-header-right {
     align-items: stretch;
+
     flex-direction: column;
   }
 
   .departments-header-summary {
     width: 100%;
+
     box-sizing: border-box;
   }
 
@@ -1241,6 +1301,7 @@
 
   .department-stats {
     grid-template-columns: 1fr 1fr;
+
     gap: 11px;
   }
 
@@ -1259,6 +1320,7 @@
 
   .department-toolbar {
     flex-direction: column;
+
     align-items: stretch;
   }
 
@@ -1266,6 +1328,7 @@
   .department-filter,
   .sort-control {
     width: 100%;
+
     box-sizing: border-box;
   }
 
@@ -1303,6 +1366,7 @@
 
   .departments-eyebrow {
     font-size: 8px;
+
     letter-spacing: 1px;
   }
 
@@ -1394,6 +1458,7 @@
 
   .departments-header {
     padding: 12px;
+
     border-radius: 15px;
   }
 
@@ -1422,4 +1487,3 @@
     font-size: 18px;
   }
 }
-
