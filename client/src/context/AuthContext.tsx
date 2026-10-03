@@ -87,7 +87,7 @@ export function AuthProvider({
   ): Promise<boolean> => {
     try {
       const response = await fetch(
-        "https://nexora-3-v485.onrender.com/auth/login",
+        "https://nexora-4-hit8.onrender.com/auth/login",
         {
           method: "POST",
           headers: {
@@ -148,7 +148,7 @@ export function AuthProvider({
   ): Promise<boolean> => {
     try {
       const response = await fetch(
-        "https://nexora-3-v485.onrender.com/auth/register",
+        "https://nexora-4-hit8.onrender.com/auth/register",
         {
           method: "POST",
           headers: {
