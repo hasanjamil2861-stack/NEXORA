@@ -18,7 +18,8 @@ const registerUser = async (req, res) => {
 
     if (existingUser) {
       return res.status(409).json({
-        message: "An account with this email already exists.",
+        message:
+          "An account with this email already exists.",
       })
     }
 
@@ -32,11 +33,11 @@ const registerUser = async (req, res) => {
 
     await newUser.save()
 
-    // Never return the hashed password
+    // Never return the password
     res.status(201).json({
       message: "User registered successfully",
       user: {
-        id: newUser._id,
+        id: String(newUser._id),
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
@@ -60,7 +61,9 @@ const loginUser = async (req, res) => {
       password,
     } = req.body
 
-    const user = await User.findOne({ email })
+    const user = await User.findOne({
+      email: email.trim().toLowerCase(),
+    })
 
     if (!user) {
       return res.status(401).json({
@@ -83,7 +86,7 @@ const loginUser = async (req, res) => {
     // Create JWT token
     const token = jwt.sign(
       {
-        userId: user._id,
+        userId: String(user._id),
         email: user.email,
         role: user.role,
       },
@@ -94,11 +97,11 @@ const loginUser = async (req, res) => {
     )
 
     // Return authenticated user
-    res.json({
+    res.status(200).json({
       message: "Login successful",
       token,
       user: {
-        id: user._id,
+        id: String(user._id),
         name: user.name,
         email: user.email,
         role: user.role,

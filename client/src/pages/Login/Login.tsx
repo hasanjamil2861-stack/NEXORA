@@ -67,28 +67,41 @@ export default function Login() {
             return
         }
 
-        // Clear inputs immediately after clicking Login
-        setEmail("")
-        setPassword("")
-        setShowPassword(false)
-
         setIsSubmitting(true)
 
-        const success = await login(
-            cleanEmail,
-            enteredPassword
-        )
+        try {
+            const success = await login(
+                cleanEmail,
+                enteredPassword
+            )
 
-        if (success) {
-            navigate("/")
-            return
+            if (success) {
+                setEmail("")
+                setPassword("")
+                setShowPassword(false)
+
+                navigate("/", {
+                    replace: true,
+                })
+
+                return
+            }
+
+            setError(
+                "Invalid email or password."
+            )
+        } catch (error) {
+            console.error(
+                "LOGIN SUBMIT ERROR:",
+                error
+            )
+
+            setError(
+                "Unable to connect to the server."
+            )
+        } finally {
+            setIsSubmitting(false)
         }
-
-        setError(
-            "Invalid email or password."
-        )
-
-        setIsSubmitting(false)
     }
 
     return (
@@ -129,6 +142,7 @@ export default function Login() {
 
                     <div className="login-brand-text">
                         <strong>NEXORA</strong>
+
                         <span>
                             Business Management
                         </span>
@@ -143,12 +157,15 @@ export default function Login() {
                     <div className="login-header">
                         <div className="login-badge">
                             <Sparkles size={14} />
+
                             <span>
                                 Secure Workspace
                             </span>
                         </div>
 
-                        <h1>Welcome Back</h1>
+                        <h1>
+                            Welcome Back
+                        </h1>
 
                         <p>
                             Sign in to your NEXORA
@@ -203,6 +220,9 @@ export default function Login() {
                                             setError("")
                                         }
                                     }}
+                                    disabled={
+                                        isSubmitting
+                                    }
                                 />
                             </div>
                         </div>
@@ -221,6 +241,9 @@ export default function Login() {
                                         setError(
                                             "Password recovery will be connected later."
                                         )
+                                    }
+                                    disabled={
+                                        isSubmitting
                                     }
                                 >
                                     Forgot password?
@@ -253,6 +276,9 @@ export default function Login() {
                                             setError("")
                                         }
                                     }}
+                                    disabled={
+                                        isSubmitting
+                                    }
                                 />
 
                                 <button
@@ -268,6 +294,9 @@ export default function Login() {
                                             (current) =>
                                                 !current
                                         )
+                                    }
+                                    disabled={
+                                        isSubmitting
                                     }
                                 >
                                     {showPassword ? (
@@ -286,6 +315,7 @@ export default function Login() {
                                 role="alert"
                             >
                                 <CircleAlert size={18} />
+
                                 <span>
                                     {error}
                                 </span>
@@ -296,7 +326,9 @@ export default function Login() {
                         <button
                             type="submit"
                             className="login-submit-btn"
-                            disabled={isSubmitting}
+                            disabled={
+                                isSubmitting
+                            }
                         >
                             <span>
                                 {isSubmitting
@@ -314,7 +346,14 @@ export default function Login() {
                             Don't have an account?
                         </span>
 
-                        <Link to="/register">
+                        <Link
+                            to="/register"
+                            className={
+                                isSubmitting
+                                    ? "disabled"
+                                    : undefined
+                            }
+                        >
                             Create one
                         </Link>
                     </div>
