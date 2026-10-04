@@ -1,6 +1,6 @@
 import { apiRequest } from "./api"
 
-type ProfilePayload = {
+export type ProfilePayload = {
     firstName: string
     lastName: string
     email: string
@@ -12,15 +12,14 @@ type ProfilePayload = {
     status: "Active" | "Inactive"
 }
 
-export function getProfile(id: string) {
-    return apiRequest(`/profile/${id}`)
+export function getProfile() {
+    return apiRequest("/profile")
 }
 
 export function updateProfile(
-    id: string,
     profile: ProfilePayload
 ) {
-    return apiRequest(`/profile/${id}`, {
+    return apiRequest("/profile", {
         method: "PUT",
         body: JSON.stringify(profile),
     })

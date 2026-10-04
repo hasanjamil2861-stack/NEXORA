@@ -39,6 +39,7 @@ import type { Employee } from "../../types/Employee"
 
 type EmployeeApiResponse = Employee & {
     _id?: string
+    userId?: string
 }
 
 type ProfileFormData = {
@@ -107,43 +108,53 @@ export default function Profile() {
 
         async function loadProfile() {
             try {
+                setLoading(true)
                 setProfileError(false)
 
+                // No ID anymore.
+                // Backend gets the logged-in user from JWT.
                 const data =
-                    (await getProfile(
-                        currentUser.id
-                    )) as EmployeeApiResponse
+                    (await getProfile()) as EmployeeApiResponse
 
                 const loadedEmployee: Employee = {
                     id: String(
                         data._id ?? data.id
                     ),
+
                     firstName:
                         data.firstName ?? "",
+
                     lastName:
                         data.lastName ?? "",
+
                     email:
                         data.email ??
                         currentUser.email ??
                         "",
+
                     phone:
                         data.phone ?? "",
+
                     position:
                         data.position ??
                         (currentUser.role ===
                         "Admin"
                             ? "Administrator"
                             : "Employee"),
+
                     departmentId:
                         String(
                             data.departmentId ?? ""
                         ),
+
                     salary:
                         Number(
                             data.salary ?? 0
                         ),
+
                     hireDate:
                         data.hireDate ?? "",
+
                     status:
                         data.status ?? "Active",
                 }
@@ -155,20 +166,28 @@ export default function Profile() {
                 setFormData({
                     firstName:
                         loadedEmployee.firstName,
+
                     lastName:
                         loadedEmployee.lastName,
+
                     email:
                         loadedEmployee.email,
+
                     phone:
                         loadedEmployee.phone,
+
                     position:
                         loadedEmployee.position,
+
                     departmentId:
                         loadedEmployee.departmentId,
+
                     salary:
                         loadedEmployee.salary,
+
                     hireDate:
                         loadedEmployee.hireDate,
+
                     status:
                         loadedEmployee.status,
                 })
@@ -296,6 +315,7 @@ export default function Profile() {
         setFormData(
             (current) => ({
                 ...current,
+
                 [field]:
                     field === "salary"
                         ? Number(value)
@@ -317,20 +337,28 @@ export default function Profile() {
         setFormData({
             firstName:
                 employee.firstName,
+
             lastName:
                 employee.lastName,
+
             email:
                 employee.email,
+
             phone:
                 employee.phone,
+
             position:
                 employee.position,
+
             departmentId:
                 employee.departmentId,
+
             salary:
                 employee.salary,
+
             hireDate:
                 employee.hireDate,
+
             status:
                 employee.status,
         })
@@ -343,20 +371,28 @@ export default function Profile() {
             setFormData({
                 firstName:
                     employee.firstName,
+
                 lastName:
                     employee.lastName,
+
                 email:
                     employee.email,
+
                 phone:
                     employee.phone,
+
                 position:
                     employee.position,
+
                 departmentId:
                     employee.departmentId,
+
                 salary:
                     employee.salary,
+
                 hireDate:
                     employee.hireDate,
+
                 status:
                     employee.status,
             })
@@ -401,57 +437,76 @@ export default function Profile() {
         try {
             setSaving(true)
 
+            // No employee.id anymore.
+            // Backend identifies the profile
+            // using the JWT userId.
             const data =
-                (await updateProfile(
-                    employee.id,
-                    {
-                        firstName:
-                            formData.firstName.trim(),
-                        lastName:
-                            formData.lastName.trim(),
-                        email:
-                            formData.email.trim(),
-                        phone:
-                            formData.phone.trim(),
-                        position:
-                            formData.position.trim(),
-                        departmentId:
-                            formData.departmentId,
-                        salary:
-                            Number(
-                                formData.salary
-                            ),
-                        hireDate:
-                            formData.hireDate,
-                        status:
-                            formData.status,
-                    }
-                )) as EmployeeApiResponse
+                (await updateProfile({
+                    firstName:
+                        formData.firstName.trim(),
+
+                    lastName:
+                        formData.lastName.trim(),
+
+                    email:
+                        formData.email
+                            .trim()
+                            .toLowerCase(),
+
+                    phone:
+                        formData.phone.trim(),
+
+                    position:
+                        formData.position.trim(),
+
+                    departmentId:
+                        formData.departmentId,
+
+                    salary:
+                        Number(
+                            formData.salary
+                        ),
+
+                    hireDate:
+                        formData.hireDate,
+
+                    status:
+                        formData.status,
+                })) as EmployeeApiResponse
 
             const updatedEmployee: Employee = {
                 id: String(
                     data._id ?? data.id
                 ),
+
                 firstName:
                     data.firstName ?? "",
+
                 lastName:
                     data.lastName ?? "",
+
                 email:
                     data.email ?? "",
+
                 phone:
                     data.phone ?? "",
+
                 position:
                     data.position ?? "",
+
                 departmentId:
                     String(
                         data.departmentId ?? ""
                     ),
+
                 salary:
                     Number(
                         data.salary ?? 0
                     ),
+
                 hireDate:
                     data.hireDate ?? "",
+
                 status:
                     data.status ?? "Active",
             }
@@ -463,20 +518,28 @@ export default function Profile() {
             setFormData({
                 firstName:
                     updatedEmployee.firstName,
+
                 lastName:
                     updatedEmployee.lastName,
+
                 email:
                     updatedEmployee.email,
+
                 phone:
                     updatedEmployee.phone,
+
                 position:
                     updatedEmployee.position,
+
                 departmentId:
                     updatedEmployee.departmentId,
+
                 salary:
                     updatedEmployee.salary,
+
                 hireDate:
                     updatedEmployee.hireDate,
+
                 status:
                     updatedEmployee.status,
             })
@@ -597,6 +660,7 @@ export default function Profile() {
                                     <Pencil
                                         size={15}
                                     />
+
                                     Edit Profile
                                 </button>
                             ) : (
@@ -607,10 +671,14 @@ export default function Profile() {
                                         onClick={
                                             handleCancel
                                         }
+                                        disabled={
+                                            saving
+                                        }
                                     >
                                         <X
                                             size={15}
                                         />
+
                                         Cancel
                                     </button>
 
@@ -721,10 +789,8 @@ export default function Profile() {
                         <span className="profile-email">
                             <Mail size={14} />
 
-                            {
-                                employee?.email ||
-                                currentUser.email
-                            }
+                            {employee?.email ||
+                                currentUser.email}
                         </span>
                     </div>
                 </div>
@@ -1175,11 +1241,13 @@ export default function Profile() {
                         <p
                             className="profile-error-message"
                             style={{
-                                marginTop: "16px",
+                                marginTop:
+                                    "16px",
                             }}
                         >
-                            Profile data could not be loaded.
-                            Check the browser console for
+                            Profile data could not
+                            be loaded. Check the
+                            browser console for
                             <strong>
                                 {" "}
                                 PROFILE LOAD ERROR

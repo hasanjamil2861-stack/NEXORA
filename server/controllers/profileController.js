@@ -1,17 +1,59 @@
 const Employee = require("../models/Employee")
+const User = require("../models/User")
 
 const getProfile = async (req, res) => {
     try {
-        const employee = await Employee.findById(req.params.id)
+        const userId = req.user.userId
 
+        let employee = await Employee.findOne({
+            userId,
+        })
+
+        // If the user does not have an employee profile yet,
+        // create one automatically from the User account.
         if (!employee) {
-            return res.status(404).json({
-                message: "Profile not found",
+            const user = await User.findById(userId)
+
+            if (!user) {
+                return res.status(404).json({
+                    message: "User not found",
+                })
+            }
+
+            const nameParts = user.name
+                ? user.name.trim().split(/\s+/)
+                : []
+
+            const firstName =
+                nameParts[0] || ""
+
+            const lastName =
+                nameParts.slice(1).join(" ") || ""
+
+            employee = await Employee.create({
+                userId: user._id,
+                firstName,
+                lastName,
+                email: user.email,
+                phone: "",
+                position:
+                    user.role === "Admin"
+                        ? "Administrator"
+                        : "Employee",
+                departmentId: undefined,
+                salary: 0,
+                hireDate: "",
+                status: "Active",
             })
         }
 
         res.status(200).json(employee)
     } catch (error) {
+        console.error(
+            "Get profile error:",
+            error
+        )
+
         res.status(500).json({
             message: "Failed to get profile",
             error: error.message,
@@ -21,6 +63,8 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     try {
+        const userId = req.user.userId
+
         const {
             firstName,
             lastName,
@@ -33,13 +77,21 @@ const updateProfile = async (req, res) => {
             status,
         } = req.body
 
-        const employee = await Employee.findById(
-            req.params.id
-        )
+        let employee = await Employee.findOne({
+            userId,
+        })
 
         if (!employee) {
-            return res.status(404).json({
-                message: "Profile not found",
+            const user = await User.findById(userId)
+
+            if (!user) {
+                return res.status(404).json({
+                    message: "User not found",
+                })
+            }
+
+            employee = new Employee({
+                userId,
             })
         }
 
@@ -48,7 +100,8 @@ const updateProfile = async (req, res) => {
         employee.email = email
         employee.phone = phone
         employee.position = position
-        employee.departmentId = departmentId
+        employee.departmentId =
+            departmentId || undefined
         employee.salary = salary
         employee.hireDate = hireDate
         employee.status = status
@@ -56,8 +109,28 @@ const updateProfile = async (req, res) => {
         const updatedEmployee =
             await employee.save()
 
-        res.status(200).json(updatedEmployee)
+        // Keep the login User account email/name
+        // synchronized with the editable profile.
+        const user = await User.findById(userId)
+
+        if (user) {
+            user.email = email
+
+            user.name = `${firstName} ${lastName}`
+                .trim()
+
+            await user.save()
+        }
+
+        res.status(200).json(
+            updatedEmployee
+        )
     } catch (error) {
+        console.error(
+            "Update profile error:",
+            error
+        )
+
         res.status(500).json({
             message: "Failed to update profile",
             error: error.message,

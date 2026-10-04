@@ -5,15 +5,21 @@ const {
     updateProfile,
 } = require("../controllers/profileController")
 
+const {
+    protect,
+} = require("../middleware/authMiddleware")
+
 const router = express.Router()
 
 router.get(
-    "/profile/:id",
+    "/profile",
+    protect,
     getProfile
 )
 
 router.put(
-    "/profile/:id",
+    "/profile",
+    protect,
     updateProfile
 )
 

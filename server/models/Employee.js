@@ -1,40 +1,67 @@
-/* Employee schema */
-
 const mongoose = require("mongoose")
 
-const employeeSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    unique: true,
-    sparse: true,
-  },
+const employeeSchema = new mongoose.Schema(
+    {
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            unique: true,
+            sparse: true,
+        },
 
-  firstName: String,
+        firstName: {
+            type: String,
+            trim: true,
+        },
 
-  lastName: String,
+        lastName: {
+            type: String,
+            trim: true,
+        },
 
-  email: String,
+        email: {
+            type: String,
+            trim: true,
+            lowercase: true,
+        },
 
-  phone: String,
+        phone: {
+            type: String,
+            trim: true,
+        },
 
-  position: String,
+        position: {
+            type: String,
+            trim: true,
+        },
 
-  departmentId: Number,
+        departmentId: {
+            type: Number,
+        },
 
-  salary: Number,
+        salary: {
+            type: Number,
+            min: 0,
+        },
 
-  hireDate: String,
+        hireDate: {
+            type: String,
+        },
 
-  status: {
-    type: String,
-    enum: ["Active", "Inactive"],
-  },
-})
+        status: {
+            type: String,
+            enum: ["Active", "Inactive"],
+            default: "Active",
+        },
+    },
+    {
+        timestamps: true,
+    }
+)
 
 const Employee = mongoose.model(
-  "Employee",
-  employeeSchema
+    "Employee",
+    employeeSchema
 )
 
 module.exports = Employee
