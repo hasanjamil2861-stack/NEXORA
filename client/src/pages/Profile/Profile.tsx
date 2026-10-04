@@ -89,6 +89,9 @@ export default function Profile() {
             status: "Active",
         })
 
+    const isAdmin =
+        user?.role === "Admin"
+
     useEffect(() => {
         if (!user) {
             setLoading(false)
@@ -111,8 +114,6 @@ export default function Profile() {
                 setLoading(true)
                 setProfileError(false)
 
-                // No ID anymore.
-                // Backend gets the logged-in user from JWT.
                 const data =
                     (await getProfile()) as EmployeeApiResponse
 
@@ -216,6 +217,11 @@ export default function Profile() {
     const handleProfileImage = (
         event: ChangeEvent<HTMLInputElement>
     ) => {
+        // Employees cannot edit their profile picture.
+        if (!isAdmin) {
+            return
+        }
+
         const file =
             event.target.files?.[0]
 
@@ -289,6 +295,11 @@ export default function Profile() {
     }
 
     const handleDeleteProfileImage = () => {
+        // Employees cannot delete their profile picture.
+        if (!isAdmin) {
+            return
+        }
+
         try {
             localStorage.removeItem(
                 `nexora-profile-image-${currentUser.id}`
@@ -312,10 +323,14 @@ export default function Profile() {
         field: keyof ProfileFormData,
         value: string
     ) => {
+        // Employees cannot modify profile fields.
+        if (!isAdmin) {
+            return
+        }
+
         setFormData(
             (current) => ({
                 ...current,
-
                 [field]:
                     field === "salary"
                         ? Number(value)
@@ -325,6 +340,11 @@ export default function Profile() {
     }
 
     const handleEdit = () => {
+        // Only Admin can enter edit mode.
+        if (!isAdmin) {
+            return
+        }
+
         if (!employee) {
             showToast(
                 "Profile data is not available.",
@@ -364,9 +384,24 @@ export default function Profile() {
         })
 
         setIsEditing(true)
+
+        setTimeout(() => {
+            document
+                .querySelector(
+                    ".profile-details-grid"
+                )
+                ?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                })
+        }, 100)
     }
 
     const handleCancel = () => {
+        if (!isAdmin) {
+            return
+        }
+
         if (employee) {
             setFormData({
                 firstName:
@@ -406,6 +441,11 @@ export default function Profile() {
     ) => {
         event.preventDefault()
 
+        // Employees cannot update their profile.
+        if (!isAdmin) {
+            return
+        }
+
         if (!employee) {
             return
         }
@@ -437,9 +477,6 @@ export default function Profile() {
         try {
             setSaving(true)
 
-            // No employee.id anymore.
-            // Backend identifies the profile
-            // using the JWT userId.
             const data =
                 (await updateProfile({
                     firstName:
@@ -640,14 +677,16 @@ export default function Profile() {
                     </h1>
 
                     <p>
-                        Manage your personal
-                        information and account
-                        details.
+                        {isAdmin
+                            ? "Manage your personal information and account details."
+                            : "View your personal information and account details."}
                     </p>
                 </div>
 
+                {/* Admin only */}
                 {!loading &&
-                    employee && (
+                    employee &&
+                    isAdmin && (
                         <div className="profile-header-actions">
                             {!isEditing ? (
                                 <button
@@ -725,42 +764,45 @@ export default function Profile() {
                             </div>
                         )}
 
-                        <div className="profile-avatar-actions">
-                            <label
-                                htmlFor="profile-image-upload"
-                                className="profile-camera-btn"
-                                title="Change profile picture"
-                            >
-                                <Camera
-                                    size={16}
-                                />
-
-                                <input
-                                    id="profile-image-upload"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={
-                                        handleProfileImage
-                                    }
-                                />
-                            </label>
-
-                            {profileImage && (
-                                <button
-                                    type="button"
-                                    className="profile-delete-image-btn"
-                                    onClick={
-                                        handleDeleteProfileImage
-                                    }
-                                    title="Delete profile picture"
-                                    aria-label="Delete profile picture"
+                        {/* Admin only */}
+                        {isAdmin && (
+                            <div className="profile-avatar-actions">
+                                <label
+                                    htmlFor="profile-image-upload"
+                                    className="profile-camera-btn"
+                                    title="Change profile picture"
                                 >
-                                    <Trash2
-                                        size={15}
+                                    <Camera
+                                        size={16}
                                     />
-                                </button>
-                            )}
-                        </div>
+
+                                    <input
+                                        id="profile-image-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={
+                                            handleProfileImage
+                                        }
+                                    />
+                                </label>
+
+                                {profileImage && (
+                                    <button
+                                        type="button"
+                                        className="profile-delete-image-btn"
+                                        onClick={
+                                            handleDeleteProfileImage
+                                        }
+                                        title="Delete profile picture"
+                                        aria-label="Delete profile picture"
+                                    >
+                                        <Trash2
+                                            size={15}
+                                        />
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="profile-identity">
@@ -776,9 +818,7 @@ export default function Profile() {
                                     size={14}
                                 />
 
-                                {
-                                    currentUser.role
-                                }
+                                {currentUser.role}
                             </span>
                         </div>
 
@@ -811,8 +851,9 @@ export default function Profile() {
                             </h3>
 
                             <p>
-                                Your account and
-                                employment details.
+                                {isAdmin
+                                    ? "Your account and employment details."
+                                    : "Your account and employment details managed by your administrator."}
                             </p>
                         </div>
                     </div>
@@ -829,6 +870,7 @@ export default function Profile() {
                                 handleSave
                             }
                         >
+                            {/* EMAIL */}
                             <div className="profile-detail">
                                 <div className="profile-detail-icon">
                                     <Mail
@@ -842,6 +884,7 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
+                                    isAdmin &&
                                     employee ? (
                                         <input
                                             type="email"
@@ -870,6 +913,7 @@ export default function Profile() {
                                 </div>
                             </div>
 
+                            {/* PHONE */}
                             <div className="profile-detail">
                                 <div className="profile-detail-icon">
                                     <Phone
@@ -883,6 +927,7 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
+                                    isAdmin &&
                                     employee ? (
                                         <input
                                             type="tel"
@@ -910,6 +955,7 @@ export default function Profile() {
                                 </div>
                             </div>
 
+                            {/* POSITION */}
                             <div className="profile-detail">
                                 <div className="profile-detail-icon">
                                     <BriefcaseBusiness
@@ -923,6 +969,7 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
+                                    isAdmin &&
                                     employee ? (
                                         <input
                                             type="text"
@@ -950,6 +997,7 @@ export default function Profile() {
                                 </div>
                             </div>
 
+                            {/* DEPARTMENT */}
                             <div className="profile-detail">
                                 <div className="profile-detail-icon">
                                     <Building2
@@ -963,6 +1011,7 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
+                                    isAdmin &&
                                     employee ? (
                                         <select
                                             className="profile-inline-input"
@@ -1013,6 +1062,7 @@ export default function Profile() {
                                 </div>
                             </div>
 
+                            {/* MANAGER */}
                             <div className="profile-detail">
                                 <div className="profile-detail-icon">
                                     <UsersRound
@@ -1031,6 +1081,7 @@ export default function Profile() {
                                 </div>
                             </div>
 
+                            {/* SALARY */}
                             <div className="profile-detail">
                                 <div className="profile-detail-icon">
                                     <WalletCards
@@ -1044,6 +1095,7 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
+                                    isAdmin &&
                                     employee ? (
                                         <input
                                             type="number"
@@ -1072,6 +1124,7 @@ export default function Profile() {
                                 </div>
                             </div>
 
+                            {/* HIRE DATE */}
                             <div className="profile-detail">
                                 <div className="profile-detail-icon">
                                     <CalendarDays
@@ -1085,6 +1138,7 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
+                                    isAdmin &&
                                     employee ? (
                                         <input
                                             type="date"
@@ -1111,6 +1165,7 @@ export default function Profile() {
                                 </div>
                             </div>
 
+                            {/* STATUS */}
                             <div className="profile-detail">
                                 <div className="profile-detail-icon">
                                     {status ===
@@ -1131,6 +1186,7 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
+                                    isAdmin &&
                                     employee ? (
                                         <select
                                             className="profile-inline-input"
@@ -1164,7 +1220,10 @@ export default function Profile() {
                                 </div>
                             </div>
 
+                            {/* FIRST NAME + LAST NAME
+                                Admin edit only */}
                             {isEditing &&
+                                isAdmin &&
                                 employee && (
                                     <>
                                         <div className="profile-detail">
