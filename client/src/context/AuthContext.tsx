@@ -36,6 +36,9 @@ const AuthContext = createContext<
   AuthContextType | undefined
 >(undefined)
 
+const API_URL =
+  "https://nexora-3-v485.onrender.com"
+
 const isValidUser = (
   value: unknown
 ): value is User => {
@@ -87,24 +90,29 @@ export function AuthProvider({
   ): Promise<boolean> => {
     try {
       const response = await fetch(
-        "https://nexora-4-hit8.onrender.com/auth/login",
+        `${API_URL}/auth/login`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email,
+            email: email.trim().toLowerCase(),
             password,
           }),
         }
       )
 
+      const data = await response.json()
+
       if (!response.ok) {
+        console.error(
+          "Login failed:",
+          data.message
+        )
+
         return false
       }
-
-      const data = await response.json()
 
       if (
         !data.user ||
@@ -140,7 +148,6 @@ export function AuthProvider({
     }
   }
 
-  // Register a new Employee account
   const register = async (
     name: string,
     email: string,
@@ -148,21 +155,32 @@ export function AuthProvider({
   ): Promise<boolean> => {
     try {
       const response = await fetch(
-        "https://nexora-4-hit8.onrender.com/auth/register",
+        `${API_URL}/auth/register`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name,
-            email,
+            name: name.trim(),
+            email: email.trim().toLowerCase(),
             password,
           }),
         }
       )
 
-      return response.ok
+      const data = await response.json()
+
+      if (!response.ok) {
+        console.error(
+          "Register failed:",
+          data.message
+        )
+
+        return false
+      }
+
+      return true
     } catch (error) {
       console.error(
         "Register error:",
