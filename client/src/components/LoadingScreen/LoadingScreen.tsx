@@ -35,7 +35,7 @@ export default function LoadingScreen() {
                     />
 
                     <div className="nexora-welcome-text">
-                        WELCOME MR JAAFORA ASSAF
+                        WELCOME MR To 
                     </div>
 
                     <div className="nexora-logo-word">
