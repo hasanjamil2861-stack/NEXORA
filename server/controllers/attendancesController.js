@@ -1,5 +1,5 @@
 const Attendance =
-  require("../models/Attendances")
+  require("../models/Attendance")
 
 const Employee =
   require("../models/Employee")
@@ -22,7 +22,10 @@ const getAttendance = async (
 
     const employee =
       await Employee.findOne({
-        email: req.user.email,
+        email:
+          req.user.email
+            .trim()
+            .toLowerCase(),
       })
 
     if (!employee) {
@@ -48,7 +51,7 @@ const getAttendance = async (
       error
     )
 
-    res.status(500).json({
+    return res.status(500).json({
       message:
         "Failed to get attendance",
       error: error.message,
@@ -70,33 +73,80 @@ const postAttendance = async (
       status,
     } = req.body
 
-    const employee =
-      await Employee.findById(
-        employeeId
-      )
+    let finalEmployee = null
 
-    if (!employee) {
-      return res.status(404).json({
+    if (req.user.role === "Employee") {
+      finalEmployee =
+        await Employee.findOne({
+          email:
+            req.user.email
+              .trim()
+              .toLowerCase(),
+        })
+
+      if (!finalEmployee) {
+        return res.status(404).json({
+          message:
+            "Employee profile not found.",
+        })
+      }
+    } else {
+      if (!employeeId) {
+        return res.status(400).json({
+          message:
+            "Employee ID is required.",
+        })
+      }
+
+      finalEmployee =
+        await Employee.findById(
+          employeeId
+        )
+
+      if (!finalEmployee) {
+        return res.status(404).json({
+          message:
+            "Employee not found.",
+        })
+      }
+    }
+
+    if (!date) {
+      return res.status(400).json({
         message:
-          "Employee not found.",
+          "Date is required.",
+      })
+    }
+
+    if (!status) {
+      return res.status(400).json({
+        message:
+          "Status is required.",
       })
     }
 
     const newAttendance =
       new Attendance({
-        employeeId,
+        employeeId:
+          finalEmployee._id,
+
         employeeName:
-          employeeName ||
-          `${employee.firstName} ${employee.lastName}`,
+          `${finalEmployee.firstName} ${finalEmployee.lastName}`,
+
         date,
-        checkIn,
-        checkOut,
+
+        checkIn:
+          checkIn || "",
+
+        checkOut:
+          checkOut || "",
+
         status,
       })
 
     await newAttendance.save()
 
-    res.status(201).json(
+    return res.status(201).json(
       newAttendance
     )
   } catch (error) {
@@ -105,7 +155,7 @@ const postAttendance = async (
       error
     )
 
-    res.status(500).json({
+    return res.status(500).json({
       message:
         "Failed to save attendance",
       error: error.message,
@@ -118,31 +168,76 @@ const updateAttendance = async (
   res
 ) => {
   try {
-    const updatedAttendance =
-      await Attendance.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        {
-          new: true,
-          runValidators: true,
-        }
+    const attendance =
+      await Attendance.findById(
+        req.params.id
       )
 
-    if (!updatedAttendance) {
+    if (!attendance) {
       return res.status(404).json({
         message:
           "Attendance record not found.",
       })
     }
 
-    res.json(updatedAttendance)
+    if (req.user.role === "Employee") {
+      const employee =
+        await Employee.findOne({
+          email:
+            req.user.email
+              .trim()
+              .toLowerCase(),
+        })
+
+      if (!employee) {
+        return res.status(404).json({
+          message:
+            "Employee profile not found.",
+        })
+      }
+
+      if (
+        attendance.employeeId.toString() !==
+        employee._id.toString()
+      ) {
+        return res.status(403).json({
+          message:
+            "You can only edit your own attendance records.",
+        })
+      }
+    }
+
+    const {
+      date,
+      checkIn,
+      checkOut,
+      status,
+    } = req.body
+
+    attendance.date =
+      date ?? attendance.date
+
+    attendance.checkIn =
+      checkIn ?? attendance.checkIn
+
+    attendance.checkOut =
+      checkOut ?? attendance.checkOut
+
+    attendance.status =
+      status ?? attendance.status
+
+    await attendance.save()
+
+    return res.json(
+      attendance
+    )
   } catch (error) {
     console.error(
       "Update attendance error:",
       error
     )
 
-    res.status(500).json({
+    return res.status(500).json({
       message:
         "Failed to update attendance",
       error: error.message,
@@ -167,14 +262,19 @@ const deleteAttendance = async (
       })
     }
 
-    res.json(deletedAttendance)
+    return res.json({
+      message:
+        "Attendance record deleted successfully.",
+      attendance:
+        deletedAttendance,
+    })
   } catch (error) {
     console.error(
       "Delete attendance error:",
       error
     )
 
-    res.status(500).json({
+    return res.status(500).json({
       message:
         "Failed to delete attendance",
       error: error.message,

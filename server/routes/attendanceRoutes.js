@@ -10,9 +10,10 @@ const {
   postAttendance,
   updateAttendance,
   deleteAttendance,
-} = require("../controllers/attendancesController")
+} = require("../controllers/attendanceController")
 
-const router = express.Router()
+const router =
+  express.Router()
 
 router.get(
   "/attendance",
@@ -23,14 +24,12 @@ router.get(
 router.post(
   "/attendance",
   protect,
-  adminOnly,
   postAttendance
 )
 
 router.put(
   "/attendance/:id",
   protect,
-  adminOnly,
   updateAttendance
 )
 

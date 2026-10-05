@@ -1,11 +1,11 @@
 import { apiRequest } from "./api"
 
-// Get all attendance records
+// Get attendance records
 export function getAttendance() {
   return apiRequest("/attendance")
 }
 
-// Get one attendance record by ID
+// Get one attendance record
 export function getAttendanceRecord(
   id: string
 ) {
@@ -14,7 +14,7 @@ export function getAttendanceRecord(
   )
 }
 
-// Create a new attendance record
+// Create attendance record
 export function createAttendance(
   attendance: unknown
 ) {
@@ -29,7 +29,7 @@ export function createAttendance(
   )
 }
 
-// Update an existing attendance record
+// Update attendance record
 export function updateAttendance(
   id: string,
   attendance: unknown
@@ -45,7 +45,7 @@ export function updateAttendance(
   )
 }
 
-// Delete an attendance record
+// Delete attendance record
 export function deleteAttendance(
   id: string
 ) {
