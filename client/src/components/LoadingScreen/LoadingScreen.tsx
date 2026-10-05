@@ -1,33 +1,58 @@
 import { useEffect, useState } from "react"
 
-export default function LoadingScreen() {
-    // Check if the loading screen has already been shown in this session
-    const [isVisible, setIsVisible] = useState(() => {
-        const hasSeenLoading = sessionStorage.getItem("nexora_has_seen_loading")
-        return !hasSeenLoading
-    })
+type LoadingScreenProps = {
+    isLoading: boolean
+}
+
+export default function LoadingScreen({
+    isLoading,
+}: LoadingScreenProps) {
+    const [showLogo, setShowLogo] = useState(false)
+    const [isVisible, setIsVisible] = useState(true)
 
     useEffect(() => {
-        if (!isVisible) return
-
-        // Mark as seen immediately so refreshing won't trigger it again
-        sessionStorage.setItem("nexora_has_seen_loading", "true")
-
-        const timer = window.setTimeout(() => {
-            setIsVisible(false)
-        }, 6000)
+        /*
+         * Show the logo after the loading dots
+         * have been visible for about 1 second.
+         */
+        const logoTimer = window.setTimeout(() => {
+            setShowLogo(true)
+        }, 1000)
 
         return () => {
-            window.clearTimeout(timer)
+            window.clearTimeout(logoTimer)
         }
-    }, [isVisible])
+    }, [])
+
+    useEffect(() => {
+        if (!isLoading) {
+            /*
+             * Small delay gives the application
+             * a smooth transition instead of an
+             * instant hard cut.
+             */
+            const hideTimer = window.setTimeout(() => {
+                setIsVisible(false)
+            }, 350)
+
+            return () => {
+                window.clearTimeout(hideTimer)
+            }
+        }
+    }, [isLoading])
 
     if (!isVisible) {
         return null
     }
 
     return (
-        <div className="nexora-loading-screen">
+        <div
+            className={`nexora-loading-screen ${
+                !isLoading
+                    ? "nexora-loading-screen-exit"
+                    : ""
+            }`}
+        >
             <div className="nexora-loading-background">
                 <div className="nexora-loading-glow nexora-loading-glow-one" />
                 <div className="nexora-loading-glow nexora-loading-glow-two" />
@@ -35,28 +60,7 @@ export default function LoadingScreen() {
 
             <div className="nexora-loading-content">
 
-                <div className="nexora-logo-loader">
-
-                    <img 
-                        src="/images/Logo.jpg" 
-                        alt="Nexora Logo" 
-                        className="nexora-logo-image" 
-                    />
-
-                    <div className="nexora-welcome-text">
-                        WELCOME MR
-                    </div>
-
-                    <div className="nexora-logo-word">
-                        NEXORA
-                    </div>
-
-                    <div className="nexora-arabic-quote">
-                        شو مفكر بتفرق معي؟
-                    </div>
-
-                </div>
-
+                {/* Loading Dots */}
                 <div
                     className="nexora-loading-dots"
                     aria-label="Loading"
@@ -65,6 +69,27 @@ export default function LoadingScreen() {
                     <span />
                     <span />
                 </div>
+
+                {/* Logo appears after 1 second */}
+                {showLogo && (
+                    <div className="nexora-logo-loader">
+
+                        <img
+                            src="/images/Logo.jpg"
+                            alt="Nexora Logo"
+                            className="nexora-logo-image"
+                        />
+
+                        <div className="nexora-welcome-text">
+                            WELCOME MR TO
+                        </div>
+
+                        <div className="nexora-logo-word">
+                            NEXORA
+                        </div>
+
+                    </div>
+                )}
 
             </div>
         </div>
