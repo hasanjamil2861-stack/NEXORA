@@ -60,11 +60,21 @@ function formatEmployee(
 ): Employee {
     return {
         id: String(employee._id),
-        firstName: employee.firstName ?? "",
-        lastName: employee.lastName ?? "",
-        email: employee.email ?? "",
-        phone: employee.phone ?? "",
-        position: employee.position ?? "",
+
+        firstName:
+            employee.firstName ?? "",
+
+        lastName:
+            employee.lastName ?? "",
+
+        email:
+            employee.email ?? "",
+
+        phone:
+            employee.phone ?? "",
+
+        position:
+            employee.position ?? "",
 
         departmentId:
             employee.departmentId !== undefined
@@ -72,12 +82,13 @@ function formatEmployee(
                 : "",
 
         salary:
-            typeof employee.salary === "number"
-                ? employee.salary
-                : Number(employee.salary) || 0,
+            Number(employee.salary) || 0,
 
-        hireDate: employee.hireDate ?? "",
-        status: employee.status ?? "Active",
+        hireDate:
+            employee.hireDate ?? "",
+
+        status:
+            employee.status ?? "Active",
     }
 }
 
@@ -115,7 +126,9 @@ export default function Employees() {
         useState("")
 
     const [status, setStatus] =
-        useState<Employee["status"]>("Active")
+        useState<Employee["status"]>(
+            "Active"
+        )
 
     const [employeeList, setEmployeeList] =
         useState<Employee[]>([])
@@ -209,6 +222,10 @@ export default function Employees() {
         fetchEmployees()
     }, [])
 
+    /* =========================
+       Statistics
+    ========================= */
+
     const totalEmployees =
         employeeList.length
 
@@ -225,25 +242,25 @@ export default function Employees() {
         ).length
 
     /*
-     * Average Salary
+     * Total salary of ALL employees.
      *
      * Example:
-     *
      * $1000 + $2000 + $3000 = $6000
      *
-     * $6000 / 3 employees = $2000
+     * There is NO division here.
      */
     const totalSalary =
         employeeList.reduce(
-            (total, employee) =>
-                total + Number(employee.salary),
+            (total, employee) => {
+                return (
+                    total +
+                    Number(
+                        employee.salary || 0
+                    )
+                )
+            },
             0
         )
-
-    const averageSalary =
-        totalEmployees === 0
-            ? 0
-            : totalSalary / totalEmployees
 
     const activePercentage =
         totalEmployees > 0
@@ -253,6 +270,10 @@ export default function Employees() {
                       100
               )
             : 0
+
+    /* =========================
+       Form
+    ========================= */
 
     function resetForm() {
         setFirstName("")
@@ -358,6 +379,10 @@ export default function Employees() {
         return true
     }
 
+    /* =========================
+       Delete
+    ========================= */
+
     function handleDeleteEmployee(
         id: string
     ) {
@@ -431,6 +456,10 @@ export default function Employees() {
         }
     }
 
+    /* =========================
+       Edit
+    ========================= */
+
     function handleEditEmployee(
         id: string
     ) {
@@ -499,6 +528,10 @@ export default function Employees() {
         })
     }
 
+    /* =========================
+       Create / Update
+    ========================= */
+
     async function handleCreateEmployee() {
         if (!isAdmin) {
             return
@@ -538,6 +571,7 @@ export default function Employees() {
                 status,
             }
 
+        /* UPDATE */
         if (editingEmployee !== null) {
             try {
                 const data =
@@ -583,6 +617,7 @@ export default function Employees() {
             return
         }
 
+        /* CREATE */
         try {
             const data =
                 (await createEmployee(
@@ -621,6 +656,10 @@ export default function Employees() {
             )
         }
     }
+
+    /* =========================
+       Filters
+    ========================= */
 
     const filteredEmployees =
         employeeList.filter(
@@ -703,6 +742,11 @@ export default function Employees() {
 
     return (
         <main className="employees-page">
+
+            {/* =========================
+                Header
+            ========================= */}
+
             <header className="employees-header">
                 <div>
                     <h1>
@@ -738,7 +782,12 @@ export default function Employees() {
                 )}
             </header>
 
+            {/* =========================
+                Statistics
+            ========================= */}
+
             <section className="employee-statistics">
+
                 <div className="employee-stat-card">
                     <div className="employee-stat-icon total">
                         <Users size={20} />
@@ -800,6 +849,8 @@ export default function Employees() {
                     </div>
                 </div>
 
+                {/* TOTAL SALARIES */}
+
                 <div className="employee-stat-card">
                     <div className="employee-stat-icon salary">
                         <WalletCards size={20} />
@@ -807,12 +858,12 @@ export default function Employees() {
 
                     <div className="employee-stat-content">
                         <span>
-                            Average Salary
+                            Total Salaries
                         </span>
 
                         <strong>
                             $
-                            {averageSalary.toLocaleString(
+                            {totalSalary.toLocaleString(
                                 undefined,
                                 {
                                     maximumFractionDigits: 0,
@@ -821,13 +872,19 @@ export default function Employees() {
                         </strong>
 
                         <small>
-                            Average per employee
+                            Total payroll
                         </small>
                     </div>
                 </div>
+
             </section>
 
+            {/* =========================
+                Controls
+            ========================= */}
+
             <section className="employee-controls">
+
                 <div className="employee-search">
                     <Search
                         className="employee-search-icon"
@@ -873,7 +930,9 @@ export default function Employees() {
 
                 <div className="employee-filter">
                     <select
-                        value={departmentFilter}
+                        value={
+                            departmentFilter
+                        }
                         onChange={(e) =>
                             setDepartmentFilter(
                                 e.target.value
@@ -929,7 +988,12 @@ export default function Employees() {
                         </option>
                     </select>
                 </div>
+
             </section>
+
+            {/* =========================
+                Results Info
+            ========================= */}
 
             <div className="employee-results-info">
                 <span>
@@ -942,6 +1006,10 @@ export default function Employees() {
                         : "employees"}
                 </span>
             </div>
+
+            {/* =========================
+                Form
+            ========================= */}
 
             {showForm &&
                 isAdmin && (
@@ -966,15 +1034,14 @@ export default function Employees() {
                             </div>
                         </div>
 
-                        <div className="form-error-container">
-                            {formError && (
-                                <p className="form-error">
-                                    {formError}
-                                </p>
-                            )}
-                        </div>
+                        {formError && (
+                            <p className="form-error">
+                                {formError}
+                            </p>
+                        )}
 
                         <div className="employee-form-grid">
+
                             <div className="employee-form-field">
                                 <label htmlFor="employee-first-name">
                                     First Name
@@ -1083,9 +1150,9 @@ export default function Employees() {
                                 <input
                                     id="employee-salary"
                                     type="number"
+                                    min="0"
                                     placeholder="Enter salary"
                                     value={salary}
-                                    min="0"
                                     onChange={(e) => {
                                         setSalary(
                                             e.target.value
@@ -1140,9 +1207,11 @@ export default function Employees() {
                                     </option>
                                 </select>
                             </div>
+
                         </div>
 
                         <div className="employee-form-actions">
+
                             <button
                                 type="button"
                                 className="create-employee-btn"
@@ -1164,20 +1233,30 @@ export default function Employees() {
                             >
                                 Cancel
                             </button>
+
                         </div>
                     </section>
                 )}
 
+            {/* =========================
+                Employees Grid
+            ========================= */}
+
             <section className="employees-grid">
+
                 {sortedEmployees.length > 0 ? (
                     sortedEmployees.map(
                         (employee) => (
                             <div
-                                key={employee.id}
+                                key={
+                                    employee.id
+                                }
                                 id={`employee-${employee.id}`}
                             >
                                 <EmployeeCard
-                                    employee={employee}
+                                    employee={
+                                        employee
+                                    }
                                     onDelete={
                                         handleDeleteEmployee
                                     }
@@ -1190,6 +1269,7 @@ export default function Employees() {
                     )
                 ) : (
                     <div className="employee-empty-state">
+
                         <div className="employee-empty-icon">
                             <Search size={26} />
                         </div>
@@ -1215,14 +1295,22 @@ export default function Employees() {
                                 setDepartmentFilter(
                                     "All"
                                 )
-                                setSortBy("None")
+                                setSortBy(
+                                    "None"
+                                )
                             }}
                         >
                             Clear Filters
                         </button>
+
                     </div>
                 )}
+
             </section>
+
+            {/* =========================
+                Delete Modal
+            ========================= */}
 
             {employeeToDelete !== null &&
                 isAdmin && (
@@ -1230,13 +1318,16 @@ export default function Employees() {
                         title="Delete Employee"
                         message="Are you sure you want to delete this employee?"
                         onCancel={() =>
-                            setEmployeeToDelete(null)
+                            setEmployeeToDelete(
+                                null
+                            )
                         }
                         onConfirm={
                             confirmDeleteEmployee
                         }
                     />
                 )}
+
         </main>
     )
 }
