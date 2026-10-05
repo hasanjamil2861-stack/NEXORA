@@ -269,6 +269,12 @@
 .profile-avatar-image {
     display: block;
     object-fit: cover;
+    cursor: zoom-in;
+}
+
+.profile-avatar-image:focus-visible {
+    outline: 3px solid #8b98aa;
+    outline-offset: 3px;
 }
 
 /* =========================================================
@@ -336,6 +342,107 @@
     background: #f9eef0;
     color: #a83f4a;
     transform: translateY(-2px);
+}
+
+/* =========================================================
+   PROFILE IMAGE PREVIEW
+   ========================================================= */
+
+.profile-image-modal {
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: rgba(10, 16, 27, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    animation: profile-image-modal-in 0.2s ease;
+}
+
+.profile-image-modal-content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: min(900px, 90vw);
+    max-height: 88vh;
+    animation: profile-image-preview-in 0.22s ease;
+}
+
+.profile-image-modal-image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: min(900px, 90vw);
+    max-height: 82vh;
+    border: 5px solid rgba(255, 255, 255, 0.96);
+    border-radius: 18px;
+    object-fit: contain;
+    background: #ffffff;
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.4),
+        0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.profile-image-modal-close {
+    position: absolute;
+    z-index: 2;
+    top: 24px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    cursor: pointer;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.profile-image-modal-close:hover {
+    transform: scale(1.06);
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.profile-image-modal-close:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 3px;
+}
+
+@keyframes profile-image-modal-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes profile-image-preview-in {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 /* =========================================================
@@ -1145,6 +1252,31 @@ select.profile-inline-input {
     .profile-cancel-form-btn {
         width: 100%;
     }
+
+    /* Image preview */
+
+    .profile-image-modal {
+        padding: 24px;
+    }
+
+    .profile-image-modal-content {
+        max-width: 94vw;
+        max-height: 82vh;
+    }
+
+    .profile-image-modal-image {
+        max-width: 94vw;
+        max-height: 76vh;
+        border-width: 4px;
+        border-radius: 14px;
+    }
+
+    .profile-image-modal-close {
+        top: 16px;
+        right: 16px;
+        width: 38px;
+        height: 38px;
+    }
 }
 
 /* =========================================================
@@ -1223,5 +1355,30 @@ select.profile-inline-input {
         .profile-inline-input
     ) {
         padding: 8px;
+    }
+
+    /* Image preview */
+
+    .profile-image-modal {
+        padding: 18px;
+    }
+
+    .profile-image-modal-content {
+        max-width: 96vw;
+        max-height: 80vh;
+    }
+
+    .profile-image-modal-image {
+        max-width: 96vw;
+        max-height: 72vh;
+        border-width: 3px;
+        border-radius: 12px;
+    }
+
+    .profile-image-modal-close {
+        top: 12px;
+        right: 12px;
+        width: 36px;
+        height: 36px;
     }
 }

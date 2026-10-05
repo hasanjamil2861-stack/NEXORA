@@ -64,6 +64,9 @@ export default function Profile() {
     const [profileImage, setProfileImage] =
         useState<string | null>(null)
 
+    const [isImagePreviewOpen, setIsImagePreviewOpen] =
+        useState(false)
+
     const [loading, setLoading] =
         useState(true)
 
@@ -208,6 +211,36 @@ export default function Profile() {
         loadProfile()
     }, [user])
 
+    useEffect(() => {
+        if (!isImagePreviewOpen) {
+            return
+        }
+
+        const handleEscape = (
+            event: KeyboardEvent
+        ) => {
+            if (event.key === "Escape") {
+                setIsImagePreviewOpen(false)
+            }
+        }
+
+        document.addEventListener(
+            "keydown",
+            handleEscape
+        )
+
+        document.body.style.overflow = "hidden"
+
+        return () => {
+            document.removeEventListener(
+                "keydown",
+                handleEscape
+            )
+
+            document.body.style.overflow = ""
+        }
+    }, [isImagePreviewOpen])
+
     if (!user) {
         return null
     }
@@ -291,6 +324,8 @@ export default function Profile() {
 
     const handleDeleteProfileImage = () => {
         try {
+            setIsImagePreviewOpen(false)
+
             localStorage.removeItem(
                 `nexora-profile-image-${currentUser.id}`
             )
@@ -726,6 +761,27 @@ export default function Profile() {
                                 }
                                 alt={`${fullName} profile`}
                                 className="profile-avatar-image"
+                                onClick={() =>
+                                    setIsImagePreviewOpen(
+                                        true
+                                    )
+                                }
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(
+                                    event
+                                ) => {
+                                    if (
+                                        event.key ===
+                                            "Enter" ||
+                                        event.key ===
+                                            " "
+                                    ) {
+                                        setIsImagePreviewOpen(
+                                            true
+                                        )
+                                    }
+                                }}
                             />
                         ) : (
                             <div className="profile-avatar">
@@ -931,7 +987,8 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
-                                    employee ? (
+                                    employee &&
+                                    isAdmin ? (
                                         <input
                                             type="text"
                                             className="profile-inline-input"
@@ -1054,7 +1111,6 @@ export default function Profile() {
                                         Salary
                                     </span>
 
-                                    {/* Salary is editable by Admin only */}
                                     {isEditing &&
                                     isAdmin &&
                                     employee ? (
@@ -1276,6 +1332,48 @@ export default function Profile() {
                     )}
                 </section>
             </section>
+
+            {isImagePreviewOpen &&
+                profileImage && (
+                    <div
+                        className="profile-image-modal"
+                        onClick={() =>
+                            setIsImagePreviewOpen(
+                                false
+                            )
+                        }
+                    >
+                        <button
+                            type="button"
+                            className="profile-image-modal-close"
+                            onClick={(event) => {
+                                event.stopPropagation()
+
+                                setIsImagePreviewOpen(
+                                    false
+                                )
+                            }}
+                            aria-label="Close profile image preview"
+                        >
+                            <X size={22} />
+                        </button>
+
+                        <div
+                            className="profile-image-modal-content"
+                            onClick={(event) =>
+                                event.stopPropagation()
+                            }
+                        >
+                            <img
+                                src={
+                                    profileImage
+                                }
+                                alt={`${fullName} profile preview`}
+                                className="profile-image-modal-image"
+                            />
+                        </div>
+                    </div>
+                )}
         </main>
     )
 }
