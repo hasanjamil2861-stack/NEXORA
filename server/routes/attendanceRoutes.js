@@ -10,10 +10,9 @@ const {
   postAttendance,
   updateAttendance,
   deleteAttendance,
-} = require("../controllers/attendanceController")
+} = require("../controllers/attendancesController")
 
-const router =
-  express.Router()
+const router = express.Router()
 
 router.get(
   "/attendance",
