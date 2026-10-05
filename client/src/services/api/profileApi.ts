@@ -12,6 +12,12 @@ export type ProfilePayload = {
     status: "Active" | "Inactive"
 }
 
+export type AccountCredentialsPayload = {
+    currentPassword: string
+    newEmail?: string
+    newPassword?: string
+}
+
 export function getProfile() {
     return apiRequest("/profile")
 }
@@ -23,4 +29,18 @@ export function updateProfile(
         method: "PUT",
         body: JSON.stringify(profile),
     })
+}
+
+export function updateAccountCredentials(
+    credentials: AccountCredentialsPayload
+) {
+    return apiRequest(
+        "/profile/account",
+        {
+            method: "PUT",
+            body: JSON.stringify(
+                credentials
+            ),
+        }
+    )
 }

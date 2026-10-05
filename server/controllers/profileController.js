@@ -1,6 +1,7 @@
 const Employee = require("../models/Employee")
 const User = require("../models/User")
 const Department = require("../models/Department")
+const bcrypt = require("bcryptjs")
 
 const getProfile = async (req, res) => {
     try {
@@ -263,7 +264,8 @@ const updateProfile = async (req, res) => {
                 })
 
             manager =
-                updatedDepartment?.manager || ""
+                updatedDepartment?.manager ||
+                ""
         }
 
         res.status(200).json({
@@ -283,7 +285,157 @@ const updateProfile = async (req, res) => {
     }
 }
 
+// =====================================================
+// UPDATE ACCOUNT EMAIL / PASSWORD
+// =====================================================
+
+const updateAccountCredentials = async (
+    req,
+    res
+) => {
+    try {
+        const userId = req.user.userId
+
+        const {
+            currentPassword,
+            newEmail,
+            newPassword,
+        } = req.body
+
+        if (!currentPassword) {
+            return res.status(400).json({
+                message:
+                    "Current password is required.",
+            })
+        }
+
+        if (!newEmail && !newPassword) {
+            return res.status(400).json({
+                message:
+                    "Provide a new email or a new password.",
+            })
+        }
+
+        const user =
+            await User.findById(userId)
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found.",
+            })
+        }
+
+        // ==========================================
+        // VERIFY CURRENT PASSWORD
+        // ==========================================
+
+        const passwordCorrect =
+            await bcrypt.compare(
+                currentPassword,
+                user.password
+            )
+
+        if (!passwordCorrect) {
+            return res.status(401).json({
+                message:
+                    "Current password is incorrect.",
+            })
+        }
+
+        // ==========================================
+        // UPDATE EMAIL
+        // ==========================================
+
+        if (newEmail) {
+            const cleanEmail =
+                newEmail.trim().toLowerCase()
+
+            if (!cleanEmail) {
+                return res.status(400).json({
+                    message:
+                        "New email cannot be empty.",
+                })
+            }
+
+            const existingUser =
+                await User.findOne({
+                    email: cleanEmail,
+                    _id: {
+                        $ne: userId,
+                    },
+                })
+
+            if (existingUser) {
+                return res.status(409).json({
+                    message:
+                        "An account with this email already exists.",
+                })
+            }
+
+            const existingEmployee =
+                await Employee.findOne({
+                    email: cleanEmail,
+                    userId: {
+                        $ne: userId,
+                    },
+                })
+
+            if (existingEmployee) {
+                return res.status(409).json({
+                    message:
+                        "An employee with this email already exists.",
+                })
+            }
+
+            user.email = cleanEmail
+
+            await Employee.findOneAndUpdate(
+                {
+                    userId,
+                },
+                {
+                    email: cleanEmail,
+                }
+            )
+        }
+
+        // ==========================================
+        // UPDATE PASSWORD
+        // ==========================================
+
+        if (newPassword) {
+            if (newPassword.length < 6) {
+                return res.status(400).json({
+                    message:
+                        "New password must be at least 6 characters.",
+                })
+            }
+
+            user.password = newPassword
+        }
+
+        await user.save()
+
+        res.status(200).json({
+            message:
+                "Account credentials updated successfully.",
+        })
+    } catch (error) {
+        console.error(
+            "Update account credentials error:",
+            error
+        )
+
+        res.status(500).json({
+            message:
+                "Failed to update account credentials.",
+            error: error.message,
+        })
+    }
+}
+
 module.exports = {
     getProfile,
     updateProfile,
+    updateAccountCredentials,
 }

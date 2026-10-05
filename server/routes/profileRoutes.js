@@ -3,6 +3,7 @@ const express = require("express")
 const {
     getProfile,
     updateProfile,
+    updateAccountCredentials,
 } = require("../controllers/profileController")
 
 const {
@@ -23,6 +24,14 @@ router.put(
     "/profile",
     protect,
     updateProfile
+)
+
+// Admin + Employee
+// Update login email and/or password
+router.put(
+    "/profile/account",
+    protect,
+    updateAccountCredentials
 )
 
 module.exports = router

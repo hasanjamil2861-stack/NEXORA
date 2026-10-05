@@ -18,33 +18,34 @@ const reportRoutes = require("./routes/reportRoutes")
 const authRoutes = require("./routes/authRoutes")
 const profileRoutes = require("./routes/profileRoutes")
 
+const ensureAdmin = require("./utils/ensureAdmin")
+
 const app = express()
 
 const PORT =
-  process.env.PORT || 5000
+    process.env.PORT || 5000
 
 const MONGO_URI =
-  process.env.MONGO_URI ||
-  "mongodb://localhost:27017/Projectnode"
+    process.env.MONGO_URI ||
+    "mongodb://localhost:27017/Projectnode"
 
-// Middleware
 app.use(cors())
 app.use(express.json())
 
-// MongoDB connection
 mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log("MongoDB connected")
-  })
-  .catch((error) => {
-    console.error(
-      "MongoDB connection error:",
-      error
-    )
-  })
+    .connect(MONGO_URI)
+    .then(async () => {
+        console.log("MongoDB connected")
 
-// API routes
+        await ensureAdmin()
+    })
+    .catch((error) => {
+        console.error(
+            "MongoDB connection error:",
+            error
+        )
+    })
+
 app.use(employeeRoutes)
 app.use(departmentRoutes)
 app.use(projectRoutes)
@@ -57,27 +58,21 @@ app.use(invoiceRoutes)
 app.use(documentRoutes)
 app.use(reportRoutes)
 app.use(profileRoutes)
+
 app.use("/auth", authRoutes)
 
-// Health check
 app.get("/", (req, res) => {
-  res.send("Server is running!")
+    res.send("Server is running!")
 })
 
-// Test route
-app.get(
-  "/test-invoice",
-  (req, res) => {
+app.get("/test-invoice", (req, res) => {
     res.json({
-      message:
-        "Invoice test route works",
+        message: "Invoice test route works",
     })
-  }
-)
+})
 
-// Start server
 app.listen(PORT, () => {
-  console.log(
-    `Server is running on http://localhost:${PORT}`
-  )
+    console.log(
+        `Server is running on http://localhost:${PORT}`
+    )
 })
