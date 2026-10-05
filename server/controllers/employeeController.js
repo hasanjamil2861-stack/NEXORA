@@ -21,7 +21,7 @@ const getEmployees = async (req, res) => {
 
                     if (
                         employee.departmentId !==
-                        undefined &&
+                            undefined &&
                         employee.departmentId !== null
                     ) {
                         const department =
@@ -40,7 +40,9 @@ const getEmployees = async (req, res) => {
                 })
             )
 
-        res.json(employeesWithManager)
+        res.status(200).json(
+            employeesWithManager
+        )
     } catch (error) {
         console.error(
             "Get employees error:",
@@ -70,12 +72,24 @@ const postEmployee = async (req, res) => {
             status,
         } = req.body
 
+        const cleanFirstName =
+            typeof firstName === "string"
+                ? firstName.trim()
+                : ""
+
+        const cleanLastName =
+            typeof lastName === "string"
+                ? lastName.trim()
+                : ""
+
         const cleanEmail =
-            email?.trim().toLowerCase()
+            typeof email === "string"
+                ? email.trim().toLowerCase()
+                : ""
 
         if (
-            !firstName?.trim() ||
-            !lastName?.trim() ||
+            !cleanFirstName ||
+            !cleanLastName ||
             !cleanEmail
         ) {
             return res.status(400).json({
@@ -117,7 +131,7 @@ const postEmployee = async (req, res) => {
             }
         }
 
-        // Find the User account using the employee email
+        // Find the User account using employee email
         const user =
             await User.findOne({
                 email: cleanEmail,
@@ -143,27 +157,39 @@ const postEmployee = async (req, res) => {
 
         const newEmployee =
             new Employee({
-                firstName: firstName.trim(),
-                lastName: lastName.trim(),
+                firstName: cleanFirstName,
+                lastName: cleanLastName,
                 email: cleanEmail,
-                phone: phone?.trim() || "",
 
-                // Admin-created employees can have
-                // the position selected by Admin.
+                phone:
+                    typeof phone === "string"
+                        ? phone.trim()
+                        : "",
+
                 position:
-                    position?.trim() || "Employee",
+                    typeof position === "string" &&
+                    position.trim()
+                        ? position.trim()
+                        : "Employee",
 
                 departmentId:
                     department?.id,
 
                 salary:
-                    salary ?? 0,
+                    salary !== undefined &&
+                    salary !== ""
+                        ? Number(salary)
+                        : 0,
 
                 hireDate:
-                    hireDate || "",
+                    typeof hireDate === "string"
+                        ? hireDate
+                        : "",
 
                 status:
-                    status || "Active",
+                    status === "Inactive"
+                        ? "Inactive"
+                        : "Active",
 
                 userId: linkedUserId,
             })
@@ -218,12 +244,26 @@ const updateEmployee = async (
             status,
         } = req.body
 
-        const cleanEmail =
-            email?.trim().toLowerCase()
+        // Normalize text fields safely
+        const cleanFirstName =
+            typeof firstName === "string"
+                ? firstName.trim()
+                : ""
 
+        const cleanLastName =
+            typeof lastName === "string"
+                ? lastName.trim()
+                : ""
+
+        const cleanEmail =
+            typeof email === "string"
+                ? email.trim().toLowerCase()
+                : ""
+
+        // Validate required fields
         if (
-            !firstName?.trim() ||
-            !lastName?.trim() ||
+            !cleanFirstName ||
+            !cleanLastName ||
             !cleanEmail
         ) {
             return res.status(400).json({
@@ -232,6 +272,7 @@ const updateEmployee = async (
             })
         }
 
+        // Check duplicate employee email
         const existingEmployee =
             await Employee.findOne({
                 email: cleanEmail,
@@ -255,9 +296,23 @@ const updateEmployee = async (
             departmentId !== null &&
             departmentId !== ""
         ) {
+            const numericDepartmentId =
+                Number(departmentId)
+
+            if (
+                Number.isNaN(
+                    numericDepartmentId
+                )
+            ) {
+                return res.status(400).json({
+                    message:
+                        "Invalid department.",
+                })
+            }
+
             department =
                 await Department.findOne({
-                    id: Number(departmentId),
+                    id: numericDepartmentId,
                 })
 
             if (!department) {
@@ -295,37 +350,62 @@ const updateEmployee = async (
             linkedUserId = user._id
         }
 
+        // Prepare salary safely
+        const cleanSalary =
+            salary !== undefined &&
+            salary !== ""
+                ? Number(salary)
+                : 0
+
+        if (Number.isNaN(cleanSalary)) {
+            return res.status(400).json({
+                message:
+                    "Salary must be a valid number.",
+            })
+        }
+
+        // Update employee
         const updatedEmployee =
             await Employee.findByIdAndUpdate(
                 req.params.id,
                 {
                     firstName:
-                        firstName.trim(),
+                        cleanFirstName,
 
                     lastName:
-                        lastName.trim(),
+                        cleanLastName,
 
                     email:
                         cleanEmail,
 
                     phone:
-                        phone?.trim() || "",
+                        typeof phone === "string"
+                            ? phone.trim()
+                            : "",
 
                     position:
-                        position?.trim() ||
-                        "Employee",
+                        typeof position ===
+                            "string" &&
+                        position.trim()
+                            ? position.trim()
+                            : "Employee",
 
                     departmentId:
                         department?.id,
 
                     salary:
-                        salary ?? 0,
+                        cleanSalary,
 
                     hireDate:
-                        hireDate || "",
+                        typeof hireDate ===
+                        "string"
+                            ? hireDate
+                            : "",
 
                     status:
-                        status || "Active",
+                        status === "Inactive"
+                            ? "Inactive"
+                            : "Active",
 
                     userId:
                         linkedUserId,
@@ -349,7 +429,7 @@ const updateEmployee = async (
         const employeeObject =
             updatedEmployee.toObject()
 
-        res.json({
+        res.status(200).json({
             ...employeeObject,
             manager:
                 department?.manager || "",
@@ -386,7 +466,7 @@ const deleteEmployee = async (
             })
         }
 
-        res.json({
+        res.status(200).json({
             message:
                 "Employee deleted successfully.",
             employee:
