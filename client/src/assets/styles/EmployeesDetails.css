@@ -267,6 +267,11 @@
     min-width: 0;
 }
 
+
+/* =========================================================
+   PROFILE AVATAR
+========================================================= */
+
 .employee-details-avatar {
     position: relative;
 
@@ -301,7 +306,10 @@
         0 12px 24px rgba(37, 99, 235, 0.12);
 }
 
-/* Profile image must stay inside the avatar */
+
+/* =========================================================
+   PROFILE AVATAR IMAGE
+========================================================= */
 
 .employee-details-avatar-image {
     display: block;
@@ -316,6 +324,40 @@
     object-position: center;
 
     border-radius: inherit;
+}
+
+
+/* =========================================================
+   CLICKABLE PROFILE AVATAR
+========================================================= */
+
+.employee-details-avatar-clickable {
+    padding: 0;
+
+    font: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+
+    cursor: zoom-in;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.employee-details-avatar-clickable:hover {
+    transform: translateY(-2px);
+
+    border-color: #93c5fd;
+
+    box-shadow:
+        0 16px 30px rgba(37, 99, 235, 0.2);
+}
+
+.employee-details-avatar-clickable:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.22);
+    outline-offset: 3px;
 }
 
 .employee-details-avatar::after {
@@ -338,6 +380,11 @@
 
     pointer-events: none;
 }
+
+
+/* =========================================================
+   PROFILE CONTENT
+========================================================= */
 
 .employee-profile-content {
     min-width: 0;
@@ -832,6 +879,163 @@
 
 
 /* =========================================================
+   PROFILE IMAGE PREVIEW OVERLAY
+========================================================= */
+
+.employee-profile-image-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px;
+
+    background: rgba(15, 23, 42, 0.82);
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    animation: employeeImageOverlayIn 0.2s ease;
+}
+
+.employee-profile-image-modal {
+    position: relative;
+
+    max-width: min(850px, 92vw);
+    max-height: 90vh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 10px;
+
+    background: #ffffff;
+
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 20px;
+
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.35);
+
+    animation: employeeImageModalIn 0.25s ease;
+}
+
+.employee-profile-image-preview {
+    display: block;
+
+    width: auto;
+    height: auto;
+
+    max-width: min(800px, 88vw);
+    max-height: 75vh;
+
+    object-fit: contain;
+
+    border-radius: 14px;
+}
+
+.employee-profile-image-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 2;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    color: #334155;
+    background: rgba(255, 255, 255, 0.94);
+
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 6px 18px rgba(15, 23, 42, 0.14);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.employee-profile-image-close:hover {
+    transform: scale(1.06);
+
+    color: #dc2626;
+    background: #ffffff;
+}
+
+.employee-profile-image-close:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.22);
+    outline-offset: 2px;
+}
+
+.employee-profile-image-caption {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    padding: 12px 6px 3px;
+}
+
+.employee-profile-image-caption strong {
+    color: #172554;
+
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.employee-profile-image-caption span {
+    color: #64748b;
+
+    font-size: 10px;
+    font-weight: 650;
+}
+
+
+/* =========================================================
+   PROFILE IMAGE ANIMATIONS
+========================================================= */
+
+@keyframes employeeImageOverlayIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes employeeImageModalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+/* =========================================================
    RESPONSIVE — 1200px
 ========================================================= */
 
@@ -978,6 +1182,38 @@
         align-items: flex-start;
         flex-direction: column;
     }
+
+    .employee-profile-image-overlay {
+        padding: 18px;
+    }
+
+    .employee-profile-image-modal {
+        max-width: 95vw;
+        max-height: 88vh;
+
+        padding: 8px;
+
+        border-radius: 16px;
+    }
+
+    .employee-profile-image-preview {
+        max-width: 88vw;
+        max-height: 72vh;
+
+        border-radius: 11px;
+    }
+
+    .employee-profile-image-close {
+        top: 13px;
+        right: 13px;
+
+        width: 34px;
+        height: 34px;
+    }
+
+    .employee-profile-image-caption {
+        padding: 10px 4px 2px;
+    }
 }
 
 
@@ -1049,6 +1285,12 @@
     .employee-details-item {
         padding: 12px;
     }
+
+    .employee-profile-image-caption {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 3px;
+    }
 }
 
 
@@ -1085,6 +1327,20 @@
 
     .employee-record-id {
         align-self: flex-start;
+    }
+
+    .employee-profile-image-overlay {
+        padding: 12px;
+    }
+
+    .employee-profile-image-modal {
+        max-width: 96vw;
+        border-radius: 14px;
+    }
+
+    .employee-profile-image-preview {
+        max-width: 91vw;
+        max-height: 70vh;
     }
 }
 
@@ -1133,6 +1389,19 @@
 
     .employee-information-section {
         padding: 10px;
+    }
+
+    .employee-profile-image-close {
+        top: 9px;
+        right: 9px;
+
+        width: 31px;
+        height: 31px;
+    }
+
+    .employee-profile-image-preview {
+        max-width: 92vw;
+        max-height: 67vh;
     }
 }
 
