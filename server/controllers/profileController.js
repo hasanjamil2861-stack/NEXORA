@@ -23,7 +23,8 @@ const getProfile = async (req, res) => {
 
         if (!user) {
             return res.status(404).json({
-                message: "User account not found.",
+                message:
+                    "User account not found.",
             })
         }
 
@@ -32,11 +33,46 @@ const getProfile = async (req, res) => {
                 userId: user._id,
             })
 
-        // If this account does not have an Employee
-        // document yet, create one automatically.
+        // =================================================
+        // RECOVER OLD EMPLOYEE PROFILE
+        // =================================================
+
+        if (!employee) {
+            employee =
+                await Employee.findOne({
+                    email: user.email
+                        ?.trim()
+                        .toLowerCase(),
+
+                    $or: [
+                        {
+                            userId: {
+                                $exists: false,
+                            },
+                        },
+                        {
+                            userId: null,
+                        },
+                    ],
+                })
+
+            if (employee) {
+                employee.userId =
+                    user._id
+
+                await employee.save()
+            }
+        }
+
+        // =================================================
+        // CREATE NEW EMPLOYEE PROFILE
+        // =================================================
+
         if (!employee) {
             const nameParts = user.name
-                ? user.name.trim().split(/\s+/)
+                ? user.name
+                      .trim()
+                      .split(/\s+/)
                 : []
 
             const firstName =
@@ -47,34 +83,39 @@ const getProfile = async (req, res) => {
                     .slice(1)
                     .join(" ") || ""
 
-            employee = await Employee.create({
-                userId: user._id,
+            employee =
+                await Employee.create({
+                    userId: user._id,
 
-                firstName,
+                    firstName,
 
-                lastName,
+                    lastName,
 
-                email:
-                    user.email
-                        ?.trim()
-                        .toLowerCase() || "",
+                    email:
+                        user.email
+                            ?.trim()
+                            .toLowerCase() || "",
 
-                phone: "",
+                    phone: "",
 
-                position:
-                    user.role === "Admin"
-                        ? "Administrator"
-                        : "Employee",
+                    position:
+                        user.role === "Admin"
+                            ? "Administrator"
+                            : "Employee",
 
-                salary: 0,
+                    salary: 0,
 
-                hireDate: "",
+                    hireDate: "",
 
-                status: "Active",
+                    status: "Active",
 
-                profileImage: "",
-            })
+                    profileImage: "",
+                })
         }
+
+        // =================================================
+        // MANAGER
+        // =================================================
 
         let manager = ""
 
@@ -164,6 +205,10 @@ const updateProfile = async (req, res) => {
             })
         }
 
+        // =================================================
+        // USER
+        // =================================================
+
         const user =
             await User.findById(userId)
 
@@ -174,22 +219,80 @@ const updateProfile = async (req, res) => {
             })
         }
 
-        // Find the employee profile belonging
-        // to the currently logged-in user.
+        // =================================================
+        // FIND EMPLOYEE BY USER ID
+        // =================================================
+
         let employee =
             await Employee.findOne({
                 userId: user._id,
             })
 
-        // If it does not exist, create it.
+        // =================================================
+        // RECOVER OLD UNLINKED EMPLOYEE
+        // =================================================
+
+        if (!employee) {
+            employee =
+                await Employee.findOne({
+                    email: user.email
+                        ?.trim()
+                        .toLowerCase(),
+
+                    $or: [
+                        {
+                            userId: {
+                                $exists: false,
+                            },
+                        },
+                        {
+                            userId: null,
+                        },
+                    ],
+                })
+
+            if (employee) {
+                employee.userId =
+                    user._id
+            }
+        }
+
+        // =================================================
+        // CREATE EMPLOYEE IF NEEDED
+        // =================================================
+
         if (!employee) {
             employee = new Employee({
                 userId: user._id,
             })
         }
 
+        // Always make sure the profile belongs
+        // to the logged-in user.
+        employee.userId =
+            user._id
+
         // =================================================
-        // CHECK EMAIL
+        // CHECK USER EMAIL
+        // =================================================
+
+        const existingUser =
+            await User.findOne({
+                email: cleanEmail,
+                _id: {
+                    $ne: user._id,
+                },
+            })
+
+        if (existingUser) {
+            return res.status(409).json({
+                message:
+                    "An account with this email already exists.",
+            })
+        }
+
+        // =================================================
+        // CHECK EMPLOYEE EMAIL
         // =================================================
 
         const existingEmployee =
@@ -278,7 +381,7 @@ const updateProfile = async (req, res) => {
         }
 
         // =================================================
-        // ADMIN FIELDS
+        // ADMIN
         // =================================================
 
         if (req.user.role === "Admin") {
@@ -326,17 +429,18 @@ const updateProfile = async (req, res) => {
                 employee.status =
                     status
             }
-        } else {
-            // =================================================
-            // EMPLOYEE PROTECTION
-            // =================================================
+        }
 
-            employee.position = "Employee"
+        // =================================================
+        // EMPLOYEE
+        // =================================================
 
-            // Employee cannot modify:
-            // salary
-            // hireDate
-            // status
+        else {
+            // Employee controls only
+            // personal/profile information.
+
+            employee.position =
+                "Employee"
         }
 
         // =================================================
@@ -350,7 +454,8 @@ const updateProfile = async (req, res) => {
         // UPDATE USER ACCOUNT
         // =================================================
 
-        user.email = cleanEmail
+        user.email =
+            cleanEmail
 
         user.name =
             `${cleanFirstName} ${cleanLastName}`.trim()
@@ -389,7 +494,6 @@ const updateProfile = async (req, res) => {
             error
         )
 
-        // Mongo duplicate key
         if (error.code === 11000) {
             return res.status(409).json({
                 message:
@@ -481,7 +585,7 @@ const updateAccountCredentials = async (
                 await User.findOne({
                     email: cleanEmail,
                     _id: {
-                        $ne: userId,
+                        $ne: user._id,
                     },
                 })
 
@@ -496,7 +600,7 @@ const updateAccountCredentials = async (
                 await Employee.findOne({
                     email: cleanEmail,
                     userId: {
-                        $ne: userId,
+                        $ne: user._id,
                     },
                 })
 
@@ -512,7 +616,7 @@ const updateAccountCredentials = async (
 
             await Employee.findOneAndUpdate(
                 {
-                    userId,
+                    userId: user._id,
                 },
                 {
                     email: cleanEmail,

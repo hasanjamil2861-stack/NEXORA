@@ -65,8 +65,10 @@ export default function Profile() {
     const [profileImage, setProfileImage] =
         useState<string | null>(null)
 
-    const [isImagePreviewOpen, setIsImagePreviewOpen] =
-        useState(false)
+    const [
+        isImagePreviewOpen,
+        setIsImagePreviewOpen,
+    ] = useState(false)
 
     const [loading, setLoading] =
         useState(true)
@@ -114,7 +116,7 @@ export default function Profile() {
 
                 const loadedEmployee: Employee = {
                     id: String(
-                        data._id ?? data.id
+                        data._id ?? data.id ?? ""
                     ),
 
                     firstName:
@@ -133,8 +135,7 @@ export default function Profile() {
 
                     position:
                         data.position ??
-                        (currentUser.role ===
-                        "Admin"
+                        (currentUser.role === "Admin"
                             ? "Administrator"
                             : "Employee"),
 
@@ -160,8 +161,7 @@ export default function Profile() {
                 )
 
                 setProfileImage(
-                    data.profileImage ||
-                        null
+                    data.profileImage || null
                 )
 
                 setFormData({
@@ -227,7 +227,8 @@ export default function Profile() {
             handleEscape
         )
 
-        document.body.style.overflow = "hidden"
+        document.body.style.overflow =
+            "hidden"
 
         return () => {
             document.removeEventListener(
@@ -235,7 +236,8 @@ export default function Profile() {
                 handleEscape
             )
 
-            document.body.style.overflow = ""
+            document.body.style.overflow =
+                ""
         }
     }, [isImagePreviewOpen])
 
@@ -244,6 +246,10 @@ export default function Profile() {
     }
 
     const currentUser = user
+
+    // =====================================================
+    // PROFILE IMAGE
+    // =====================================================
 
     const handleProfileImage = (
         event: ChangeEvent<HTMLInputElement>
@@ -256,9 +262,7 @@ export default function Profile() {
         }
 
         if (
-            !file.type.startsWith(
-                "image/"
-            )
+            !file.type.startsWith("image/")
         ) {
             showToast(
                 "Please select an image file.",
@@ -307,6 +311,84 @@ export default function Profile() {
             try {
                 setSaving(true)
 
+                const data =
+                    (await updateProfile({
+                        firstName:
+                            employee.firstName,
+
+                        lastName:
+                            employee.lastName,
+
+                        email:
+                            employee.email,
+
+                        phone:
+                            employee.phone,
+
+                        position:
+                            employee.position ||
+                            "Employee",
+
+                        departmentId:
+                            employee.departmentId,
+
+                        salary:
+                            employee.salary,
+
+                        hireDate:
+                            employee.hireDate,
+
+                        status:
+                            employee.status,
+
+                        profileImage:
+                            image,
+                    })) as EmployeeApiResponse
+
+                setProfileImage(
+                    data.profileImage ||
+                        image
+                )
+
+                showToast(
+                    "Profile picture updated.",
+                    "success"
+                )
+            } catch (error) {
+                console.error(
+                    "PROFILE IMAGE UPDATE ERROR:",
+                    error
+                )
+
+                showToast(
+                    error instanceof Error
+                        ? error.message
+                        : "Unable to save profile picture.",
+                    "error"
+                )
+            } finally {
+                setSaving(false)
+            }
+        }
+
+        reader.readAsDataURL(file)
+
+        event.target.value = ""
+    }
+
+    const handleDeleteProfileImage =
+        async () => {
+            if (!employee) {
+                return
+            }
+
+            try {
+                setSaving(true)
+
+                setIsImagePreviewOpen(
+                    false
+                )
+
                 await updateProfile({
                     firstName:
                         employee.firstName,
@@ -321,7 +403,8 @@ export default function Profile() {
                         employee.phone,
 
                     position:
-                        employee.position,
+                        employee.position ||
+                        "Employee",
 
                     departmentId:
                         employee.departmentId,
@@ -335,24 +418,25 @@ export default function Profile() {
                     status:
                         employee.status,
 
-                    profileImage:
-                        image,
+                    profileImage: "",
                 })
 
-                setProfileImage(image)
+                setProfileImage(null)
 
                 showToast(
-                    "Profile picture updated.",
+                    "Profile picture removed.",
                     "success"
                 )
             } catch (error) {
                 console.error(
-                    "PROFILE IMAGE UPDATE ERROR:",
+                    "PROFILE IMAGE DELETE ERROR:",
                     error
                 )
 
                 showToast(
-                    "Unable to save profile picture.",
+                    error instanceof Error
+                        ? error.message
+                        : "Unable to remove profile picture.",
                     "error"
                 )
             } finally {
@@ -360,71 +444,9 @@ export default function Profile() {
             }
         }
 
-        reader.readAsDataURL(file)
-
-        event.target.value = ""
-    }
-
-    const handleDeleteProfileImage = async () => {
-        if (!employee) {
-            return
-        }
-
-        try {
-            setSaving(true)
-            setIsImagePreviewOpen(false)
-
-            await updateProfile({
-                firstName:
-                    employee.firstName,
-
-                lastName:
-                    employee.lastName,
-
-                email:
-                    employee.email,
-
-                phone:
-                    employee.phone,
-
-                position:
-                    employee.position,
-
-                departmentId:
-                    employee.departmentId,
-
-                salary:
-                    employee.salary,
-
-                hireDate:
-                    employee.hireDate,
-
-                status:
-                    employee.status,
-
-                profileImage: "",
-            })
-
-            setProfileImage(null)
-
-            showToast(
-                "Profile picture removed.",
-                "success"
-            )
-        } catch (error) {
-            console.error(
-                "PROFILE IMAGE DELETE ERROR:",
-                error
-            )
-
-            showToast(
-                "Unable to remove profile picture.",
-                "error"
-            )
-        } finally {
-            setSaving(false)
-        }
-    }
+    // =====================================================
+    // INPUT
+    // =====================================================
 
     const handleInputChange = (
         field: keyof ProfileFormData,
@@ -433,6 +455,7 @@ export default function Profile() {
         setFormData(
             (current) => ({
                 ...current,
+
                 [field]:
                     field === "salary"
                         ? Number(value)
@@ -440,6 +463,10 @@ export default function Profile() {
             })
         )
     }
+
+    // =====================================================
+    // EDIT
+    // =====================================================
 
     const handleEdit = () => {
         if (!employee) {
@@ -465,7 +492,8 @@ export default function Profile() {
                 employee.phone,
 
             position:
-                employee.position,
+                employee.position ||
+                "Employee",
 
             departmentId:
                 employee.departmentId,
@@ -494,6 +522,10 @@ export default function Profile() {
         }, 100)
     }
 
+    // =====================================================
+    // CANCEL
+    // =====================================================
+
     const handleCancel = () => {
         if (employee) {
             setFormData({
@@ -510,7 +542,8 @@ export default function Profile() {
                     employee.phone,
 
                 position:
-                    employee.position,
+                    employee.position ||
+                    "Employee",
 
                 departmentId:
                     employee.departmentId,
@@ -529,24 +562,55 @@ export default function Profile() {
         setIsEditing(false)
     }
 
+    // =====================================================
+    // SAVE PROFILE
+    // =====================================================
+
     const handleSave = async (
         event: FormEvent<HTMLFormElement>
     ) => {
         event.preventDefault()
 
         if (!employee) {
+            showToast(
+                "Profile data is not available.",
+                "error"
+            )
+
             return
         }
 
         if (
             !formData.firstName.trim() ||
             !formData.lastName.trim() ||
-            !formData.email.trim() ||
-            !formData.phone.trim() ||
+            !formData.email.trim()
+        ) {
+            showToast(
+                "First name, last name and email are required.",
+                "error"
+            )
+
+            return
+        }
+
+        if (
+            isAdmin &&
+            !formData.phone.trim()
+        ) {
+            showToast(
+                "Phone is required.",
+                "error"
+            )
+
+            return
+        }
+
+        if (
+            isAdmin &&
             !formData.position.trim()
         ) {
             showToast(
-                "Please complete all required fields.",
+                "Position is required.",
                 "error"
             )
 
@@ -565,79 +629,103 @@ export default function Profile() {
         try {
             setSaving(true)
 
+            const payload = {
+                firstName:
+                    formData.firstName.trim(),
+
+                lastName:
+                    formData.lastName.trim(),
+
+                email:
+                    formData.email
+                        .trim()
+                        .toLowerCase(),
+
+                phone:
+                    formData.phone.trim(),
+
+                position:
+                    isAdmin
+                        ? formData.position.trim()
+                        : "Employee",
+
+                departmentId:
+                    formData.departmentId,
+
+                salary:
+                    isAdmin
+                        ? Number(
+                              formData.salary
+                          )
+                        : employee.salary,
+
+                hireDate:
+                    isAdmin
+                        ? formData.hireDate
+                        : employee.hireDate,
+
+                status:
+                    isAdmin
+                        ? formData.status
+                        : employee.status,
+
+                profileImage:
+                    profileImage || "",
+            }
+
             const data =
-                (await updateProfile({
+                (await updateProfile(
+                    payload
+                )) as EmployeeApiResponse
+
+            const updatedEmployee: Employee =
+                {
+                    id: String(
+                        data._id ??
+                            data.id ??
+                            employee.id
+                    ),
+
                     firstName:
-                        formData.firstName.trim(),
+                        data.firstName ??
+                        payload.firstName,
 
                     lastName:
-                        formData.lastName.trim(),
+                        data.lastName ??
+                        payload.lastName,
 
                     email:
-                        formData.email
-                            .trim()
-                            .toLowerCase(),
+                        data.email ??
+                        payload.email,
 
                     phone:
-                        formData.phone.trim(),
+                        data.phone ??
+                        payload.phone,
 
                     position:
-                        formData.position.trim(),
+                        data.position ??
+                        payload.position,
 
                     departmentId:
-                        formData.departmentId,
+                        String(
+                            data.departmentId ??
+                                ""
+                        ),
 
                     salary:
                         Number(
-                            formData.salary
+                            data.salary ??
+                                payload.salary
                         ),
 
                     hireDate:
-                        formData.hireDate,
+                        data.hireDate ??
+                        payload.hireDate,
 
                     status:
-                        formData.status,
-
-                    profileImage:
-                        profileImage || "",
-                })) as EmployeeApiResponse
-
-            const updatedEmployee: Employee = {
-                id: String(
-                    data._id ?? data.id
-                ),
-
-                firstName:
-                    data.firstName ?? "",
-
-                lastName:
-                    data.lastName ?? "",
-
-                email:
-                    data.email ?? "",
-
-                phone:
-                    data.phone ?? "",
-
-                position:
-                    data.position ?? "",
-
-                departmentId:
-                    String(
-                        data.departmentId ?? ""
-                    ),
-
-                salary:
-                    Number(
-                        data.salary ?? 0
-                    ),
-
-                hireDate:
-                    data.hireDate ?? "",
-
-                status:
-                    data.status ?? "Active",
-            }
+                        data.status ??
+                        payload.status,
+                }
 
             setEmployee(
                 updatedEmployee
@@ -645,6 +733,7 @@ export default function Profile() {
 
             setProfileImage(
                 data.profileImage ||
+                    profileImage ||
                     null
             )
 
@@ -691,13 +780,19 @@ export default function Profile() {
             )
 
             showToast(
-                "Failed to update profile.",
+                error instanceof Error
+                    ? error.message
+                    : "Failed to update profile.",
                 "error"
             )
         } finally {
             setSaving(false)
         }
     }
+
+    // =====================================================
+    // DISPLAY DATA
+    // =====================================================
 
     const department =
         employee?.departmentId
@@ -773,9 +868,9 @@ export default function Profile() {
                     </h1>
 
                     <p>
-                        {isAdmin
-                            ? "Manage your personal information and account details."
-                            : "Manage your personal information and account details."}
+                        Manage your personal
+                        information and account
+                        details.
                     </p>
                 </div>
 
@@ -966,7 +1061,8 @@ export default function Profile() {
                             </h3>
 
                             <p>
-                                Your account and employment details.
+                                Your account and employment
+                                details.
                             </p>
                         </div>
                     </div>
@@ -1056,7 +1152,9 @@ export default function Profile() {
                                                         .value
                                                 )
                                             }
-                                            required
+                                            required={
+                                                isAdmin
+                                            }
                                         />
                                     ) : (
                                         <strong>
@@ -1415,9 +1513,8 @@ export default function Profile() {
                         >
                             Profile data could not
                             be loaded. Check the
-                            browser console for
+                            browser console for{" "}
                             <strong>
-                                {" "}
                                 PROFILE LOAD ERROR
                             </strong>
                             .
