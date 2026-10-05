@@ -264,7 +264,6 @@ const deleteAttendance = async (
     return res.json({
       message:
         "Attendance record deleted successfully.",
-
       attendance:
         deletedAttendance,
     })

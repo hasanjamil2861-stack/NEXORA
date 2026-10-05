@@ -52,24 +52,18 @@ export default function AttendanceCard({
         </div>
 
         <div>
-          <strong>
-            Check In
-          </strong>
+          <strong>Check In</strong>
 
           <span>
-            {attendance.checkIn ||
-              "-"}
+            {attendance.checkIn || "-"}
           </span>
         </div>
 
         <div>
-          <strong>
-            Check Out
-          </strong>
+          <strong>Check Out</strong>
 
           <span>
-            {attendance.checkOut ||
-              "-"}
+            {attendance.checkOut || "-"}
           </span>
         </div>
       </div>
@@ -89,9 +83,7 @@ export default function AttendanceCard({
           <button
             type="button"
             onClick={() =>
-              onDelete(
-                attendance.id
-              )
+              onDelete(attendance.id)
             }
           >
             <Trash2 size={15} />

@@ -30,7 +30,6 @@ import "@assets/styles/Register.css"
 import "@assets/styles/Profile.css"
 import "@assets/styles/LoadingScreen.css"
 
-
 import { TrashProvider } from "./context/TrashContext"
 import { AuthProvider } from "./context/AuthContext"
 
@@ -59,151 +58,126 @@ import LoadingScreen from "./components/LoadingScreen/LoadingScreen"
 export default function App() {
   return (
     <>
-    <LoadingScreen />
-    <BrowserRouter>
-      <AuthProvider>
-        <TrashProvider>
-          <Routes>
-            <Route
-              path="/login"
-              element={<Login />}
-            />
+      <LoadingScreen />
 
-            <Route
-              path="/register"
-              element={<Register />}
-            />
-
-            <Route
-              element={
-                <ProtectedRoute />
-              }
-            >
+      <BrowserRouter>
+        <AuthProvider>
+          <TrashProvider>
+            <Routes>
               <Route
-                element={<MainLayout />}
+                path="/login"
+                element={<Login />}
+              />
+
+              <Route
+                path="/register"
+                element={<Register />}
+              />
+
+              <Route
+                element={
+                  <ProtectedRoute />
+                }
               >
                 <Route
-                  path="/tasks"
-                  element={<Tasks />}
-                />
-
-                <Route
-                  path="/leave-requests"
-                  element={
-                    <LeaveRequests />
-                  }
-                />
-
-                <Route
-                  path="/documents"
-                  element={
-                    <Documents />
-                  }
-                />
-
-                <Route
-                  path="/projects"
-                  element={
-                    <Projects />
-                  }
-                />
-
-                <Route
-                  path="/profile"
-                  element={<Profile />}
-                />
-
-                <Route
-                  element={
-                    <ProtectedRoute
-                      adminOnly
-                    />
-                  }
+                  element={<MainLayout />}
                 >
+                  <Route
+                    path="/profile"
+                    element={<Profile />}
+                  />
+
+                  <Route
+                    path="/projects"
+                    element={<Projects />}
+                  />
+
+                  <Route
+                    path="/tasks"
+                    element={<Tasks />}
+                  />
+
+                  <Route
+                    path="/leave-requests"
+                    element={
+                      <LeaveRequests />
+                    }
+                  />
+
+                  <Route
+                    path="/documents"
+                    element={<Documents />}
+                  />
+
                   <Route
                     path="/attendance"
-                    element={
-                      <Attendance />
-                    }
+                    element={<Attendance />}
                   />
 
                   <Route
-                    path="/contracts"
                     element={
-                      <Contracts />
+                      <ProtectedRoute
+                        adminOnly
+                      />
                     }
-                  />
-                </Route>
-
-                <Route
-                  element={
-                    <ProtectedRoute
-                      adminOnly
+                  >
+                    <Route
+                      path="/"
+                      element={<Dashboard />}
                     />
-                  }
-                >
-                  <Route
-                    path="/"
-                    element={
-                      <Dashboard />
-                    }
-                  />
 
-                  <Route
-                    path="/employees"
-                    element={
-                      <Employees />
-                    }
-                  />
+                    <Route
+                      path="/employees"
+                      element={<Employees />}
+                    />
 
-                  <Route
-                    path="/employees/:id"
-                    element={
-                      <EmployeeDetails />
-                    }
-                  />
+                    <Route
+                      path="/employees/:id"
+                      element={
+                        <EmployeeDetails />
+                      }
+                    />
 
-                  <Route
-                    path="/departments"
-                    element={
-                      <Departments />
-                    }
-                  />
+                    <Route
+                      path="/departments"
+                      element={
+                        <Departments />
+                      }
+                    />
 
-                  <Route
-                    path="/clients"
-                    element={
-                      <Clients />
-                    }
-                  />
+                    <Route
+                      path="/clients"
+                      element={<Clients />}
+                    />
 
-                  <Route
-                    path="/invoices"
-                    element={
-                      <Invoices />
-                    }
-                  />
+                    <Route
+                      path="/contracts"
+                      element={
+                        <Contracts />
+                      }
+                    />
 
-                  <Route
-                    path="/reports"
-                    element={
-                      <Reports />
-                    }
-                  />
+                    <Route
+                      path="/invoices"
+                      element={<Invoices />}
+                    />
 
-                  <Route
-                    path="/trash"
-                    element={
-                      <Trash />
-                    }
-                  />
+                    <Route
+                      path="/reports"
+                      element={<Reports />}
+                    />
+
+                    <Route
+                      path="/trash"
+                      element={<Trash />}
+                    />
+                  </Route>
                 </Route>
               </Route>
-            </Route>
-          </Routes>
-        </TrashProvider>
-      </AuthProvider>
-    </BrowserRouter>
+            </Routes>
+          </TrashProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </>
   )
 }

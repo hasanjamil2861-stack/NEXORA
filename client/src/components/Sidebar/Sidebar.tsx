@@ -1,5 +1,3 @@
-// Sidebar.tsx
-
 import { useState } from "react"
 
 import {
@@ -117,8 +115,6 @@ export default function Sidebar() {
         </div>
 
         <nav className="sidebar-navigation">
-
-          {/* Available for Admin and Employee */}
           <NavLink
             to="/profile"
             title="My Profile"
@@ -128,7 +124,6 @@ export default function Sidebar() {
             <span>My Profile</span>
           </NavLink>
 
-          {/* Admin Only */}
           {isAdmin && (
             <>
               <NavLink
@@ -178,7 +173,6 @@ export default function Sidebar() {
             <span>Tasks</span>
           </NavLink>
 
-          {/* Admin Only */}
           {isAdmin && (
             <NavLink
               to="/clients"
@@ -196,23 +190,20 @@ export default function Sidebar() {
             onClick={closeMobileMenu}
           >
             <CalendarDays className="sidebar-icon" />
-            <span>
-              Leave Requests
-            </span>
+            <span>Leave Requests</span>
           </NavLink>
 
-          {/* Admin Only */}
+          <NavLink
+            to="/attendance"
+            title="Attendance"
+            onClick={closeMobileMenu}
+          >
+            <CalendarCheck className="sidebar-icon" />
+            <span>Attendance</span>
+          </NavLink>
+
           {isAdmin && (
             <>
-              <NavLink
-                to="/attendance"
-                title="Attendance"
-                onClick={closeMobileMenu}
-              >
-                <CalendarCheck className="sidebar-icon" />
-                <span>Attendance</span>
-              </NavLink>
-
               <NavLink
                 to="/contracts"
                 title="Contracts"
@@ -221,19 +212,16 @@ export default function Sidebar() {
                 <FileSignature className="sidebar-icon" />
                 <span>Contracts</span>
               </NavLink>
-            </>
-          )}
 
-          {/* Admin Only */}
-          {isAdmin && (
-            <NavLink
-              to="/invoices"
-              title="Invoices"
-              onClick={closeMobileMenu}
-            >
-              <Receipt className="sidebar-icon" />
-              <span>Invoices</span>
-            </NavLink>
+              <NavLink
+                to="/invoices"
+                title="Invoices"
+                onClick={closeMobileMenu}
+              >
+                <Receipt className="sidebar-icon" />
+                <span>Invoices</span>
+              </NavLink>
+            </>
           )}
 
           <NavLink
@@ -245,7 +233,6 @@ export default function Sidebar() {
             <span>Documents</span>
           </NavLink>
 
-          {/* Admin Only */}
           {isAdmin && (
             <>
               <NavLink
