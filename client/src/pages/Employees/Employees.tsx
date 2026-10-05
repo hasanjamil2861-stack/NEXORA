@@ -60,20 +60,33 @@ function formatEmployee(
 ): Employee {
     return {
         id: String(employee._id),
-        firstName: employee.firstName ?? "",
-        lastName: employee.lastName ?? "",
-        email: employee.email ?? "",
-        phone: employee.phone ?? "",
-        position: employee.position ?? "",
+
+        firstName:
+            employee.firstName ?? "",
+
+        lastName:
+            employee.lastName ?? "",
+
+        email:
+            employee.email ?? "",
+
+        phone:
+            employee.phone ?? "",
+
+        position:
+            employee.position ?? "",
+
         departmentId:
-            employee.departmentId !==
-            undefined
-                ? String(
-                      employee.departmentId
-                  )
+            employee.departmentId !== undefined
+                ? String(employee.departmentId)
                 : "",
-        salary: employee.salary ?? 0,
-        hireDate: employee.hireDate ?? "",
+
+        salary:
+            Number(employee.salary) || 0,
+
+        hireDate:
+            employee.hireDate ?? "",
+
         status:
             employee.status ?? "Active",
     }
@@ -171,13 +184,10 @@ export default function Employees() {
                     )
 
                 if (newEmployee) {
-                    newEmployee.scrollIntoView(
-                        {
-                            behavior:
-                                "smooth",
-                            block: "center",
-                        }
-                    )
+                    newEmployee.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                    })
                 }
 
                 setNewEmployeeId(null)
@@ -215,28 +225,35 @@ export default function Employees() {
     const activeEmployees =
         employeeList.filter(
             (employee) =>
-                employee.status ===
-                "Active"
+                employee.status === "Active"
         ).length
 
     const inactiveEmployees =
         employeeList.filter(
             (employee) =>
-                employee.status ===
-                "Inactive"
+                employee.status === "Inactive"
         ).length
+
+    /*
+     * Average Salary
+     *
+     * Total of all employee salaries
+     * divided by the total number of employees.
+     */
+    const totalSalary =
+        employeeList.reduce(
+            (total, employee) => {
+                return (
+                    total +
+                    Number(employee.salary || 0)
+                )
+            },
+            0
+        )
 
     const averageSalary =
         totalEmployees > 0
-            ? employeeList.reduce(
-                  (
-                      total,
-                      employee
-                  ) =>
-                      total +
-                      employee.salary,
-                  0
-              ) / totalEmployees
+            ? totalSalary / totalEmployees
             : 0
 
     const activePercentage =
@@ -273,12 +290,10 @@ export default function Employees() {
         setFormError("")
 
         requestAnimationFrame(() => {
-            employeeFormRef.current?.scrollIntoView(
-                {
-                    behavior: "smooth",
-                    block: "start",
-                }
-            )
+            employeeFormRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            })
         })
     }
 
@@ -464,7 +479,6 @@ export default function Employees() {
             employee.position ?? ""
         )
 
-        // Keep the employee's existing department
         setDepartmentId(
             employee.departmentId ?? ""
         )
@@ -491,12 +505,10 @@ export default function Employees() {
         setFormError("")
 
         requestAnimationFrame(() => {
-            employeeFormRef.current?.scrollIntoView(
-                {
-                    behavior: "smooth",
-                    block: "start",
-                }
-            )
+            employeeFormRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            })
         })
     }
 
@@ -652,8 +664,7 @@ export default function Employees() {
                         )
 
                 const matchesStatus =
-                    statusFilter ===
-                        "All" ||
+                    statusFilter === "All" ||
                     employee.status ===
                         statusFilter
 
@@ -724,9 +735,7 @@ export default function Employees() {
                         type="button"
                         className="add-employee-btn"
                         onClick={() => {
-                            if (
-                                showForm
-                            ) {
+                            if (showForm) {
                                 resetForm()
                             } else {
                                 openEmployeeForm()
@@ -748,48 +757,36 @@ export default function Employees() {
 
                     <div className="employee-stat-content">
                         <span>
-                            Total
-                            Employees
+                            Total Employees
                         </span>
 
                         <strong>
-                            {
-                                totalEmployees
-                            }
+                            {totalEmployees}
                         </strong>
 
                         <small>
-                            Current
-                            workforce
+                            Current workforce
                         </small>
                     </div>
                 </div>
 
                 <div className="employee-stat-card">
                     <div className="employee-stat-icon active">
-                        <UserCheck
-                            size={20}
-                        />
+                        <UserCheck size={20} />
                     </div>
 
                     <div className="employee-stat-content">
                         <span>
-                            Active
-                            Employees
+                            Active Employees
                         </span>
 
                         <strong>
-                            {
-                                activeEmployees
-                            }
+                            {activeEmployees}
                         </strong>
 
                         <small>
-                            {
-                                activePercentage
-                            }
-                            % of
-                            workforce
+                            {activePercentage}%
+                            {" "}of workforce
                         </small>
                     </div>
                 </div>
@@ -801,34 +798,27 @@ export default function Employees() {
 
                     <div className="employee-stat-content">
                         <span>
-                            Inactive
-                            Employees
+                            Inactive Employees
                         </span>
 
                         <strong>
-                            {
-                                inactiveEmployees
-                            }
+                            {inactiveEmployees}
                         </strong>
 
                         <small>
-                            Currently
-                            inactive
+                            Currently inactive
                         </small>
                     </div>
                 </div>
 
                 <div className="employee-stat-card">
                     <div className="employee-stat-icon salary">
-                        <WalletCards
-                            size={20}
-                        />
+                        <WalletCards size={20} />
                     </div>
 
                     <div className="employee-stat-content">
                         <span>
-                            Average
-                            Salary
+                            Average Salary
                         </span>
 
                         <strong>
@@ -836,15 +826,13 @@ export default function Employees() {
                             {averageSalary.toLocaleString(
                                 undefined,
                                 {
-                                    maximumFractionDigits:
-                                        0,
+                                    maximumFractionDigits: 0,
                                 }
                             )}
                         </strong>
 
                         <small>
-                            Average per
-                            employee
+                            Average per employee
                         </small>
                     </div>
                 </div>
@@ -871,9 +859,7 @@ export default function Employees() {
 
                 <div className="employee-filter">
                     <select
-                        value={
-                            statusFilter
-                        }
+                        value={statusFilter}
                         onChange={(e) =>
                             setStatusFilter(
                                 e.target.value as
@@ -898,9 +884,7 @@ export default function Employees() {
 
                 <div className="employee-filter">
                     <select
-                        value={
-                            departmentFilter
-                        }
+                        value={departmentFilter}
                         onChange={(e) =>
                             setDepartmentFilter(
                                 e.target.value
@@ -912,9 +896,7 @@ export default function Employees() {
                         </option>
 
                         {departments.map(
-                            (
-                                department
-                            ) => (
+                            (department) => (
                                 <option
                                     key={
                                         department.id
@@ -964,12 +946,9 @@ export default function Employees() {
                 <span>
                     Showing{" "}
                     <strong>
-                        {
-                            sortedEmployees.length
-                        }
+                        {sortedEmployees.length}
                     </strong>{" "}
-                    {sortedEmployees.length ===
-                    1
+                    {sortedEmployees.length === 1
                         ? "employee"
                         : "employees"}
                 </span>
@@ -978,20 +957,15 @@ export default function Employees() {
             {showForm &&
                 isAdmin && (
                     <section
-                        ref={
-                            employeeFormRef
-                        }
+                        ref={employeeFormRef}
                         className="employee-form"
                     >
                         <div className="employee-form-header">
                             <div>
                                 <h2>
-                                    {
-                                        editingEmployee !==
-                                        null
-                                            ? "Edit Employee"
-                                            : "Add New Employee"
-                                    }
+                                    {editingEmployee !== null
+                                        ? "Edit Employee"
+                                        : "Add New Employee"}
                                 </h2>
 
                                 <p>
@@ -1006,9 +980,7 @@ export default function Employees() {
                         <div className="form-error-container">
                             {formError && (
                                 <p className="form-error">
-                                    {
-                                        formError
-                                    }
+                                    {formError}
                                 </p>
                             )}
                         </div>
@@ -1023,20 +995,12 @@ export default function Employees() {
                                     id="employee-first-name"
                                     type="text"
                                     placeholder="Enter first name"
-                                    value={
-                                        firstName
-                                    }
-                                    onChange={(
-                                        e
-                                    ) => {
+                                    value={firstName}
+                                    onChange={(e) => {
                                         setFirstName(
-                                            e
-                                                .target
-                                                .value
+                                            e.target.value
                                         )
-                                        setFormError(
-                                            ""
-                                        )
+                                        setFormError("")
                                     }}
                                     required
                                 />
@@ -1051,20 +1015,12 @@ export default function Employees() {
                                     id="employee-last-name"
                                     type="text"
                                     placeholder="Enter last name"
-                                    value={
-                                        lastName
-                                    }
-                                    onChange={(
-                                        e
-                                    ) => {
+                                    value={lastName}
+                                    onChange={(e) => {
                                         setLastName(
-                                            e
-                                                .target
-                                                .value
+                                            e.target.value
                                         )
-                                        setFormError(
-                                            ""
-                                        )
+                                        setFormError("")
                                     }}
                                     required
                                 />
@@ -1079,20 +1035,12 @@ export default function Employees() {
                                     id="employee-email"
                                     type="email"
                                     placeholder="employee@example.com"
-                                    value={
-                                        email
-                                    }
-                                    onChange={(
-                                        e
-                                    ) => {
+                                    value={email}
+                                    onChange={(e) => {
                                         setEmail(
-                                            e
-                                                .target
-                                                .value
+                                            e.target.value
                                         )
-                                        setFormError(
-                                            ""
-                                        )
+                                        setFormError("")
                                     }}
                                     required
                                 />
@@ -1107,20 +1055,12 @@ export default function Employees() {
                                     id="employee-phone"
                                     type="tel"
                                     placeholder="Enter phone number"
-                                    value={
-                                        phone
-                                    }
-                                    onChange={(
-                                        e
-                                    ) => {
+                                    value={phone}
+                                    onChange={(e) => {
                                         setPhone(
-                                            e
-                                                .target
-                                                .value
+                                            e.target.value
                                         )
-                                        setFormError(
-                                            ""
-                                        )
+                                        setFormError("")
                                     }}
                                     required
                                 />
@@ -1135,20 +1075,12 @@ export default function Employees() {
                                     id="employee-position"
                                     type="text"
                                     placeholder="e.g. Software Developer"
-                                    value={
-                                        position
-                                    }
-                                    onChange={(
-                                        e
-                                    ) => {
+                                    value={position}
+                                    onChange={(e) => {
                                         setPosition(
-                                            e
-                                                .target
-                                                .value
+                                            e.target.value
                                         )
-                                        setFormError(
-                                            ""
-                                        )
+                                        setFormError("")
                                     }}
                                     required
                                 />
@@ -1163,21 +1095,13 @@ export default function Employees() {
                                     id="employee-salary"
                                     type="number"
                                     placeholder="Enter salary"
-                                    value={
-                                        salary
-                                    }
+                                    value={salary}
                                     min="0"
-                                    onChange={(
-                                        e
-                                    ) => {
+                                    onChange={(e) => {
                                         setSalary(
-                                            e
-                                                .target
-                                                .value
+                                            e.target.value
                                         )
-                                        setFormError(
-                                            ""
-                                        )
+                                        setFormError("")
                                     }}
                                     required
                                 />
@@ -1191,20 +1115,12 @@ export default function Employees() {
                                 <input
                                     id="employee-hire-date"
                                     type="date"
-                                    value={
-                                        hireDate
-                                    }
-                                    onChange={(
-                                        e
-                                    ) => {
+                                    value={hireDate}
+                                    onChange={(e) => {
                                         setHireDate(
-                                            e
-                                                .target
-                                                .value
+                                            e.target.value
                                         )
-                                        setFormError(
-                                            ""
-                                        )
+                                        setFormError("")
                                     }}
                                     required
                                 />
@@ -1217,20 +1133,12 @@ export default function Employees() {
 
                                 <select
                                     id="employee-status"
-                                    value={
-                                        status
-                                    }
-                                    onChange={(
-                                        e
-                                    ) => {
+                                    value={status}
+                                    onChange={(e) => {
                                         setStatus(
-                                            e
-                                                .target
-                                                .value as Employee["status"]
+                                            e.target.value as Employee["status"]
                                         )
-                                        setFormError(
-                                            ""
-                                        )
+                                        setFormError("")
                                     }}
                                     required
                                 >
@@ -1253,20 +1161,15 @@ export default function Employees() {
                                     handleCreateEmployee
                                 }
                             >
-                                {
-                                    editingEmployee !==
-                                    null
-                                        ? "Update Employee"
-                                        : "Create Employee"
-                                }
+                                {editingEmployee !== null
+                                    ? "Update Employee"
+                                    : "Create Employee"}
                             </button>
 
                             <button
                                 type="button"
                                 className="employee-cancel-btn"
-                                onClick={
-                                    resetForm
-                                }
+                                onClick={resetForm}
                             >
                                 Cancel
                             </button>
@@ -1275,22 +1178,15 @@ export default function Employees() {
                 )}
 
             <section className="employees-grid">
-                {sortedEmployees.length >
-                0 ? (
+                {sortedEmployees.length > 0 ? (
                     sortedEmployees.map(
-                        (
-                            employee
-                        ) => (
+                        (employee) => (
                             <div
-                                key={
-                                    employee.id
-                                }
+                                key={employee.id}
                                 id={`employee-${employee.id}`}
                             >
                                 <EmployeeCard
-                                    employee={
-                                        employee
-                                    }
+                                    employee={employee}
                                     onDelete={
                                         handleDeleteEmployee
                                     }
@@ -1304,20 +1200,16 @@ export default function Employees() {
                 ) : (
                     <div className="employee-empty-state">
                         <div className="employee-empty-icon">
-                            <Search
-                                size={26}
-                            />
+                            <Search size={26} />
                         </div>
 
                         <h2>
-                            No Employees
-                            Found
+                            No Employees Found
                         </h2>
 
                         <p>
-                            No employees
-                            match your
-                            current search
+                            No employees match
+                            your current search
                             or filters.
                         </p>
 
@@ -1325,18 +1217,14 @@ export default function Employees() {
                             type="button"
                             className="clear-employee-search-btn"
                             onClick={() => {
-                                setSearch(
-                                    ""
-                                )
+                                setSearch("")
                                 setStatusFilter(
                                     "All"
                                 )
                                 setDepartmentFilter(
                                     "All"
                                 )
-                                setSortBy(
-                                    "None"
-                                )
+                                setSortBy("None")
                             }}
                         >
                             Clear Filters
@@ -1345,16 +1233,13 @@ export default function Employees() {
                 )}
             </section>
 
-            {employeeToDelete !==
-                null &&
+            {employeeToDelete !== null &&
                 isAdmin && (
                     <Modal
                         title="Delete Employee"
                         message="Are you sure you want to delete this employee?"
                         onCancel={() =>
-                            setEmployeeToDelete(
-                                null
-                            )
+                            setEmployeeToDelete(null)
                         }
                         onConfirm={
                             confirmDeleteEmployee

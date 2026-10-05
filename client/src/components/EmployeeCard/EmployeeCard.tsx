@@ -53,8 +53,22 @@ export default function EmployeeCard({
 
             <div className="employee-card-header">
 
-                <div className="employee-avatar">
-                    {initials}
+                <div
+                    className={`employee-avatar ${
+                        employee.profileImage
+                            ? "employee-avatar-has-image"
+                            : ""
+                    }`}
+                >
+                    {employee.profileImage ? (
+                        <img
+                            src={employee.profileImage}
+                            alt={`${employee.firstName} ${employee.lastName}`}
+                            className="employee-avatar-image"
+                        />
+                    ) : (
+                        initials
+                    )}
                 </div>
 
                 <div className="employee-main-info">
