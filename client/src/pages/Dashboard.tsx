@@ -148,7 +148,6 @@ export default function Dashboard() {
               status: task.status,
               priority: task.priority,
               assignedTo: task.assignedTo,
-              projectId: task.projectId,
               dueDate: task.dueDate,
             })
           )
