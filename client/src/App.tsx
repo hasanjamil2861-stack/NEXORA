@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react"
-
 import {
   BrowserRouter,
   Route,
@@ -32,12 +30,12 @@ import "@assets/styles/Register.css"
 import "@assets/styles/Profile.css"
 import "@assets/styles/LoadingScreen.css"
 
+
 import { TrashProvider } from "./context/TrashContext"
 import { AuthProvider } from "./context/AuthContext"
 
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute"
 import MainLayout from "./layouts/MainLayout/MainLayout"
-import LoadingScreen from "./components/LoadingScreen/LoadingScreen"
 
 import Attendance from "./pages/Attendance/Attendance"
 import Clients from "./pages/Clients/Clients"
@@ -56,179 +54,156 @@ import Tasks from "./pages/Tasks/Tasks"
 import Trash from "./pages/Trash/Trash"
 import Register from "./pages/Register/Register"
 import Profile from "./pages/Profile/Profile"
-
+import LoadingScreen from "./components/LoadingScreen/LoadingScreen"
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    /*
-     * Give React and the initial application
-     * enough time to mount before removing
-     * the loading screen.
-     */
-    const timer = window.setTimeout(() => {
-      setIsLoading(false)
-    }, 1800)
-
-    return () => {
-      window.clearTimeout(timer)
-    }
-  }, [])
-
   return (
     <>
-      <LoadingScreen isLoading={isLoading} />
+    <LoadingScreen />
+    <BrowserRouter>
+      <AuthProvider>
+        <TrashProvider>
+          <Routes>
+            <Route
+              path="/login"
+              element={<Login />}
+            />
 
-      <BrowserRouter>
-        <AuthProvider>
-          <TrashProvider>
+            <Route
+              path="/register"
+              element={<Register />}
+            />
 
-            <Routes>
-
-              {/* =====================================================
-                  Public Routes
-                  ===================================================== */}
-
+            <Route
+              element={
+                <ProtectedRoute />
+              }
+            >
               <Route
-                path="/login"
-                element={<Login />}
-              />
-
-              <Route
-                path="/register"
-                element={<Register />}
-              />
-
-
-              {/* =====================================================
-                  Protected Routes
-                  ===================================================== */}
-
-              <Route
-                element={
-                  <ProtectedRoute />
-                }
+                element={<MainLayout />}
               >
+                <Route
+                  path="/tasks"
+                  element={<Tasks />}
+                />
 
                 <Route
-                  element={<MainLayout />}
+                  path="/leave-requests"
+                  element={
+                    <LeaveRequests />
+                  }
+                />
+
+                <Route
+                  path="/documents"
+                  element={
+                    <Documents />
+                  }
+                />
+
+                <Route
+                  path="/projects"
+                  element={
+                    <Projects />
+                  }
+                />
+
+                <Route
+                  path="/profile"
+                  element={<Profile />}
+                />
+
+                <Route
+                  element={
+                    <ProtectedRoute
+                      adminOnly
+                    />
+                  }
                 >
-
                   <Route
-                    path="/tasks"
-                    element={<Tasks />}
-                  />
-
-                  <Route
-                    path="/leave-requests"
-                    element={<LeaveRequests />}
-                  />
-
-                  <Route
-                    path="/documents"
-                    element={<Documents />}
-                  />
-
-                  <Route
-                    path="/projects"
-                    element={<Projects />}
-                  />
-
-                  <Route
-                    path="/profile"
-                    element={<Profile />}
-                  />
-
-
-                  {/* =================================================
-                      Admin Routes
-                      ================================================= */}
-
-                  <Route
+                    path="/attendance"
                     element={
-                      <ProtectedRoute
-                        adminOnly
-                      />
+                      <Attendance />
                     }
-                  >
-
-                    <Route
-                      path="/attendance"
-                      element={<Attendance />}
-                    />
-
-                    <Route
-                      path="/contracts"
-                      element={<Contracts />}
-                    />
-
-                  </Route>
-
-
-                  {/* =================================================
-                      Admin Dashboard Routes
-                      ================================================= */}
+                  />
 
                   <Route
+                    path="/contracts"
                     element={
-                      <ProtectedRoute
-                        adminOnly
-                      />
+                      <Contracts />
                     }
-                  >
-
-                    <Route
-                      path="/"
-                      element={<Dashboard />}
-                    />
-
-                    <Route
-                      path="/employees"
-                      element={<Employees />}
-                    />
-
-                    <Route
-                      path="/employees/:id"
-                      element={<EmployeeDetails />}
-                    />
-
-                    <Route
-                      path="/departments"
-                      element={<Departments />}
-                    />
-
-                    <Route
-                      path="/clients"
-                      element={<Clients />}
-                    />
-
-                    <Route
-                      path="/invoices"
-                      element={<Invoices />}
-                    />
-
-                    <Route
-                      path="/reports"
-                      element={<Reports />}
-                    />
-
-                    <Route
-                      path="/trash"
-                      element={<Trash />}
-                    />
-
-                  </Route>
-
+                  />
                 </Route>
 
+                <Route
+                  element={
+                    <ProtectedRoute
+                      adminOnly
+                    />
+                  }
+                >
+                  <Route
+                    path="/"
+                    element={
+                      <Dashboard />
+                    }
+                  />
+
+                  <Route
+                    path="/employees"
+                    element={
+                      <Employees />
+                    }
+                  />
+
+                  <Route
+                    path="/employees/:id"
+                    element={
+                      <EmployeeDetails />
+                    }
+                  />
+
+                  <Route
+                    path="/departments"
+                    element={
+                      <Departments />
+                    }
+                  />
+
+                  <Route
+                    path="/clients"
+                    element={
+                      <Clients />
+                    }
+                  />
+
+                  <Route
+                    path="/invoices"
+                    element={
+                      <Invoices />
+                    }
+                  />
+
+                  <Route
+                    path="/reports"
+                    element={
+                      <Reports />
+                    }
+                  />
+
+                  <Route
+                    path="/trash"
+                    element={
+                      <Trash />
+                    }
+                  />
+                </Route>
               </Route>
-
-            </Routes>
-
-          </TrashProvider>
-        </AuthProvider>
-      </BrowserRouter>
+            </Route>
+          </Routes>
+        </TrashProvider>
+      </AuthProvider>
+    </BrowserRouter>
     </>
   )
 }
