@@ -1,5 +1,5 @@
 const Attendance =
-  require("../models/Attendance")
+  require("../models/Attendances")
 
 const Employee =
   require("../models/Employee")
@@ -66,7 +66,6 @@ const postAttendance = async (
   try {
     const {
       employeeId,
-      employeeName,
       date,
       checkIn,
       checkOut,
@@ -265,6 +264,7 @@ const deleteAttendance = async (
     return res.json({
       message:
         "Attendance record deleted successfully.",
+
       attendance:
         deletedAttendance,
     })
