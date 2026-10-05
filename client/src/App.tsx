@@ -28,6 +28,8 @@ import "@assets/styles/Trash.css"
 import "@assets/styles/TrashCard.css"
 import "@assets/styles/Register.css"
 import "@assets/styles/Profile.css"
+import "@assets/styles/LoadingScreen.css"
+
 
 import { TrashProvider } from "./context/TrashContext"
 import { AuthProvider } from "./context/AuthContext"
@@ -52,9 +54,12 @@ import Tasks from "./pages/Tasks/Tasks"
 import Trash from "./pages/Trash/Trash"
 import Register from "./pages/Register/Register"
 import Profile from "./pages/Profile/Profile"
+import LoadingScreen from "./components/LoadingScreen/LoadingScreen"
 
 export default function App() {
   return (
+    <>
+    <LoadingScreen />
     <BrowserRouter>
       <AuthProvider>
         <TrashProvider>
@@ -199,5 +204,6 @@ export default function App() {
         </TrashProvider>
       </AuthProvider>
     </BrowserRouter>
+    </>
   )
 }
