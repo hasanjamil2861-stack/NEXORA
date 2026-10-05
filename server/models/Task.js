@@ -16,33 +16,19 @@ const taskSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: [
-        "Pending",
-        "In Progress",
-        "Completed",
-      ],
+      enum: ["Pending", "In Progress", "Completed"],
       default: "Pending",
     },
 
     priority: {
       type: String,
-      enum: [
-        "Low",
-        "Medium",
-        "High",
-      ],
+      enum: ["Low", "Medium", "High"],
       default: "Medium",
     },
 
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",
-      required: true,
-    },
-
-    projectId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Project",
       required: true,
     },
 
@@ -56,9 +42,6 @@ const taskSchema = new mongoose.Schema(
   }
 )
 
-const Task = mongoose.model(
-  "Task",
-  taskSchema
-)
+const Task = mongoose.model("Task", taskSchema)
 
 module.exports = Task
