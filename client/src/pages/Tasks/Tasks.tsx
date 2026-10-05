@@ -1,4 +1,4 @@
-import {
+ import {
   useEffect,
   useRef,
   useState,
@@ -31,6 +31,7 @@ import { useAuth } from "../../context/AuthContext"
 import type {
   Task,
   TaskEmployee,
+  TaskProject,
 } from "../../types/Task"
 
 import {
@@ -49,6 +50,7 @@ type TaskApiRecord = {
   status?: Task["status"]
   priority?: Task["priority"]
   assignedTo?: string | TaskEmployee
+  projectId?: string | TaskProject
   dueDate?: string
 }
 
@@ -222,10 +224,9 @@ export default function Tasks() {
               task.assignedTo ??
               "",
 
-            // Kept only for compatibility
-            // with the current Task type.
-            // Tasks no longer use projects.
-            projectId: "",
+            projectId:
+              task.projectId ??
+              "",
 
             dueDate:
               task.dueDate ??
@@ -569,8 +570,10 @@ export default function Tasks() {
             updatedTask.assignedTo ??
             taskData.assignedTo,
 
-          // No project is used anymore.
-          projectId: "",
+          projectId:
+            updatedTask.projectId ??
+            existingTask.projectId ??
+            "",
 
           dueDate:
             updatedTask.dueDate ??
@@ -669,8 +672,9 @@ export default function Tasks() {
             createdTask.assignedTo ??
             newTaskData.assignedTo,
 
-          // No project is used anymore.
-          projectId: "",
+          projectId:
+            createdTask.projectId ??
+            "",
 
           dueDate:
             createdTask.dueDate ??
