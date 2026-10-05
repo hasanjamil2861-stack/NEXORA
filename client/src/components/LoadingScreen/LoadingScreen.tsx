@@ -17,7 +17,7 @@ export default function LoadingScreen({
          */
         const logoTimer = window.setTimeout(() => {
             setShowLogo(true)
-        }, 1000)
+        }, 6000)
 
         return () => {
             window.clearTimeout(logoTimer)
