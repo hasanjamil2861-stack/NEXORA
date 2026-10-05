@@ -34,6 +34,10 @@ export default function LoadingScreen() {
                         className="nexora-logo-image" 
                     />
 
+                    <div className="nexora-welcome-text">
+                        WELCOME MR
+                    </div>
+
                     <div className="nexora-logo-word">
                         NEXORA
                     </div>

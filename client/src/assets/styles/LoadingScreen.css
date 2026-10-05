@@ -174,7 +174,7 @@
     align-items: center;
     justify-content: center;
 
-    width: 230px;
+    width: 280px;
 
     animation:
         nexora-logo-enter
@@ -202,13 +202,52 @@
 
 
 /* =========================================================
+   WELCOME MR Text
+   ========================================================= */
+
+.nexora-welcome-text {
+    margin-top: 28px;
+
+    font-family:
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    line-height: 1;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.45em;
+
+    padding-left: 0.45em;
+
+    color: rgba(255, 255, 255, 0.7);
+
+    text-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.5);
+
+    animation:
+        nexora-welcome-enter
+        0.85s
+        cubic-bezier(0.16, 1, 0.3, 1)
+        0.15s
+        both;
+}
+
+
+/* =========================================================
    NEXORA Word
    ========================================================= */
 
 .nexora-logo-word {
     position: relative;
 
-    margin-top: 30px;
+    margin-top: 10px;
 
     font-family:
         Inter,
@@ -280,7 +319,7 @@
 
     gap: 7px;
 
-    margin-top: 30px;
+    margin-top: 26px;
 
     height: 14px;
 
@@ -388,6 +427,26 @@
 
         transform:
             scale(1);
+    }
+}
+
+@keyframes nexora-welcome-enter {
+    from {
+        opacity: 0;
+
+        letter-spacing: 0.6em;
+
+        transform:
+            translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+
+        letter-spacing: 0.45em;
+
+        transform:
+            translateY(0);
     }
 }
 
@@ -531,8 +590,16 @@
         height: 94px;
     }
 
+    .nexora-welcome-text {
+        margin-top: 24px;
+
+        font-size: 11px;
+
+        letter-spacing: 0.38em;
+    }
+
     .nexora-logo-word {
-        margin-top: 27px;
+        margin-top: 8px;
 
         font-size: 31px;
 
@@ -540,7 +607,7 @@
     }
 
     .nexora-loading-dots {
-        margin-top: 27px;
+        margin-top: 24px;
     }
 
     .nexora-loading-glow {
@@ -563,8 +630,16 @@
         height: 82px;
     }
 
+    .nexora-welcome-text {
+        margin-top: 20px;
+
+        font-size: 10px;
+
+        letter-spacing: 0.32em;
+    }
+
     .nexora-logo-word {
-        margin-top: 24px;
+        margin-top: 6px;
 
         font-size: 26px;
 
@@ -574,7 +649,7 @@
     .nexora-loading-dots {
         gap: 6px;
 
-        margin-top: 24px;
+        margin-top: 20px;
     }
 
     .nexora-loading-dots span {
@@ -600,6 +675,7 @@
     .nexora-loading-content,
     .nexora-logo-loader,
     .nexora-logo-image,
+    .nexora-welcome-text,
     .nexora-logo-word,
     .nexora-loading-dots,
     .nexora-loading-dots span,
