@@ -3,25 +3,38 @@ const User = require("../models/User")
 const Department = require("../models/Department")
 const bcrypt = require("bcryptjs")
 
+// =====================================================
+// GET MY PROFILE
+// =====================================================
+
 const getProfile = async (req, res) => {
     try {
         const userId = req.user.userId
 
-        let employee = await Employee.findOne({
-            userId,
-        })
+        if (!userId) {
+            return res.status(401).json({
+                message:
+                    "User ID is missing from authentication token.",
+            })
+        }
 
-        // If the user does not have an employee profile yet,
-        // create one automatically from the User account.
+        const user =
+            await User.findById(userId)
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User account not found.",
+            })
+        }
+
+        let employee =
+            await Employee.findOne({
+                userId: user._id,
+            })
+
+        // If this account does not have an Employee
+        // document yet, create one automatically.
         if (!employee) {
-            const user = await User.findById(userId)
-
-            if (!user) {
-                return res.status(404).json({
-                    message: "User not found",
-                })
-            }
-
             const nameParts = user.name
                 ? user.name.trim().split(/\s+/)
                 : []
@@ -30,42 +43,56 @@ const getProfile = async (req, res) => {
                 nameParts[0] || ""
 
             const lastName =
-                nameParts.slice(1).join(" ") || ""
+                nameParts
+                    .slice(1)
+                    .join(" ") || ""
 
             employee = await Employee.create({
                 userId: user._id,
+
                 firstName,
+
                 lastName,
-                email: user.email,
+
+                email:
+                    user.email
+                        ?.trim()
+                        .toLowerCase() || "",
+
                 phone: "",
+
                 position:
                     user.role === "Admin"
                         ? "Administrator"
                         : "Employee",
-                departmentId: undefined,
+
                 salary: 0,
+
                 hireDate: "",
+
                 status: "Active",
+
                 profileImage: "",
             })
         }
 
         let manager = ""
-        let department = null
 
-        // Get manager from the employee's department
         if (
-            employee.departmentId !== undefined &&
+            employee.departmentId !==
+                undefined &&
             employee.departmentId !== null
         ) {
-            department = await Department.findOne({
-                id: employee.departmentId,
-            })
+            const department =
+                await Department.findOne({
+                    id: employee.departmentId,
+                })
 
-            manager = department?.manager || ""
+            manager =
+                department?.manager || ""
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             ...employee.toObject(),
             manager,
         })
@@ -75,16 +102,28 @@ const getProfile = async (req, res) => {
             error
         )
 
-        res.status(500).json({
-            message: "Failed to get profile",
+        return res.status(500).json({
+            message:
+                "Failed to load profile.",
             error: error.message,
         })
     }
 }
 
+// =====================================================
+// UPDATE MY PROFILE
+// =====================================================
+
 const updateProfile = async (req, res) => {
     try {
         const userId = req.user.userId
+
+        if (!userId) {
+            return res.status(401).json({
+                message:
+                    "User ID is missing from authentication token.",
+            })
+        }
 
         const {
             firstName,
@@ -100,13 +139,19 @@ const updateProfile = async (req, res) => {
         } = req.body
 
         const cleanFirstName =
-            firstName?.trim()
+            typeof firstName === "string"
+                ? firstName.trim()
+                : ""
 
         const cleanLastName =
-            lastName?.trim()
+            typeof lastName === "string"
+                ? lastName.trim()
+                : ""
 
         const cleanEmail =
-            email?.trim().toLowerCase()
+            typeof email === "string"
+                ? email.trim().toLowerCase()
+                : ""
 
         if (
             !cleanFirstName ||
@@ -119,25 +164,34 @@ const updateProfile = async (req, res) => {
             })
         }
 
-        let employee = await Employee.findOne({
-            userId,
-        })
+        const user =
+            await User.findById(userId)
 
-        if (!employee) {
-            const user = await User.findById(userId)
-
-            if (!user) {
-                return res.status(404).json({
-                    message: "User not found",
-                })
-            }
-
-            employee = new Employee({
-                userId,
+        if (!user) {
+            return res.status(404).json({
+                message:
+                    "User account not found.",
             })
         }
 
-        // Check if another employee already uses this email
+        // Find the employee profile belonging
+        // to the currently logged-in user.
+        let employee =
+            await Employee.findOne({
+                userId: user._id,
+            })
+
+        // If it does not exist, create it.
+        if (!employee) {
+            employee = new Employee({
+                userId: user._id,
+            })
+        }
+
+        // =================================================
+        // CHECK EMAIL
+        // =================================================
+
         const existingEmployee =
             await Employee.findOne({
                 email: cleanEmail,
@@ -153,7 +207,10 @@ const updateProfile = async (req, res) => {
             })
         }
 
-        // Validate selected department
+        // =================================================
+        // DEPARTMENT
+        // =================================================
+
         let department = null
 
         if (
@@ -161,9 +218,23 @@ const updateProfile = async (req, res) => {
             departmentId !== null &&
             departmentId !== ""
         ) {
+            const numericDepartmentId =
+                Number(departmentId)
+
+            if (
+                Number.isNaN(
+                    numericDepartmentId
+                )
+            ) {
+                return res.status(400).json({
+                    message:
+                        "Invalid department.",
+                })
+            }
+
             department =
                 await Department.findOne({
-                    id: Number(departmentId),
+                    id: numericDepartmentId,
                 })
 
             if (!department) {
@@ -174,9 +245,9 @@ const updateProfile = async (req, res) => {
             }
         }
 
-        // ==========================================
-        // FIELDS BOTH ADMIN AND EMPLOYEE CAN EDIT
-        // ==========================================
+        // =================================================
+        // COMMON FIELDS
+        // =================================================
 
         employee.firstName =
             cleanFirstName
@@ -188,14 +259,16 @@ const updateProfile = async (req, res) => {
             cleanEmail
 
         employee.phone =
-            phone?.trim() || ""
+            typeof phone === "string"
+                ? phone.trim()
+                : ""
 
         employee.departmentId =
             department?.id
 
-        // ==========================================
+        // =================================================
         // PROFILE IMAGE
-        // ==========================================
+        // =================================================
 
         if (
             typeof profileImage === "string"
@@ -204,61 +277,89 @@ const updateProfile = async (req, res) => {
                 profileImage
         }
 
-        // ==========================================
-        // ADMIN ONLY FIELDS
-        // ==========================================
+        // =================================================
+        // ADMIN FIELDS
+        // =================================================
 
         if (req.user.role === "Admin") {
             employee.position =
-                position?.trim() ||
-                "Administrator"
+                typeof position === "string" &&
+                position.trim()
+                    ? position.trim()
+                    : "Administrator"
 
-            employee.salary =
-                salary ?? employee.salary
+            if (
+                salary !== undefined &&
+                salary !== ""
+            ) {
+                const numericSalary =
+                    Number(salary)
 
-            employee.hireDate =
-                hireDate ?? employee.hireDate
+                if (
+                    Number.isNaN(
+                        numericSalary
+                    ) ||
+                    numericSalary < 0
+                ) {
+                    return res.status(400).json({
+                        message:
+                            "Salary must be a valid non-negative number.",
+                    })
+                }
 
-            employee.status =
-                status || employee.status
+                employee.salary =
+                    numericSalary
+            }
+
+            if (
+                typeof hireDate ===
+                "string"
+            ) {
+                employee.hireDate =
+                    hireDate
+            }
+
+            if (
+                status === "Active" ||
+                status === "Inactive"
+            ) {
+                employee.status =
+                    status
+            }
         } else {
-            // ======================================
+            // =================================================
             // EMPLOYEE PROTECTION
-            // ======================================
+            // =================================================
 
             employee.position = "Employee"
 
-            // Salary is NOT changed here.
-            // Existing salary remains untouched.
-
-            // Hire date is NOT changed here.
-            // Existing hire date remains untouched.
-
-            // Status is NOT changed here.
-            // Existing status remains untouched.
+            // Employee cannot modify:
+            // salary
+            // hireDate
+            // status
         }
+
+        // =================================================
+        // SAVE EMPLOYEE
+        // =================================================
 
         const updatedEmployee =
             await employee.save()
 
-        // ==========================================
+        // =================================================
         // UPDATE USER ACCOUNT
-        // ==========================================
+        // =================================================
 
-        const user = await User.findById(userId)
+        user.email = cleanEmail
 
-        if (user) {
-            user.email = cleanEmail
+        user.name =
+            `${cleanFirstName} ${cleanLastName}`.trim()
 
-            user.name =
-                `${cleanFirstName} ${cleanLastName}`.trim()
+        await user.save()
 
-            await user.save()
-        }
-
-        // ==========================================
-        // GET MANAGER FROM DEPARTMENT
-        // ==========================================
+        // =================================================
+        // GET MANAGER
+        // =================================================
 
         let manager = ""
 
@@ -278,7 +379,7 @@ const updateProfile = async (req, res) => {
                 ""
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             ...updatedEmployee.toObject(),
             manager,
         })
@@ -288,8 +389,18 @@ const updateProfile = async (req, res) => {
             error
         )
 
-        res.status(500).json({
-            message: "Failed to update profile",
+        // Mongo duplicate key
+        if (error.code === 11000) {
+            return res.status(409).json({
+                message:
+                    "This profile is already linked to another account.",
+                error: error.message,
+            })
+        }
+
+        return res.status(500).json({
+            message:
+                "Failed to setup profile.",
             error: error.message,
         })
     }
@@ -331,13 +442,10 @@ const updateAccountCredentials = async (
 
         if (!user) {
             return res.status(404).json({
-                message: "User not found.",
+                message:
+                    "User not found.",
             })
         }
-
-        // ==========================================
-        // VERIFY CURRENT PASSWORD
-        // ==========================================
 
         const passwordCorrect =
             await bcrypt.compare(
@@ -352,13 +460,15 @@ const updateAccountCredentials = async (
             })
         }
 
-        // ==========================================
+        // =================================================
         // UPDATE EMAIL
-        // ==========================================
+        // =================================================
 
         if (newEmail) {
             const cleanEmail =
-                newEmail.trim().toLowerCase()
+                newEmail
+                    .trim()
+                    .toLowerCase()
 
             if (!cleanEmail) {
                 return res.status(400).json({
@@ -397,7 +507,8 @@ const updateAccountCredentials = async (
                 })
             }
 
-            user.email = cleanEmail
+            user.email =
+                cleanEmail
 
             await Employee.findOneAndUpdate(
                 {
@@ -409,24 +520,27 @@ const updateAccountCredentials = async (
             )
         }
 
-        // ==========================================
+        // =================================================
         // UPDATE PASSWORD
-        // ==========================================
+        // =================================================
 
         if (newPassword) {
-            if (newPassword.length < 6) {
+            if (
+                newPassword.length < 6
+            ) {
                 return res.status(400).json({
                     message:
                         "New password must be at least 6 characters.",
                 })
             }
 
-            user.password = newPassword
+            user.password =
+                newPassword
         }
 
         await user.save()
 
-        res.status(200).json({
+        return res.status(200).json({
             message:
                 "Account credentials updated successfully.",
         })
@@ -436,7 +550,7 @@ const updateAccountCredentials = async (
             error
         )
 
-        res.status(500).json({
+        return res.status(500).json({
             message:
                 "Failed to update account credentials.",
             error: error.message,
