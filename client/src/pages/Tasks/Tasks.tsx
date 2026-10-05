@@ -19,6 +19,7 @@ import {
   Save,
   X,
   Flag,
+  FolderKanban,
 } from "lucide-react"
 
 import TaskCard from "../../components/TaskCard/TaskCard"
@@ -43,6 +44,8 @@ import {
 
 import { getEmployees } from "../../services/api/employeeApi"
 
+import { getProjects } from "../../services/api/projectApi"
+
 type TaskApiRecord = {
   _id: string
   title?: string
@@ -64,6 +67,12 @@ type EmployeeOption = {
   lastName: string
   email: string
   position: string
+}
+
+type ProjectOption = {
+  _id: string
+  name: string
+  status?: string
 }
 
 export default function Tasks() {
@@ -102,6 +111,9 @@ export default function Tasks() {
   const [assignedTo, setAssignedTo] =
     useState("")
 
+  const [projectId, setProjectId] =
+    useState("")
+
   // =========================================================
   // TASK DATA
   // =========================================================
@@ -124,6 +136,9 @@ export default function Tasks() {
 
   const [employees, setEmployees] =
     useState<EmployeeOption[]>([])
+
+  const [projects, setProjects] =
+    useState<ProjectOption[]>([])
 
   // =========================================================
   // SEARCH / FILTER
@@ -262,7 +277,7 @@ export default function Tasks() {
   }, [showToast])
 
   // =========================================================
-  // FETCH EMPLOYEES FOR ADMIN
+  // FETCH EMPLOYEES + PROJECTS FOR ADMIN
   // =========================================================
 
   useEffect(() => {
@@ -272,11 +287,20 @@ export default function Tasks() {
 
     async function fetchFormOptions() {
       try {
-        const employeeData =
-          await getEmployees()
+        const [
+          employeeData,
+          projectData,
+        ] = await Promise.all([
+          getEmployees(),
+          getProjects(),
+        ])
 
         setEmployees(
           employeeData as EmployeeOption[]
+        )
+
+        setProjects(
+          projectData as ProjectOption[]
         )
       } catch (error) {
         console.error(
@@ -285,7 +309,7 @@ export default function Tasks() {
         )
 
         showToast(
-          "Failed to load employees",
+          "Failed to load task options",
           "error"
         )
       }
@@ -376,6 +400,7 @@ export default function Tasks() {
     setPriority("Medium")
     setDueDate("")
     setAssignedTo("")
+    setProjectId("")
     setEditingTask(null)
     setFormError("")
     setShowForm(false)
@@ -452,6 +477,10 @@ export default function Tasks() {
       return "Please assign the task to an employee."
     }
 
+    if (isAdmin && !projectId) {
+      return "Please assign the task to a project."
+    }
+
     return ""
   }
 
@@ -503,14 +532,15 @@ export default function Tasks() {
           return
         }
 
-        const existingProjectId =
-          getProjectId(
-            existingTask.projectId
-          )
-
         const existingAssignedTo =
           getAssignedEmployeeId(
             existingTask.assignedTo
+          )
+
+        const selectedProjectId =
+          projectId ||
+          getProjectId(
+            existingTask.projectId
           )
 
         const taskData = {
@@ -525,14 +555,11 @@ export default function Tasks() {
           priority,
 
           assignedTo:
+            assignedTo.trim() ||
             existingAssignedTo,
 
-          ...(existingProjectId
-            ? {
-                projectId:
-                  existingProjectId,
-              }
-            : {}),
+          projectId:
+            selectedProjectId,
 
           dueDate,
         }
@@ -571,11 +598,11 @@ export default function Tasks() {
 
           assignedTo:
             updatedTask.assignedTo ??
-            existingAssignedTo,
+            assignedTo,
 
           projectId:
             updatedTask.projectId ??
-            existingProjectId,
+            selectedProjectId,
 
           dueDate:
             updatedTask.dueDate ??
@@ -604,15 +631,6 @@ export default function Tasks() {
       // =====================================================
 
       else {
-        /*
-         * IMPORTANT:
-         * We send only the fields that belong to the
-         * create form.
-         *
-         * projectId is NOT included because there is
-         * currently no project selector in this form.
-         */
-
         const newTaskData = {
           title:
             title.trim(),
@@ -626,6 +644,9 @@ export default function Tasks() {
 
           assignedTo:
             assignedTo.trim(),
+
+          projectId:
+            projectId.trim(),
 
           dueDate,
         }
@@ -672,7 +693,7 @@ export default function Tasks() {
 
           projectId:
             createdTask.projectId ??
-            "",
+            projectId,
 
           dueDate:
             createdTask.dueDate ??
@@ -844,6 +865,12 @@ export default function Tasks() {
     setAssignedTo(
       getAssignedEmployeeId(
         task.assignedTo
+      )
+    )
+
+    setProjectId(
+      getProjectId(
+        task.projectId
       )
     )
 
@@ -1415,9 +1442,7 @@ export default function Tasks() {
                 </h2>
 
                 <p>
-                  {isAdmin
-                    ? "Enter the task information below."
-                    : "Update the status of your assigned task."}
+                  Enter the task information below.
                 </p>
 
               </div>
@@ -1582,8 +1607,57 @@ export default function Tasks() {
             </div>
 
             {/* =================================================
+                PROJECT
+                ================================================= */}
+
+            {isAdmin && (
+              <div className="task-form-field">
+
+                <label htmlFor="task-project">
+                  <FolderKanban size={15} />
+                  Project
+                </label>
+
+                <select
+                  id="task-project"
+                  value={projectId}
+                  required
+                  onChange={(e) => {
+                    setProjectId(
+                      e.target.value
+                    )
+
+                    setFormError("")
+                  }}
+                >
+
+                  <option value="">
+                    Select project
+                  </option>
+
+                  {projects.map(
+                    (project) => (
+                      <option
+                        key={
+                          project._id
+                        }
+                        value={
+                          project._id
+                        }
+                      >
+                        {project.name}
+                      </option>
+                    )
+                  )}
+
+                </select>
+
+              </div>
+            )}
+
+            {/* =================================================
                 ADMIN ONLY
-                Employee assignment only
+                Employee assignment
                 ================================================= */}
 
             {isAdmin && (
