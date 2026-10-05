@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react"
 
 export default function LoadingScreen() {
-    const [isVisible, setIsVisible] = useState(true)
+    // Check if the loading screen has already been shown in this session
+    const [isVisible, setIsVisible] = useState(() => {
+        const hasSeenLoading = sessionStorage.getItem("nexora_has_seen_loading")
+        return !hasSeenLoading
+    })
 
     useEffect(() => {
+        if (!isVisible) return
+
+        // Mark as seen immediately so refreshing won't trigger it again
+        sessionStorage.setItem("nexora_has_seen_loading", "true")
+
         const timer = window.setTimeout(() => {
             setIsVisible(false)
         }, 6000)
@@ -11,7 +20,7 @@ export default function LoadingScreen() {
         return () => {
             window.clearTimeout(timer)
         }
-    }, [])
+    }, [isVisible])
 
     if (!isVisible) {
         return null
@@ -35,11 +44,15 @@ export default function LoadingScreen() {
                     />
 
                     <div className="nexora-welcome-text">
-                        WELCOME MR To 
+                        WELCOME MR
                     </div>
 
                     <div className="nexora-logo-word">
                         NEXORA
+                    </div>
+
+                    <div className="nexora-arabic-quote">
+                        شو مفكر بتفرق معي؟
                     </div>
 
                 </div>
