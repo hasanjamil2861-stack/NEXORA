@@ -464,6 +464,8 @@ export default function Tasks() {
   ) {
     e.preventDefault()
 
+    setFormError("")
+
     const error =
       validateForm()
 
@@ -501,11 +503,14 @@ export default function Tasks() {
           return
         }
 
-        // Keep the existing projectId
-        // without showing it in the form.
         const existingProjectId =
           getProjectId(
             existingTask.projectId
+          )
+
+        const existingAssignedTo =
+          getAssignedEmployeeId(
+            existingTask.assignedTo
           )
 
         const taskData = {
@@ -519,13 +524,23 @@ export default function Tasks() {
 
           priority,
 
-          assignedTo,
+          assignedTo:
+            existingAssignedTo,
 
-          projectId:
-            existingProjectId,
+          ...(existingProjectId
+            ? {
+                projectId:
+                  existingProjectId,
+              }
+            : {}),
 
           dueDate,
         }
+
+        console.log(
+          "UPDATING TASK:",
+          taskData
+        )
 
         const updatedTask =
           (await updateTask(
@@ -540,23 +555,23 @@ export default function Tasks() {
 
           title:
             updatedTask.title ??
-            "",
+            title.trim(),
 
           description:
             updatedTask.description ??
-            "",
+            description.trim(),
 
           status:
             updatedTask.status ??
-            "Pending",
+            status,
 
           priority:
             updatedTask.priority ??
-            "Medium",
+            priority,
 
           assignedTo:
             updatedTask.assignedTo ??
-            assignedTo,
+            existingAssignedTo,
 
           projectId:
             updatedTask.projectId ??
@@ -589,6 +604,15 @@ export default function Tasks() {
       // =====================================================
 
       else {
+        /*
+         * IMPORTANT:
+         * We send only the fields that belong to the
+         * create form.
+         *
+         * projectId is NOT included because there is
+         * currently no project selector in this form.
+         */
+
         const newTaskData = {
           title:
             title.trim(),
@@ -600,15 +624,26 @@ export default function Tasks() {
 
           priority,
 
-          assignedTo,
+          assignedTo:
+            assignedTo.trim(),
 
           dueDate,
         }
+
+        console.log(
+          "CREATING TASK:",
+          newTaskData
+        )
 
         const createdTask =
           (await createTask(
             newTaskData
           )) as TaskApiRecord
+
+        console.log(
+          "TASK CREATED:",
+          createdTask
+        )
 
         const formattedTask: Task = {
           id: String(
@@ -617,19 +652,19 @@ export default function Tasks() {
 
           title:
             createdTask.title ??
-            "",
+            title.trim(),
 
           description:
             createdTask.description ??
-            "",
+            description.trim(),
 
           status:
             createdTask.status ??
-            "Pending",
+            status,
 
           priority:
             createdTask.priority ??
-            "Medium",
+            priority,
 
           assignedTo:
             createdTask.assignedTo ??
@@ -641,7 +676,7 @@ export default function Tasks() {
 
           dueDate:
             createdTask.dueDate ??
-            "",
+            dueDate,
         }
 
         setTaskList(
@@ -667,6 +702,15 @@ export default function Tasks() {
         "Create/update task error:",
         error
       )
+
+      if (
+        error instanceof Error
+      ) {
+        console.error(
+          "Error message:",
+          error.message
+        )
+      }
 
       showToast(
         isEditing
