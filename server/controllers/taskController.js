@@ -9,10 +9,6 @@ const getTasks = async (req, res) => {
           "assignedTo",
           "firstName lastName email position"
         )
-        .populate(
-          "projectId",
-          "name status"
-        )
 
       return res.json(tasks)
     }
@@ -29,15 +25,10 @@ const getTasks = async (req, res) => {
 
     const tasks = await Task.find({
       assignedTo: employee._id,
-    })
-      .populate(
-        "assignedTo",
-        "firstName lastName email position"
-      )
-      .populate(
-        "projectId",
-        "name status"
-      )
+    }).populate(
+      "assignedTo",
+      "firstName lastName email position"
+    )
 
     return res.json(tasks)
   } catch (error) {
@@ -61,7 +52,6 @@ const postTask = async (req, res) => {
       status,
       priority,
       assignedTo,
-      projectId,
       dueDate,
     } = req.body
 
@@ -69,7 +59,6 @@ const postTask = async (req, res) => {
       !title ||
       !description ||
       !assignedTo ||
-      !projectId ||
       !dueDate
     ) {
       return res.status(400).json({
@@ -94,7 +83,6 @@ const postTask = async (req, res) => {
       status,
       priority,
       assignedTo,
-      projectId,
       dueDate,
     })
 
@@ -103,15 +91,10 @@ const postTask = async (req, res) => {
     const populatedTask =
       await Task.findById(
         newTask._id
+      ).populate(
+        "assignedTo",
+        "firstName lastName email position"
       )
-        .populate(
-          "assignedTo",
-          "firstName lastName email position"
-        )
-        .populate(
-          "projectId",
-          "name status"
-        )
 
     res.status(201).json(
       populatedTask
@@ -151,15 +134,10 @@ const updateTask = async (req, res) => {
             new: true,
             runValidators: true,
           }
+        ).populate(
+          "assignedTo",
+          "firstName lastName email position"
         )
-          .populate(
-            "assignedTo",
-            "firstName lastName email position"
-          )
-          .populate(
-            "projectId",
-            "name status"
-          )
 
       return res.json(
         updatedTask
@@ -227,15 +205,10 @@ const updateTask = async (req, res) => {
     const updatedTask =
       await Task.findById(
         task._id
+      ).populate(
+        "assignedTo",
+        "firstName lastName email position"
       )
-        .populate(
-          "assignedTo",
-          "firstName lastName email position"
-        )
-        .populate(
-          "projectId",
-          "name status"
-        )
 
     return res.json(
       updatedTask
