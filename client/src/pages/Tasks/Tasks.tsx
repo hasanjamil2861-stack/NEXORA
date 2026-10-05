@@ -43,7 +43,6 @@ import {
 } from "../../services/api/taskApi"
 
 import { getEmployees } from "../../services/api/employeeApi"
-
 import { getProjects } from "../../services/api/projectApi"
 
 type TaskApiRecord = {
@@ -52,12 +51,8 @@ type TaskApiRecord = {
   description?: string
   status?: Task["status"]
   priority?: Task["priority"]
-  assignedTo?:
-    | string
-    | TaskEmployee
-  projectId?:
-    | string
-    | TaskProject
+  assignedTo?: string | TaskEmployee
+  projectId?: string | TaskProject
   dueDate?: string
 }
 
@@ -75,29 +70,38 @@ type ProjectOption = {
   status?: string
 }
 
+type EmployeeApiResponse =
+  | EmployeeOption[]
+  | {
+      employees?: EmployeeOption[]
+      data?: EmployeeOption[]
+    }
+
+type ProjectApiResponse =
+  | ProjectOption[]
+  | {
+      projects?: ProjectOption[]
+      data?: ProjectOption[]
+    }
+
 export default function Tasks() {
   const { showToast } = useToast()
   const { moveToTrash } = useTrash()
   const { user } = useAuth()
 
-  const isAdmin =
-    user?.role === "Admin"
+  const isAdmin = user?.role === "Admin"
 
   // =========================================================
   // FORM
   // =========================================================
 
-  const [showForm, setShowForm] =
-    useState(false)
+  const [showForm, setShowForm] = useState(false)
 
   const taskFormRef =
     useRef<HTMLFormElement | null>(null)
 
-  const [title, setTitle] =
-    useState("")
-
-  const [description, setDescription] =
-    useState("")
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
 
   const [status, setStatus] =
     useState<Task["status"]>("Pending")
@@ -105,21 +109,15 @@ export default function Tasks() {
   const [priority, setPriority] =
     useState<Task["priority"]>("Medium")
 
-  const [dueDate, setDueDate] =
-    useState("")
-
-  const [assignedTo, setAssignedTo] =
-    useState("")
-
-  const [projectId, setProjectId] =
-    useState("")
+  const [dueDate, setDueDate] = useState("")
+  const [assignedTo, setAssignedTo] = useState("")
+  const [projectId, setProjectId] = useState("")
 
   // =========================================================
   // TASK DATA
   // =========================================================
 
-  const [taskList, setTaskList] =
-    useState<Task[]>([])
+  const [taskList, setTaskList] = useState<Task[]>([])
 
   const [editingTask, setEditingTask] =
     useState<string | null>(null)
@@ -127,8 +125,7 @@ export default function Tasks() {
   const [newTaskId, setNewTaskId] =
     useState<string | null>(null)
 
-  const [formError, setFormError] =
-    useState("")
+  const [formError, setFormError] = useState("")
 
   // =========================================================
   // ADMIN OPTIONS
@@ -144,8 +141,7 @@ export default function Tasks() {
   // SEARCH / FILTER
   // =========================================================
 
-  const [search, setSearch] =
-    useState("")
+  const [search, setSearch] = useState("")
 
   const [statusFilter, setStatusFilter] =
     useState("All")
@@ -189,22 +185,21 @@ export default function Tasks() {
       return
     }
 
-    const frame =
-      requestAnimationFrame(() => {
-        const newTask =
-          document.getElementById(
-            `task-${newTaskId}`
-          )
+    const frame = requestAnimationFrame(() => {
+      const newTask =
+        document.getElementById(
+          `task-${newTaskId}`
+        )
 
-        if (newTask) {
-          newTask.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          })
-        }
+      if (newTask) {
+        newTask.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        })
+      }
 
-        setNewTaskId(null)
-      })
+      setNewTaskId(null)
+    })
 
     return () =>
       cancelAnimationFrame(frame)
@@ -217,9 +212,7 @@ export default function Tasks() {
   useEffect(() => {
     async function fetchTasks() {
       try {
-        console.log(
-          "FETCH TASKS STARTED"
-        )
+        console.log("FETCH TASKS STARTED")
 
         const data =
           (await getTasks()) as TaskApiRecord[]
@@ -228,19 +221,16 @@ export default function Tasks() {
           data.map((task) => ({
             id: String(task._id),
 
-            title:
-              task.title ?? "",
+            title: task.title ?? "",
 
             description:
               task.description ?? "",
 
             status:
-              task.status ??
-              "Pending",
+              task.status ?? "Pending",
 
             priority:
-              task.priority ??
-              "Medium",
+              task.priority ?? "Medium",
 
             assignedTo:
               task.assignedTo ?? "",
@@ -252,9 +242,7 @@ export default function Tasks() {
               task.dueDate ?? "",
           }))
 
-        setTaskList(
-          formattedTasks
-        )
+        setTaskList(formattedTasks)
 
         console.log(
           "TASKS LOADED:",
@@ -277,7 +265,7 @@ export default function Tasks() {
   }, [showToast])
 
   // =========================================================
-  // FETCH EMPLOYEES + PROJECTS FOR ADMIN
+  // FETCH EMPLOYEES + PROJECTS
   // =========================================================
 
   useEffect(() => {
@@ -287,20 +275,57 @@ export default function Tasks() {
 
     async function fetchFormOptions() {
       try {
+        console.log(
+          "FETCHING TASK OPTIONS..."
+        )
+
         const [
-          employeeData,
-          projectData,
+          employeeResponse,
+          projectResponse,
         ] = await Promise.all([
           getEmployees(),
           getProjects(),
         ])
 
-        setEmployees(
-          employeeData as EmployeeOption[]
+        // -----------------------------------------------
+        // Employees
+        // -----------------------------------------------
+
+        const employeeData =
+          employeeResponse as EmployeeApiResponse
+
+        const employeeList =
+          Array.isArray(employeeData)
+            ? employeeData
+            : employeeData.employees ??
+              employeeData.data ??
+              []
+
+        // -----------------------------------------------
+        // Projects
+        // -----------------------------------------------
+
+        const projectData =
+          projectResponse as ProjectApiResponse
+
+        const projectList =
+          Array.isArray(projectData)
+            ? projectData
+            : projectData.projects ??
+              projectData.data ??
+              []
+
+        setEmployees(employeeList)
+        setProjects(projectList)
+
+        console.log(
+          "EMPLOYEES FOR TASKS:",
+          employeeList
         )
 
-        setProjects(
-          projectData as ProjectOption[]
+        console.log(
+          "PROJECTS FOR TASKS:",
+          projectList
         )
       } catch (error) {
         console.error(
@@ -328,29 +353,25 @@ export default function Tasks() {
   const pendingTasks =
     taskList.filter(
       (task) =>
-        task.status ===
-        "Pending"
+        task.status === "Pending"
     ).length
 
   const inProgressTasks =
     taskList.filter(
       (task) =>
-        task.status ===
-        "In Progress"
+        task.status === "In Progress"
     ).length
 
   const completedTasks =
     taskList.filter(
       (task) =>
-        task.status ===
-        "Completed"
+        task.status === "Completed"
     ).length
 
   const highPriorityTasks =
     taskList.filter(
       (task) =>
-        task.priority ===
-        "High"
+        task.priority === "High"
     ).length
 
   const completionPercentage =
@@ -407,7 +428,7 @@ export default function Tasks() {
   }
 
   // =========================================================
-  // GET ASSIGNED ID
+  // GET ASSIGNED EMPLOYEE ID
   // =========================================================
 
   function getAssignedEmployeeId(
@@ -473,11 +494,11 @@ export default function Tasks() {
       return "Task priority is required."
     }
 
-    if (isAdmin && !assignedTo) {
+    if (isAdmin && !assignedTo.trim()) {
       return "Please assign the task to an employee."
     }
 
-    if (isAdmin && !projectId) {
+    if (isAdmin && !projectId.trim()) {
       return "Please assign the task to a project."
     }
 
@@ -495,11 +516,11 @@ export default function Tasks() {
 
     setFormError("")
 
-    const error =
+    const validationError =
       validateForm()
 
-    if (error) {
-      setFormError(error)
+    if (validationError) {
+      setFormError(validationError)
       return
     }
 
@@ -515,8 +536,7 @@ export default function Tasks() {
         const existingTask =
           taskList.find(
             (task) =>
-              task.id ===
-              editingTask
+              task.id === editingTask
           )
 
         if (!existingTask) {
@@ -537,30 +557,41 @@ export default function Tasks() {
             existingTask.assignedTo
           )
 
+        const selectedAssignedTo =
+          assignedTo.trim() ||
+          existingAssignedTo
+
         const selectedProjectId =
-          projectId ||
+          projectId.trim() ||
           getProjectId(
             existingTask.projectId
           )
 
+        if (!selectedAssignedTo) {
+          setFormError(
+            "Please assign the task to an employee."
+          )
+
+          return
+        }
+
+        if (!selectedProjectId) {
+          setFormError(
+            "Please assign the task to a project."
+          )
+
+          return
+        }
+
         const taskData = {
-          title:
-            title.trim(),
-
-          description:
-            description.trim(),
-
+          title: title.trim(),
+          description: description.trim(),
           status,
-
           priority,
-
           assignedTo:
-            assignedTo.trim() ||
-            existingAssignedTo,
-
+            selectedAssignedTo,
           projectId:
             selectedProjectId,
-
           dueDate,
         }
 
@@ -582,31 +613,31 @@ export default function Tasks() {
 
           title:
             updatedTask.title ??
-            title.trim(),
+            taskData.title,
 
           description:
             updatedTask.description ??
-            description.trim(),
+            taskData.description,
 
           status:
             updatedTask.status ??
-            status,
+            taskData.status,
 
           priority:
             updatedTask.priority ??
-            priority,
+            taskData.priority,
 
           assignedTo:
             updatedTask.assignedTo ??
-            assignedTo,
+            taskData.assignedTo,
 
           projectId:
             updatedTask.projectId ??
-            selectedProjectId,
+            taskData.projectId,
 
           dueDate:
             updatedTask.dueDate ??
-            dueDate,
+            taskData.dueDate,
         }
 
         setTaskList(
@@ -631,24 +662,38 @@ export default function Tasks() {
       // =====================================================
 
       else {
+        /*
+          IMPORTANT:
+          These are the exact fields expected by the
+          backend Task controller and MongoDB model.
+        */
+
         const newTaskData = {
-          title:
-            title.trim(),
-
-          description:
-            description.trim(),
-
+          title: title.trim(),
+          description: description.trim(),
           status,
-
           priority,
-
-          assignedTo:
-            assignedTo.trim(),
-
-          projectId:
-            projectId.trim(),
-
+          assignedTo: assignedTo.trim(),
+          projectId: projectId.trim(),
           dueDate,
+        }
+
+        // -----------------------------------------------
+        // Final frontend safety check
+        // -----------------------------------------------
+
+        if (
+          !newTaskData.title ||
+          !newTaskData.description ||
+          !newTaskData.assignedTo ||
+          !newTaskData.projectId ||
+          !newTaskData.dueDate
+        ) {
+          setFormError(
+            "Please complete all required task fields."
+          )
+
+          return
         }
 
         console.log(
@@ -673,31 +718,31 @@ export default function Tasks() {
 
           title:
             createdTask.title ??
-            title.trim(),
+            newTaskData.title,
 
           description:
             createdTask.description ??
-            description.trim(),
+            newTaskData.description,
 
           status:
             createdTask.status ??
-            status,
+            newTaskData.status,
 
           priority:
             createdTask.priority ??
-            priority,
+            newTaskData.priority,
 
           assignedTo:
             createdTask.assignedTo ??
-            assignedTo,
+            newTaskData.assignedTo,
 
           projectId:
             createdTask.projectId ??
-            projectId,
+            newTaskData.projectId,
 
           dueDate:
             createdTask.dueDate ??
-            dueDate,
+            newTaskData.dueDate,
         }
 
         setTaskList(
@@ -724,12 +769,18 @@ export default function Tasks() {
         error
       )
 
-      if (
-        error instanceof Error
-      ) {
+      if (error instanceof Error) {
         console.error(
           "Error message:",
           error.message
+        )
+
+        setFormError(
+          error.message
+        )
+      } else {
+        setFormError(
+          "Something went wrong. Please try again."
         )
       }
 
@@ -842,25 +893,11 @@ export default function Tasks() {
       return
     }
 
-    setTitle(
-      task.title
-    )
-
-    setDescription(
-      task.description
-    )
-
-    setStatus(
-      task.status
-    )
-
-    setPriority(
-      task.priority
-    )
-
-    setDueDate(
-      task.dueDate
-    )
+    setTitle(task.title)
+    setDescription(task.description)
+    setStatus(task.status)
+    setPriority(task.priority)
+    setDueDate(task.dueDate)
 
     setAssignedTo(
       getAssignedEmployeeId(
@@ -874,10 +911,7 @@ export default function Tasks() {
       )
     )
 
-    setEditingTask(
-      task.id
-    )
-
+    setEditingTask(task.id)
     setFormError("")
     setShowForm(true)
   }
@@ -894,22 +928,23 @@ export default function Tasks() {
             task.title ?? ""
           ).toLowerCase()
 
+        const searchValue =
+          search
+            .toLowerCase()
+            .trim()
+
         const matchesSearch =
           taskTitle.includes(
-            search
-              .toLowerCase()
-              .trim()
+            searchValue
           )
 
         const matchesStatus =
-          statusFilter ===
-            "All" ||
+          statusFilter === "All" ||
           task.status ===
             statusFilter
 
         const matchesPriority =
-          priorityFilter ===
-            "All" ||
+          priorityFilter === "All" ||
           task.priority ===
             priorityFilter
 
@@ -938,15 +973,11 @@ export default function Tasks() {
         b.dueDate ?? ""
       ).getTime()
 
-    if (
-      sortBy === "Newest"
-    ) {
+    if (sortBy === "Newest") {
       return dateB - dateA
     }
 
-    if (
-      sortBy === "Oldest"
-    ) {
+    if (sortBy === "Oldest") {
       return dateA - dateB
     }
 
@@ -1032,7 +1063,6 @@ export default function Tasks() {
                 }
               }}
             >
-
               {showForm ? (
                 <>
                   <X size={18} />
@@ -1050,7 +1080,6 @@ export default function Tasks() {
                   </span>
                 </>
               )}
-
             </button>
           )}
 
@@ -1281,7 +1310,6 @@ export default function Tasks() {
               )
             }
           >
-
             <option value="All">
               All Status
             </option>
@@ -1297,7 +1325,6 @@ export default function Tasks() {
             <option value="Completed">
               Completed
             </option>
-
           </select>
 
         </div>
@@ -1318,7 +1345,6 @@ export default function Tasks() {
               )
             }
           >
-
             <option value="All">
               All Priority
             </option>
@@ -1334,7 +1360,6 @@ export default function Tasks() {
             <option value="High">
               High
             </option>
-
           </select>
 
         </div>
@@ -1355,7 +1380,6 @@ export default function Tasks() {
               )
             }
           >
-
             <option value="None">
               No Sort
             </option>
@@ -1367,7 +1391,6 @@ export default function Tasks() {
             <option value="Oldest">
               Oldest Due Date
             </option>
-
           </select>
 
         </div>
@@ -1408,9 +1431,7 @@ export default function Tasks() {
         <form
           ref={taskFormRef}
           className="task-form"
-          onSubmit={
-            handleCreateTask
-          }
+          onSubmit={handleCreateTask}
         >
 
           <div className="task-form-header">
@@ -1419,8 +1440,7 @@ export default function Tasks() {
 
               <div className="task-form-icon">
 
-                {editingTask !==
-                null ? (
+                {editingTask !== null ? (
                   <Save size={19} />
                 ) : (
                   <Plus size={19} />
@@ -1435,8 +1455,7 @@ export default function Tasks() {
                 </span>
 
                 <h2>
-                  {editingTask !==
-                  null
+                  {editingTask !== null
                     ? "Edit Task"
                     : "Add New Task"}
                 </h2>
@@ -1458,6 +1477,8 @@ export default function Tasks() {
           )}
 
           <div className="task-form-grid">
+
+            {/* TITLE */}
 
             <div className="task-form-field">
 
@@ -1484,6 +1505,8 @@ export default function Tasks() {
 
             </div>
 
+            {/* DUE DATE */}
+
             <div className="task-form-field">
 
               <label htmlFor="task-due-date">
@@ -1507,6 +1530,8 @@ export default function Tasks() {
               />
 
             </div>
+
+            {/* DESCRIPTION */}
 
             <div className="task-form-field task-description-field">
 
@@ -1532,6 +1557,8 @@ export default function Tasks() {
 
             </div>
 
+            {/* STATUS */}
+
             <div className="task-form-field">
 
               <label htmlFor="task-status">
@@ -1552,7 +1579,6 @@ export default function Tasks() {
                   setFormError("")
                 }}
               >
-
                 <option value="Pending">
                   Pending
                 </option>
@@ -1564,10 +1590,11 @@ export default function Tasks() {
                 <option value="Completed">
                   Completed
                 </option>
-
               </select>
 
             </div>
+
+            {/* PRIORITY */}
 
             <div className="task-form-field">
 
@@ -1589,7 +1616,6 @@ export default function Tasks() {
                   setFormError("")
                 }}
               >
-
                 <option value="Low">
                   Low
                 </option>
@@ -1601,14 +1627,11 @@ export default function Tasks() {
                 <option value="High">
                   High
                 </option>
-
               </select>
 
             </div>
 
-            {/* =================================================
-                PROJECT
-                ================================================= */}
+            {/* PROJECT */}
 
             {isAdmin && (
               <div className="task-form-field">
@@ -1630,7 +1653,6 @@ export default function Tasks() {
                     setFormError("")
                   }}
                 >
-
                   <option value="">
                     Select project
                   </option>
@@ -1638,27 +1660,19 @@ export default function Tasks() {
                   {projects.map(
                     (project) => (
                       <option
-                        key={
-                          project._id
-                        }
-                        value={
-                          project._id
-                        }
+                        key={project._id}
+                        value={project._id}
                       >
                         {project.name}
                       </option>
                     )
                   )}
-
                 </select>
 
               </div>
             )}
 
-            {/* =================================================
-                ADMIN ONLY
-                Employee assignment
-                ================================================= */}
+            {/* ASSIGNED EMPLOYEE */}
 
             {isAdmin && (
               <div className="task-form-field">
@@ -1680,7 +1694,6 @@ export default function Tasks() {
                     setFormError("")
                   }}
                 >
-
                   <option value="">
                     Select employee
                   </option>
@@ -1688,19 +1701,14 @@ export default function Tasks() {
                   {employees.map(
                     (employee) => (
                       <option
-                        key={
-                          employee._id
-                        }
-                        value={
-                          employee._id
-                        }
+                        key={employee._id}
+                        value={employee._id}
                       >
                         {employee.firstName}{" "}
                         {employee.lastName}
                       </option>
                     )
                   )}
-
                 </select>
 
               </div>
@@ -1713,9 +1721,7 @@ export default function Tasks() {
             <button
               type="button"
               className="task-cancel-btn"
-              onClick={
-                resetForm
-              }
+              onClick={resetForm}
             >
               <X size={17} />
               Cancel
@@ -1727,11 +1733,9 @@ export default function Tasks() {
             >
               <Save size={17} />
 
-              {editingTask !==
-              null
+              {editingTask !== null
                 ? "Update Task"
                 : "Create Task"}
-
             </button>
 
           </div>
@@ -1745,15 +1749,13 @@ export default function Tasks() {
 
       <section className="tasks-grid">
 
-        {sortedTasks.length >
-        0 ? (
+        {sortedTasks.length > 0 ? (
           sortedTasks.map(
             (task) => (
               <div
                 key={task.id}
                 id={`task-${task.id}`}
               >
-
                 <TaskCard
                   task={task}
                   onDelete={
@@ -1763,7 +1765,6 @@ export default function Tasks() {
                     handleEditTask
                   }
                 />
-
               </div>
             )
           )
@@ -1788,12 +1789,8 @@ export default function Tasks() {
               className="clear-task-filters-btn"
               onClick={() => {
                 setSearch("")
-                setStatusFilter(
-                  "All"
-                )
-                setPriorityFilter(
-                  "All"
-                )
+                setStatusFilter("All")
+                setPriorityFilter("All")
                 setSortBy("None")
               }}
             >
@@ -1810,8 +1807,7 @@ export default function Tasks() {
           ===================================================== */}
 
       {isAdmin &&
-        taskToDelete !==
-          null && (
+        taskToDelete !== null && (
           <Modal
             title="Delete Task"
             message="Are you sure you want to move this task to Trash? You can recover it later from the Trash page."

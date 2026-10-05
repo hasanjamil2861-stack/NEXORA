@@ -6,9 +6,7 @@ export async function apiRequest(
   options: RequestInit = {}
 ) {
   const token =
-    localStorage.getItem(
-      "nexora-token"
-    )
+    localStorage.getItem("nexora-token")
 
   const headers = new Headers(
     options.headers
@@ -35,16 +33,19 @@ export async function apiRequest(
   )
 
   if (!response.ok) {
-    let errorMessage = `API Error: ${response.status}`
+    let errorMessage =
+      `API Error: ${response.status}`
 
     try {
-      const errorData = await response.json()
+      const errorData =
+        await response.json()
 
       if (
         errorData?.message &&
         typeof errorData.message === "string"
       ) {
-        errorMessage = errorData.message
+        errorMessage =
+          errorData.message
       }
     } catch {
       // Keep the default error message
