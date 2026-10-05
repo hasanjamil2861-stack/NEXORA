@@ -45,6 +45,7 @@ type EmployeeRecord = {
     salary?: number
     hireDate?: string
     status?: "Active" | "Inactive"
+    profileImage?: string
     userId?: EmployeeUser | string | null
 }
 
@@ -54,6 +55,9 @@ export default function EmployeeDetails() {
 
     const [employee, setEmployee] =
         useState<Employee | null>(null)
+
+    const [profileImage, setProfileImage] =
+        useState<string | null>(null)
 
     const [employeeUser, setEmployeeUser] =
         useState<EmployeeUser | null>(null)
@@ -78,6 +82,7 @@ export default function EmployeeDetails() {
 
                 if (!foundEmployee) {
                     setEmployee(null)
+                    setProfileImage(null)
                     setEmployeeUser(null)
                     return
                 }
@@ -132,6 +137,11 @@ export default function EmployeeDetails() {
                     formattedEmployee
                 )
 
+                setProfileImage(
+                    foundEmployee.profileImage ||
+                        null
+                )
+
                 if (
                     foundEmployee.userId &&
                     typeof foundEmployee.userId ===
@@ -150,6 +160,7 @@ export default function EmployeeDetails() {
                 )
 
                 setEmployee(null)
+                setProfileImage(null)
                 setEmployeeUser(null)
             } finally {
                 setLoading(false)
@@ -316,7 +327,19 @@ export default function EmployeeDetails() {
                 <div className="employee-profile-main">
 
                     <div className="employee-details-avatar">
-                        {initials || "U"}
+
+                        {profileImage ? (
+                            <img
+                                src={
+                                    profileImage
+                                }
+                                alt={`${fullName} profile`}
+                                className="employee-details-avatar-image"
+                            />
+                        ) : (
+                            initials || "U"
+                        )}
+
                     </div>
 
                     <div className="employee-profile-content">

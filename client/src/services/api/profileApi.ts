@@ -10,6 +10,7 @@ export type ProfilePayload = {
     salary: number
     hireDate: string
     status: "Active" | "Inactive"
+    profileImage?: string
 }
 
 export type AccountCredentialsPayload = {

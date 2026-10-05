@@ -46,6 +46,7 @@ const getProfile = async (req, res) => {
                 salary: 0,
                 hireDate: "",
                 status: "Active",
+                profileImage: "",
             })
         }
 
@@ -95,6 +96,7 @@ const updateProfile = async (req, res) => {
             salary,
             hireDate,
             status,
+            profileImage,
         } = req.body
 
         const cleanFirstName =
@@ -192,6 +194,17 @@ const updateProfile = async (req, res) => {
             department?.id
 
         // ==========================================
+        // PROFILE IMAGE
+        // ==========================================
+
+        if (
+            typeof profileImage === "string"
+        ) {
+            employee.profileImage =
+                profileImage
+        }
+
+        // ==========================================
         // ADMIN ONLY FIELDS
         // ==========================================
 
@@ -213,9 +226,6 @@ const updateProfile = async (req, res) => {
             // EMPLOYEE PROTECTION
             // ======================================
 
-            // Employee is always an Employee.
-            // The frontend cannot change this,
-            // and neither can Postman/API requests.
             employee.position = "Employee"
 
             // Salary is NOT changed here.

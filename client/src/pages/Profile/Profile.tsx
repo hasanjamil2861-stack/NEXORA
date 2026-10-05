@@ -40,6 +40,7 @@ import type { Employee } from "../../types/Employee"
 type EmployeeApiResponse = Employee & {
     _id?: string
     userId?: string
+    profileImage?: string
 }
 
 type ProfileFormData = {
@@ -103,15 +104,6 @@ export default function Profile() {
 
         const currentUser = user
 
-        const savedImage =
-            localStorage.getItem(
-                `nexora-profile-image-${currentUser.id}`
-            )
-
-        if (savedImage) {
-            setProfileImage(savedImage)
-        }
-
         async function loadProfile() {
             try {
                 setLoading(true)
@@ -167,6 +159,11 @@ export default function Profile() {
                     loadedEmployee
                 )
 
+                setProfileImage(
+                    data.profileImage ||
+                        null
+                )
+
                 setFormData({
                     firstName:
                         loadedEmployee.firstName,
@@ -203,6 +200,7 @@ export default function Profile() {
 
                 setProfileError(true)
                 setEmployee(null)
+                setProfileImage(null)
             } finally {
                 setLoading(false)
             }
@@ -287,7 +285,7 @@ export default function Profile() {
         const reader =
             new FileReader()
 
-        reader.onload = () => {
+        reader.onload = async () => {
             const image =
                 reader.result
 
@@ -297,11 +295,49 @@ export default function Profile() {
                 return
             }
 
-            try {
-                localStorage.setItem(
-                    `nexora-profile-image-${currentUser.id}`,
-                    image
+            if (!employee) {
+                showToast(
+                    "Profile data is not available.",
+                    "error"
                 )
+
+                return
+            }
+
+            try {
+                setSaving(true)
+
+                await updateProfile({
+                    firstName:
+                        employee.firstName,
+
+                    lastName:
+                        employee.lastName,
+
+                    email:
+                        employee.email,
+
+                    phone:
+                        employee.phone,
+
+                    position:
+                        employee.position,
+
+                    departmentId:
+                        employee.departmentId,
+
+                    salary:
+                        employee.salary,
+
+                    hireDate:
+                        employee.hireDate,
+
+                    status:
+                        employee.status,
+
+                    profileImage:
+                        image,
+                })
 
                 setProfileImage(image)
 
@@ -309,11 +345,18 @@ export default function Profile() {
                     "Profile picture updated.",
                     "success"
                 )
-            } catch {
+            } catch (error) {
+                console.error(
+                    "PROFILE IMAGE UPDATE ERROR:",
+                    error
+                )
+
                 showToast(
                     "Unable to save profile picture.",
                     "error"
                 )
+            } finally {
+                setSaving(false)
             }
         }
 
@@ -322,13 +365,45 @@ export default function Profile() {
         event.target.value = ""
     }
 
-    const handleDeleteProfileImage = () => {
+    const handleDeleteProfileImage = async () => {
+        if (!employee) {
+            return
+        }
+
         try {
+            setSaving(true)
             setIsImagePreviewOpen(false)
 
-            localStorage.removeItem(
-                `nexora-profile-image-${currentUser.id}`
-            )
+            await updateProfile({
+                firstName:
+                    employee.firstName,
+
+                lastName:
+                    employee.lastName,
+
+                email:
+                    employee.email,
+
+                phone:
+                    employee.phone,
+
+                position:
+                    employee.position,
+
+                departmentId:
+                    employee.departmentId,
+
+                salary:
+                    employee.salary,
+
+                hireDate:
+                    employee.hireDate,
+
+                status:
+                    employee.status,
+
+                profileImage: "",
+            })
 
             setProfileImage(null)
 
@@ -336,11 +411,18 @@ export default function Profile() {
                 "Profile picture removed.",
                 "success"
             )
-        } catch {
+        } catch (error) {
+            console.error(
+                "PROFILE IMAGE DELETE ERROR:",
+                error
+            )
+
             showToast(
                 "Unable to remove profile picture.",
                 "error"
             )
+        } finally {
+            setSaving(false)
         }
     }
 
@@ -515,6 +597,9 @@ export default function Profile() {
 
                     status:
                         formData.status,
+
+                    profileImage:
+                        profileImage || "",
                 })) as EmployeeApiResponse
 
             const updatedEmployee: Employee = {
@@ -556,6 +641,11 @@ export default function Profile() {
 
             setEmployee(
                 updatedEmployee
+            )
+
+            setProfileImage(
+                data.profileImage ||
+                    null
             )
 
             setFormData({
@@ -818,6 +908,9 @@ export default function Profile() {
                                     }
                                     title="Delete profile picture"
                                     aria-label="Delete profile picture"
+                                    disabled={
+                                        saving
+                                    }
                                 >
                                     <Trash2
                                         size={15}
