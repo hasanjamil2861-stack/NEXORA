@@ -117,9 +117,9 @@ export default function Sidebar() {
         </div>
 
         <nav className="sidebar-navigation">
-          {isAdmin && (
-            <>
-                  <NavLink
+
+          {/* Available for Admin and Employee */}
+          <NavLink
             to="/profile"
             title="My Profile"
             onClick={closeMobileMenu}
@@ -128,7 +128,9 @@ export default function Sidebar() {
             <span>My Profile</span>
           </NavLink>
 
-
+          {/* Admin Only */}
+          {isAdmin && (
+            <>
               <NavLink
                 to="/"
                 title="Dashboard"
@@ -176,6 +178,7 @@ export default function Sidebar() {
             <span>Tasks</span>
           </NavLink>
 
+          {/* Admin Only */}
           {isAdmin && (
             <NavLink
               to="/clients"
@@ -198,6 +201,7 @@ export default function Sidebar() {
             </span>
           </NavLink>
 
+          {/* Admin Only */}
           {isAdmin && (
             <>
               <NavLink
@@ -220,6 +224,7 @@ export default function Sidebar() {
             </>
           )}
 
+          {/* Admin Only */}
           {isAdmin && (
             <NavLink
               to="/invoices"
@@ -240,6 +245,7 @@ export default function Sidebar() {
             <span>Documents</span>
           </NavLink>
 
+          {/* Admin Only */}
           {isAdmin && (
             <>
               <NavLink
@@ -261,8 +267,6 @@ export default function Sidebar() {
               </NavLink>
             </>
           )}
-
-        
         </nav>
 
         <button

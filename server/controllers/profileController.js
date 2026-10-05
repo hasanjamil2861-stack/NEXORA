@@ -95,6 +95,7 @@ const updateProfile = async (req, res) => {
             })
         }
 
+        // Fields that both Admin and Employee can update
         employee.firstName = firstName
         employee.lastName = lastName
         employee.email = email
@@ -102,9 +103,13 @@ const updateProfile = async (req, res) => {
         employee.position = position
         employee.departmentId =
             departmentId || undefined
-        employee.salary = salary
-        employee.hireDate = hireDate
-        employee.status = status
+
+        // Only Admin can update administrative fields
+        if (req.user.role === "Admin") {
+            employee.salary = salary
+            employee.hireDate = hireDate
+            employee.status = status
+        }
 
         const updatedEmployee =
             await employee.save()
@@ -116,8 +121,8 @@ const updateProfile = async (req, res) => {
         if (user) {
             user.email = email
 
-            user.name = `${firstName} ${lastName}`
-                .trim()
+            user.name =
+                `${firstName} ${lastName}`.trim()
 
             await user.save()
         }

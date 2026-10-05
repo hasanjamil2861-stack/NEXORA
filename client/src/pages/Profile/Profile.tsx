@@ -217,11 +217,6 @@ export default function Profile() {
     const handleProfileImage = (
         event: ChangeEvent<HTMLInputElement>
     ) => {
-        // Employees cannot edit their profile picture.
-        if (!isAdmin) {
-            return
-        }
-
         const file =
             event.target.files?.[0]
 
@@ -295,11 +290,6 @@ export default function Profile() {
     }
 
     const handleDeleteProfileImage = () => {
-        // Employees cannot delete their profile picture.
-        if (!isAdmin) {
-            return
-        }
-
         try {
             localStorage.removeItem(
                 `nexora-profile-image-${currentUser.id}`
@@ -323,11 +313,6 @@ export default function Profile() {
         field: keyof ProfileFormData,
         value: string
     ) => {
-        // Employees cannot modify profile fields.
-        if (!isAdmin) {
-            return
-        }
-
         setFormData(
             (current) => ({
                 ...current,
@@ -340,11 +325,6 @@ export default function Profile() {
     }
 
     const handleEdit = () => {
-        // Only Admin can enter edit mode.
-        if (!isAdmin) {
-            return
-        }
-
         if (!employee) {
             showToast(
                 "Profile data is not available.",
@@ -398,10 +378,6 @@ export default function Profile() {
     }
 
     const handleCancel = () => {
-        if (!isAdmin) {
-            return
-        }
-
         if (employee) {
             setFormData({
                 firstName:
@@ -440,11 +416,6 @@ export default function Profile() {
         event: FormEvent<HTMLFormElement>
     ) => {
         event.preventDefault()
-
-        // Employees cannot update their profile.
-        if (!isAdmin) {
-            return
-        }
 
         if (!employee) {
             return
@@ -679,14 +650,12 @@ export default function Profile() {
                     <p>
                         {isAdmin
                             ? "Manage your personal information and account details."
-                            : "View your personal information and account details."}
+                            : "Manage your personal information and account details."}
                     </p>
                 </div>
 
-                {/* Admin only */}
                 {!loading &&
-                    employee &&
-                    isAdmin && (
+                    employee && (
                         <div className="profile-header-actions">
                             {!isEditing ? (
                                 <button
@@ -764,45 +733,42 @@ export default function Profile() {
                             </div>
                         )}
 
-                        {/* Admin only */}
-                        {isAdmin && (
-                            <div className="profile-avatar-actions">
-                                <label
-                                    htmlFor="profile-image-upload"
-                                    className="profile-camera-btn"
-                                    title="Change profile picture"
+                        <div className="profile-avatar-actions">
+                            <label
+                                htmlFor="profile-image-upload"
+                                className="profile-camera-btn"
+                                title="Change profile picture"
+                            >
+                                <Camera
+                                    size={16}
+                                />
+
+                                <input
+                                    id="profile-image-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={
+                                        handleProfileImage
+                                    }
+                                />
+                            </label>
+
+                            {profileImage && (
+                                <button
+                                    type="button"
+                                    className="profile-delete-image-btn"
+                                    onClick={
+                                        handleDeleteProfileImage
+                                    }
+                                    title="Delete profile picture"
+                                    aria-label="Delete profile picture"
                                 >
-                                    <Camera
-                                        size={16}
+                                    <Trash2
+                                        size={15}
                                     />
-
-                                    <input
-                                        id="profile-image-upload"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={
-                                            handleProfileImage
-                                        }
-                                    />
-                                </label>
-
-                                {profileImage && (
-                                    <button
-                                        type="button"
-                                        className="profile-delete-image-btn"
-                                        onClick={
-                                            handleDeleteProfileImage
-                                        }
-                                        title="Delete profile picture"
-                                        aria-label="Delete profile picture"
-                                    >
-                                        <Trash2
-                                            size={15}
-                                        />
-                                    </button>
-                                )}
-                            </div>
-                        )}
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <div className="profile-identity">
@@ -851,9 +817,7 @@ export default function Profile() {
                             </h3>
 
                             <p>
-                                {isAdmin
-                                    ? "Your account and employment details."
-                                    : "Your account and employment details managed by your administrator."}
+                                Your account and employment details.
                             </p>
                         </div>
                     </div>
@@ -884,7 +848,6 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
-                                    isAdmin &&
                                     employee ? (
                                         <input
                                             type="email"
@@ -927,7 +890,6 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
-                                    isAdmin &&
                                     employee ? (
                                         <input
                                             type="tel"
@@ -969,7 +931,6 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
-                                    isAdmin &&
                                     employee ? (
                                         <input
                                             type="text"
@@ -1011,7 +972,6 @@ export default function Profile() {
                                     </span>
 
                                     {isEditing &&
-                                    isAdmin &&
                                     employee ? (
                                         <select
                                             className="profile-inline-input"
@@ -1094,6 +1054,7 @@ export default function Profile() {
                                         Salary
                                     </span>
 
+                                    {/* Salary is editable by Admin only */}
                                     {isEditing &&
                                     isAdmin &&
                                     employee ? (
@@ -1220,10 +1181,8 @@ export default function Profile() {
                                 </div>
                             </div>
 
-                            {/* FIRST NAME + LAST NAME
-                                Admin edit only */}
+                            {/* FIRST NAME */}
                             {isEditing &&
-                                isAdmin &&
                                 employee && (
                                     <>
                                         <div className="profile-detail">
@@ -1259,6 +1218,7 @@ export default function Profile() {
                                             </div>
                                         </div>
 
+                                        {/* LAST NAME */}
                                         <div className="profile-detail">
                                             <div className="profile-detail-icon">
                                                 <UserRound
