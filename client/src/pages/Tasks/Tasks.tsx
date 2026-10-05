@@ -1,4 +1,4 @@
- import {
+import {
   useEffect,
   useRef,
   useState,
@@ -19,6 +19,7 @@ import {
   Save,
   X,
   Flag,
+  FolderKanban,
 } from "lucide-react"
 
 import TaskCard from "../../components/TaskCard/TaskCard"
@@ -42,6 +43,7 @@ import {
 } from "../../services/api/taskApi"
 
 import { getEmployees } from "../../services/api/employeeApi"
+import { getProjects } from "../../services/api/projectApi"
 
 type TaskApiRecord = {
   _id: string
@@ -62,11 +64,24 @@ type EmployeeOption = {
   position: string
 }
 
+type ProjectOption = {
+  _id: string
+  name: string
+  status?: string
+}
+
 type EmployeeApiResponse =
   | EmployeeOption[]
   | {
       employees?: EmployeeOption[]
       data?: EmployeeOption[]
+    }
+
+type ProjectApiResponse =
+  | ProjectOption[]
+  | {
+      projects?: ProjectOption[]
+      data?: ProjectOption[]
     }
 
 export default function Tasks() {
@@ -96,13 +111,13 @@ export default function Tasks() {
 
   const [dueDate, setDueDate] = useState("")
   const [assignedTo, setAssignedTo] = useState("")
+  const [projectId, setProjectId] = useState("")
 
   // =========================================================
   // TASK DATA
   // =========================================================
 
-  const [taskList, setTaskList] =
-    useState<Task[]>([])
+  const [taskList, setTaskList] = useState<Task[]>([])
 
   const [editingTask, setEditingTask] =
     useState<string | null>(null)
@@ -110,8 +125,7 @@ export default function Tasks() {
   const [newTaskId, setNewTaskId] =
     useState<string | null>(null)
 
-  const [formError, setFormError] =
-    useState("")
+  const [formError, setFormError] = useState("")
 
   // =========================================================
   // ADMIN OPTIONS
@@ -119,6 +133,9 @@ export default function Tasks() {
 
   const [employees, setEmployees] =
     useState<EmployeeOption[]>([])
+
+  const [projects, setProjects] =
+    useState<ProjectOption[]>([])
 
   // =========================================================
   // SEARCH / FILTER
@@ -195,9 +212,7 @@ export default function Tasks() {
   useEffect(() => {
     async function fetchTasks() {
       try {
-        console.log(
-          "FETCH TASKS STARTED"
-        )
+        console.log("FETCH TASKS STARTED")
 
         const data =
           (await getTasks()) as TaskApiRecord[]
@@ -206,36 +221,28 @@ export default function Tasks() {
           data.map((task) => ({
             id: String(task._id),
 
-            title:
-              task.title ?? "",
+            title: task.title ?? "",
 
             description:
               task.description ?? "",
 
             status:
-              task.status ??
-              "Pending",
+              task.status ?? "Pending",
 
             priority:
-              task.priority ??
-              "Medium",
+              task.priority ?? "Medium",
 
             assignedTo:
-              task.assignedTo ??
-              "",
+              task.assignedTo ?? "",
 
             projectId:
-              task.projectId ??
-              "",
+              task.projectId ?? "",
 
             dueDate:
-              task.dueDate ??
-              "",
+              task.dueDate ?? "",
           }))
 
-        setTaskList(
-          formattedTasks
-        )
+        setTaskList(formattedTasks)
 
         console.log(
           "TASKS LOADED:",
@@ -258,7 +265,7 @@ export default function Tasks() {
   }, [showToast])
 
   // =========================================================
-  // FETCH EMPLOYEES
+  // FETCH EMPLOYEES + PROJECTS
   // =========================================================
 
   useEffect(() => {
@@ -266,44 +273,74 @@ export default function Tasks() {
       return
     }
 
-    async function fetchEmployees() {
+    async function fetchFormOptions() {
       try {
         console.log(
-          "FETCHING EMPLOYEES FOR TASKS..."
+          "FETCHING TASK OPTIONS..."
         )
 
-        const response =
-          (await getEmployees()) as EmployeeApiResponse
+        const [
+          employeeResponse,
+          projectResponse,
+        ] = await Promise.all([
+          getEmployees(),
+          getProjects(),
+        ])
+
+        // -----------------------------------------------
+        // Employees
+        // -----------------------------------------------
+
+        const employeeData =
+          employeeResponse as EmployeeApiResponse
 
         const employeeList =
-          Array.isArray(response)
-            ? response
-            : response.employees ??
-              response.data ??
+          Array.isArray(employeeData)
+            ? employeeData
+            : employeeData.employees ??
+              employeeData.data ??
               []
 
-        setEmployees(
-          employeeList
-        )
+        // -----------------------------------------------
+        // Projects
+        // -----------------------------------------------
+
+        const projectData =
+          projectResponse as ProjectApiResponse
+
+        const projectList =
+          Array.isArray(projectData)
+            ? projectData
+            : projectData.projects ??
+              projectData.data ??
+              []
+
+        setEmployees(employeeList)
+        setProjects(projectList)
 
         console.log(
           "EMPLOYEES FOR TASKS:",
           employeeList
         )
+
+        console.log(
+          "PROJECTS FOR TASKS:",
+          projectList
+        )
       } catch (error) {
         console.error(
-          "Fetch employees error:",
+          "Fetch task options error:",
           error
         )
 
         showToast(
-          "Failed to load employees",
+          "Failed to load task options",
           "error"
         )
       }
     }
 
-    fetchEmployees()
+    fetchFormOptions()
   }, [isAdmin, showToast])
 
   // =========================================================
@@ -316,29 +353,25 @@ export default function Tasks() {
   const pendingTasks =
     taskList.filter(
       (task) =>
-        task.status ===
-        "Pending"
+        task.status === "Pending"
     ).length
 
   const inProgressTasks =
     taskList.filter(
       (task) =>
-        task.status ===
-        "In Progress"
+        task.status === "In Progress"
     ).length
 
   const completedTasks =
     taskList.filter(
       (task) =>
-        task.status ===
-        "Completed"
+        task.status === "Completed"
     ).length
 
   const highPriorityTasks =
     taskList.filter(
       (task) =>
-        task.priority ===
-        "High"
+        task.priority === "High"
     ).length
 
   const completionPercentage =
@@ -388,6 +421,7 @@ export default function Tasks() {
     setPriority("Medium")
     setDueDate("")
     setAssignedTo("")
+    setProjectId("")
     setEditingTask(null)
     setFormError("")
     setShowForm(false)
@@ -401,6 +435,27 @@ export default function Tasks() {
     value:
       | string
       | TaskEmployee
+      | undefined
+  ) {
+    if (!value) {
+      return ""
+    }
+
+    if (typeof value === "string") {
+      return value
+    }
+
+    return value._id
+  }
+
+  // =========================================================
+  // GET PROJECT ID
+  // =========================================================
+
+  function getProjectId(
+    value:
+      | string
+      | TaskProject
       | undefined
   ) {
     if (!value) {
@@ -439,11 +494,12 @@ export default function Tasks() {
       return "Task priority is required."
     }
 
-    if (
-      isAdmin &&
-      !assignedTo.trim()
-    ) {
+    if (isAdmin && !assignedTo.trim()) {
       return "Please assign the task to an employee."
+    }
+
+    if (isAdmin && !projectId.trim()) {
+      return "Please assign the task to a project."
     }
 
     return ""
@@ -464,10 +520,7 @@ export default function Tasks() {
       validateForm()
 
     if (validationError) {
-      setFormError(
-        validationError
-      )
-
+      setFormError(validationError)
       return
     }
 
@@ -483,8 +536,7 @@ export default function Tasks() {
         const existingTask =
           taskList.find(
             (task) =>
-              task.id ===
-              editingTask
+              task.id === editingTask
           )
 
         if (!existingTask) {
@@ -509,6 +561,12 @@ export default function Tasks() {
           assignedTo.trim() ||
           existingAssignedTo
 
+        const selectedProjectId =
+          projectId.trim() ||
+          getProjectId(
+            existingTask.projectId
+          )
+
         if (!selectedAssignedTo) {
           setFormError(
             "Please assign the task to an employee."
@@ -517,20 +575,23 @@ export default function Tasks() {
           return
         }
 
+        if (!selectedProjectId) {
+          setFormError(
+            "Please assign the task to a project."
+          )
+
+          return
+        }
+
         const taskData = {
-          title:
-            title.trim(),
-
-          description:
-            description.trim(),
-
+          title: title.trim(),
+          description: description.trim(),
           status,
-
           priority,
-
           assignedTo:
             selectedAssignedTo,
-
+          projectId:
+            selectedProjectId,
           dueDate,
         }
 
@@ -572,8 +633,7 @@ export default function Tasks() {
 
           projectId:
             updatedTask.projectId ??
-            existingTask.projectId ??
-            "",
+            taskData.projectId,
 
           dueDate:
             updatedTask.dueDate ??
@@ -602,27 +662,31 @@ export default function Tasks() {
       // =====================================================
 
       else {
+        /*
+          IMPORTANT:
+          These are the exact fields expected by the
+          backend Task controller and MongoDB model.
+        */
+
         const newTaskData = {
-          title:
-            title.trim(),
-
-          description:
-            description.trim(),
-
+          title: title.trim(),
+          description: description.trim(),
           status,
-
           priority,
-
-          assignedTo:
-            assignedTo.trim(),
-
+          assignedTo: assignedTo.trim(),
+          projectId: projectId.trim(),
           dueDate,
         }
+
+        // -----------------------------------------------
+        // Final frontend safety check
+        // -----------------------------------------------
 
         if (
           !newTaskData.title ||
           !newTaskData.description ||
           !newTaskData.assignedTo ||
+          !newTaskData.projectId ||
           !newTaskData.dueDate
         ) {
           setFormError(
@@ -674,7 +738,7 @@ export default function Tasks() {
 
           projectId:
             createdTask.projectId ??
-            "",
+            newTaskData.projectId,
 
           dueDate:
             createdTask.dueDate ??
@@ -830,22 +894,10 @@ export default function Tasks() {
     }
 
     setTitle(task.title)
-
-    setDescription(
-      task.description
-    )
-
-    setStatus(
-      task.status
-    )
-
-    setPriority(
-      task.priority
-    )
-
-    setDueDate(
-      task.dueDate
-    )
+    setDescription(task.description)
+    setStatus(task.status)
+    setPriority(task.priority)
+    setDueDate(task.dueDate)
 
     setAssignedTo(
       getAssignedEmployeeId(
@@ -853,10 +905,13 @@ export default function Tasks() {
       )
     )
 
-    setEditingTask(
-      task.id
+    setProjectId(
+      getProjectId(
+        task.projectId
+      )
     )
 
+    setEditingTask(task.id)
     setFormError("")
     setShowForm(true)
   }
@@ -884,14 +939,12 @@ export default function Tasks() {
           )
 
         const matchesStatus =
-          statusFilter ===
-            "All" ||
+          statusFilter === "All" ||
           task.status ===
             statusFilter
 
         const matchesPriority =
-          priorityFilter ===
-            "All" ||
+          priorityFilter === "All" ||
           task.priority ===
             priorityFilter
 
@@ -920,15 +973,11 @@ export default function Tasks() {
         b.dueDate ?? ""
       ).getTime()
 
-    if (
-      sortBy === "Newest"
-    ) {
+    if (sortBy === "Newest") {
       return dateB - dateA
     }
 
-    if (
-      sortBy === "Oldest"
-    ) {
+    if (sortBy === "Oldest") {
       return dateA - dateB
     }
 
@@ -1382,9 +1431,7 @@ export default function Tasks() {
         <form
           ref={taskFormRef}
           className="task-form"
-          onSubmit={
-            handleCreateTask
-          }
+          onSubmit={handleCreateTask}
         >
 
           <div className="task-form-header">
@@ -1393,8 +1440,7 @@ export default function Tasks() {
 
               <div className="task-form-icon">
 
-                {editingTask !==
-                null ? (
+                {editingTask !== null ? (
                   <Save size={19} />
                 ) : (
                   <Plus size={19} />
@@ -1409,8 +1455,7 @@ export default function Tasks() {
                 </span>
 
                 <h2>
-                  {editingTask !==
-                  null
+                  {editingTask !== null
                     ? "Edit Task"
                     : "Add New Task"}
                 </h2>
@@ -1586,6 +1631,47 @@ export default function Tasks() {
 
             </div>
 
+            {/* PROJECT */}
+
+            {isAdmin && (
+              <div className="task-form-field">
+
+                <label htmlFor="task-project">
+                  <FolderKanban size={15} />
+                  Project
+                </label>
+
+                <select
+                  id="task-project"
+                  value={projectId}
+                  required
+                  onChange={(e) => {
+                    setProjectId(
+                      e.target.value
+                    )
+
+                    setFormError("")
+                  }}
+                >
+                  <option value="">
+                    Select project
+                  </option>
+
+                  {projects.map(
+                    (project) => (
+                      <option
+                        key={project._id}
+                        value={project._id}
+                      >
+                        {project.name}
+                      </option>
+                    )
+                  )}
+                </select>
+
+              </div>
+            )}
+
             {/* ASSIGNED EMPLOYEE */}
 
             {isAdmin && (
@@ -1615,12 +1701,8 @@ export default function Tasks() {
                   {employees.map(
                     (employee) => (
                       <option
-                        key={
-                          employee._id
-                        }
-                        value={
-                          employee._id
-                        }
+                        key={employee._id}
+                        value={employee._id}
                       >
                         {employee.firstName}{" "}
                         {employee.lastName}
@@ -1639,9 +1721,7 @@ export default function Tasks() {
             <button
               type="button"
               className="task-cancel-btn"
-              onClick={
-                resetForm
-              }
+              onClick={resetForm}
             >
               <X size={17} />
               Cancel
@@ -1653,8 +1733,7 @@ export default function Tasks() {
             >
               <Save size={17} />
 
-              {editingTask !==
-              null
+              {editingTask !== null
                 ? "Update Task"
                 : "Create Task"}
             </button>
@@ -1670,8 +1749,7 @@ export default function Tasks() {
 
       <section className="tasks-grid">
 
-        {sortedTasks.length >
-        0 ? (
+        {sortedTasks.length > 0 ? (
           sortedTasks.map(
             (task) => (
               <div
@@ -1711,12 +1789,8 @@ export default function Tasks() {
               className="clear-task-filters-btn"
               onClick={() => {
                 setSearch("")
-                setStatusFilter(
-                  "All"
-                )
-                setPriorityFilter(
-                  "All"
-                )
+                setStatusFilter("All")
+                setPriorityFilter("All")
                 setSortBy("None")
               }}
             >
@@ -1733,8 +1807,7 @@ export default function Tasks() {
           ===================================================== */}
 
       {isAdmin &&
-        taskToDelete !==
-          null && (
+        taskToDelete !== null && (
           <Modal
             title="Delete Task"
             message="Are you sure you want to move this task to Trash? You can recover it later from the Trash page."
