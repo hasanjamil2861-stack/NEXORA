@@ -20,7 +20,10 @@
   color: #172033;
 }
 
-/* Hero */
+/* =========================================================
+   HERO
+   ========================================================= */
+
 .attendance-hero {
   position: relative;
   min-height: 155px;
@@ -76,8 +79,8 @@
   height: 170px;
   left: 42%;
   bottom: -125px;
-  border-radius: 50%;
   border: 1px solid rgba(99, 102, 241, 0.06);
+  border-radius: 50%;
   pointer-events: none;
 }
 
@@ -156,15 +159,16 @@
   height: 7px;
   border-radius: 50%;
   background: #6366f1;
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.09);
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.09);
 }
 
 .attendance-hero-dot::after {
   content: "";
   position: absolute;
   inset: -3px;
-  border-radius: 50%;
   border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 50%;
   animation: attendancePulse 2s infinite;
 }
 
@@ -227,7 +231,8 @@
   border: 1px solid #e8ebf3;
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.75);
-  box-shadow: 0 5px 17px rgba(25, 35, 58, 0.045);
+  box-shadow:
+    0 5px 17px rgba(25, 35, 58, 0.045);
 }
 
 .attendance-mini-stat {
@@ -313,7 +318,10 @@
   color: #10b981;
 }
 
-/* Statistics */
+/* =========================================================
+   STATISTICS
+   ========================================================= */
+
 .attendance-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -332,7 +340,8 @@
   gap: 12px;
   overflow: hidden;
   background: #ffffff;
-  box-shadow: 0 5px 20px rgba(20, 31, 56, 0.045);
+  box-shadow:
+    0 5px 20px rgba(20, 31, 56, 0.045);
   transition:
     transform 0.25s ease,
     border-color 0.25s ease,
@@ -359,7 +368,8 @@
 .attendance-stat-card:hover {
   transform: translateY(-4px);
   border-color: #dfe3ed;
-  box-shadow: 0 14px 30px rgba(20, 31, 56, 0.085);
+  box-shadow:
+    0 14px 30px rgba(20, 31, 56, 0.085);
 }
 
 .attendance-stat-card:hover::before {
@@ -449,14 +459,18 @@
   font-weight: 650;
 }
 
-/* Overview */
+/* =========================================================
+   OVERVIEW
+   ========================================================= */
+
 .attendance-overview {
   margin-bottom: 22px;
   padding: 21px 23px;
   border: 1px solid #e6e9f0;
   border-radius: 17px;
   background: #ffffff;
-  box-shadow: 0 6px 21px rgba(20, 31, 56, 0.04);
+  box-shadow:
+    0 6px 21px rgba(20, 31, 56, 0.04);
 }
 
 .attendance-overview-header {
@@ -528,7 +542,8 @@
       #6366f1,
       #0ea5e9
     );
-  transition: width 0.6s cubic-bezier(.2, .8, .2, 1);
+  transition:
+    width 0.6s cubic-bezier(.2, .8, .2, 1);
 }
 
 .attendance-overview-footer {
@@ -542,7 +557,10 @@
   font-weight: 650;
 }
 
-/* Toolbar */
+/* =========================================================
+   TOOLBAR
+   ========================================================= */
+
 .attendance-toolbar {
   position: relative;
   display: flex;
@@ -553,7 +571,8 @@
   border: 1px solid #e6e9f0;
   border-radius: 15px;
   background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 6px 20px rgba(20, 31, 56, 0.04);
+  box-shadow:
+    0 6px 20px rgba(20, 31, 56, 0.04);
 }
 
 .attendance-search {
@@ -577,7 +596,8 @@
 .attendance-search:focus-within {
   border-color: #818cf8;
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.08);
 }
 
 .attendance-search svg {
@@ -654,10 +674,187 @@
 .attendance-filter-control input:focus {
   border-color: #818cf8;
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.08);
 }
 
-/* Section */
+/* Add Attendance */
+
+.attendance-add-button {
+  height: 43px;
+  padding: 0 15px;
+  border: 1px solid #4f46e5;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-shrink: 0;
+  background:
+    linear-gradient(
+      135deg,
+      #6366f1,
+      #4f46e5
+    );
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow:
+    0 7px 16px rgba(79, 70, 229, 0.18);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.attendance-add-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+  box-shadow:
+    0 10px 21px rgba(79, 70, 229, 0.24);
+}
+
+.attendance-add-button:active {
+  transform: translateY(0);
+}
+
+/* =========================================================
+   ATTENDANCE FORM
+   ========================================================= */
+
+.attendance-form {
+  margin-bottom: 24px;
+  padding: 22px;
+  border: 1px solid #e2e6ef;
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fafbff
+    );
+  box-shadow:
+    0 8px 27px rgba(20, 31, 56, 0.055);
+}
+
+.attendance-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.attendance-form-header span {
+  display: block;
+  margin-bottom: 4px;
+  color: #6366f1;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+}
+
+.attendance-form-header h2 {
+  margin: 0;
+  color: #20283a;
+  font-size: 19px;
+  font-weight: 850;
+}
+
+.attendance-form-header > svg {
+  width: 38px;
+  height: 38px;
+  padding: 9px;
+  box-sizing: border-box;
+  border-radius: 11px;
+  color: #4f46e5;
+  background: #f1f2ff;
+}
+
+.attendance-form form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  align-items: end;
+}
+
+.attendance-form .attendance-filter-control {
+  min-width: 0;
+}
+
+.attendance-form .attendance-filter-control input,
+.attendance-form .attendance-filter-control select {
+  width: 100%;
+}
+
+.attendance-form .attendance-card-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 2px;
+  padding-top: 17px;
+  border-top: 1px solid #edf0f5;
+}
+
+.attendance-form .attendance-card-actions button {
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid #e0e4ec;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: #ffffff;
+  color: #596477;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.attendance-form .attendance-card-actions button[type="submit"] {
+  border-color: #4f46e5;
+  background:
+    linear-gradient(
+      135deg,
+      #6366f1,
+      #4f46e5
+    );
+  color: #ffffff;
+  box-shadow:
+    0 6px 15px rgba(79, 70, 229, 0.17);
+}
+
+.attendance-form .attendance-card-actions button[type="submit"]:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 9px 19px rgba(79, 70, 229, 0.22);
+}
+
+.attendance-form .attendance-card-actions button[type="button"]:hover {
+  border-color: #d2d7e2;
+  background: #f8f9fc;
+  color: #374151;
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   SECTION
+   ========================================================= */
+
 .attendance-section-header {
   display: flex;
   align-items: flex-end;
@@ -711,14 +908,20 @@
   font-weight: 800;
 }
 
-/* Attendance grid */
+/* =========================================================
+   ATTENDANCE GRID
+   ========================================================= */
+
 .attendance-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 }
 
-/* Attendance card */
+/* =========================================================
+   ATTENDANCE CARD
+   ========================================================= */
+
 .attendance-card {
   position: relative;
   min-width: 0;
@@ -727,7 +930,8 @@
   border-radius: 18px;
   background: #ffffff;
   overflow: hidden;
-  box-shadow: 0 6px 21px rgba(20, 31, 56, 0.045);
+  box-shadow:
+    0 6px 21px rgba(20, 31, 56, 0.045);
   transition:
     transform 0.3s cubic-bezier(.2, .8, .2, 1),
     box-shadow 0.3s ease,
@@ -754,7 +958,8 @@
 .attendance-card:hover {
   transform: translateY(-6px);
   border-color: #dce1ec;
-  box-shadow: 0 19px 40px rgba(20, 31, 56, 0.095);
+  box-shadow:
+    0 19px 40px rgba(20, 31, 56, 0.095);
 }
 
 .attendance-card:hover::before {
@@ -777,15 +982,30 @@
 }
 
 .attendance-card-accent.present {
-  background: linear-gradient(90deg, #059669, #34d399);
+  background:
+    linear-gradient(
+      90deg,
+      #059669,
+      #34d399
+    );
 }
 
 .attendance-card-accent.absent {
-  background: linear-gradient(90deg, #dc2626, #f87171);
+  background:
+    linear-gradient(
+      90deg,
+      #dc2626,
+      #f87171
+    );
 }
 
 .attendance-card-accent.late {
-  background: linear-gradient(90deg, #d97706, #fbbf24);
+  background:
+    linear-gradient(
+      90deg,
+      #d97706,
+      #fbbf24
+    );
 }
 
 .attendance-card-top {
@@ -819,7 +1039,8 @@
 
 .attendance-card:hover .attendance-card-icon {
   transform: rotate(-5deg) scale(1.06);
-  box-shadow: 0 7px 15px rgba(79, 70, 229, 0.12);
+  box-shadow:
+    0 7px 15px rgba(79, 70, 229, 0.12);
 }
 
 .attendance-status {
@@ -884,6 +1105,8 @@
   font-weight: 650;
 }
 
+/* Date */
+
 .attendance-date-box {
   position: relative;
   z-index: 2;
@@ -930,6 +1153,8 @@
   font-size: 10px;
   font-weight: 800;
 }
+
+/* Time */
 
 .attendance-time-details {
   position: relative;
@@ -993,6 +1218,8 @@
   white-space: nowrap;
 }
 
+/* Footer */
+
 .attendance-card-footer {
   position: relative;
   z-index: 2;
@@ -1050,24 +1277,76 @@
 
 .attendance-status-dot span.present {
   background: #10b981;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+  box-shadow:
+    0 0 0 4px rgba(16, 185, 129, 0.1);
 }
 
 .attendance-status-dot span.absent {
   background: #ef4444;
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+  box-shadow:
+    0 0 0 4px rgba(239, 68, 68, 0.1);
 }
 
 .attendance-status-dot span.late {
   background: #f59e0b;
-  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+  box-shadow:
+    0 0 0 4px rgba(245, 158, 11, 0.1);
 }
 
+/* Card Actions */
+
 .attendance-card-actions {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid #eef1f5;
 }
+
+.attendance-card-actions button {
+  min-height: 37px;
+  padding: 0 12px;
+  border: 1px solid #e2e6ed;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fafbfc;
+  color: #667085;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.attendance-card-actions button:hover {
+  transform: translateY(-1px);
+  border-color: #d6dbe5;
+  background: #ffffff;
+  color: #4f46e5;
+  box-shadow:
+    0 5px 12px rgba(20, 31, 56, 0.07);
+}
+
+.attendance-card-actions button:active {
+  transform: translateY(0);
+}
+
+.attendance-card-actions button svg {
+  flex-shrink: 0;
+}
+
+/* Delete */
 
 .attendance-delete-btn {
   width: 100%;
@@ -1096,7 +1375,8 @@
   border-color: #dc2626;
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.18);
+  box-shadow:
+    0 6px 14px rgba(220, 38, 38, 0.18);
 }
 
 .attendance-delete-btn:active {
@@ -1107,7 +1387,10 @@
   flex-shrink: 0;
 }
 
-/* Empty state */
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
 .attendance-empty {
   grid-column: 1 / -1;
   padding: 65px 25px;
@@ -1152,14 +1435,23 @@
   font-size: 11px;
 }
 
-/* Responsive */
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
 @media (max-width: 1200px) {
   .attendance-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
   }
 
   .attendance-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
   }
 
   .attendance-hero {
@@ -1170,6 +1462,15 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 12px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .attendance-form form {
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
   }
 }
 
@@ -1200,11 +1501,18 @@
 
   .attendance-filter {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(
+      3,
+      1fr
+    );
   }
 
   .attendance-filter-control select,
   .attendance-filter-control input {
+    width: 100%;
+  }
+
+  .attendance-add-button {
     width: 100%;
   }
 
@@ -1235,6 +1543,10 @@
 
   .attendance-grid {
     grid-template-columns: 1fr;
+  }
+
+  .attendance-form form {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -1284,6 +1596,23 @@
     flex-direction: column;
     gap: 8px;
   }
+
+  .attendance-form {
+    padding: 18px;
+  }
+
+  .attendance-form form {
+    grid-template-columns: 1fr;
+  }
+
+  .attendance-form .attendance-card-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .attendance-form .attendance-card-actions button {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1331,6 +1660,14 @@
 
   .attendance-time-details {
     grid-template-columns: 1fr;
+  }
+
+  .attendance-card-actions {
+    flex-wrap: wrap;
+  }
+
+  .attendance-card-actions button {
+    flex: 1;
   }
 }
 
