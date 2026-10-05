@@ -29,7 +29,7 @@ export default function LoadingScreen() {
                 <div className="nexora-logo-loader">
 
                     <img 
-                        src="/logo.png" 
+                        src="/Logo.jpg" 
                         alt="Nexora Logo" 
                         className="nexora-logo-image" 
                     />
