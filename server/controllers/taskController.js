@@ -1,29 +1,40 @@
 const Task = require("../models/Task")
 const Employee = require("../models/Employee")
 
-const getTasks = async (req, res) => {
+// =========================================================
+// GET ALL TASKS
+// =========================================================
+
+async function getTasks(req, res) {
   try {
-    if (req.user.role === "Admin") {
+    const user = req.user
+
+    // -------------------------------------------------------
+    // ADMIN
+    // -------------------------------------------------------
+
+    if (user?.role === "Admin") {
       const tasks = await Task.find()
         .populate(
           "assignedTo",
           "firstName lastName email position"
         )
-        .populate(
-          "projectId",
-          "name status"
-        )
+        .sort({ createdAt: -1 })
 
-      return res.json(tasks)
+      return res.status(200).json(tasks)
     }
 
+    // -------------------------------------------------------
+    // EMPLOYEE
+    // -------------------------------------------------------
+
     const employee = await Employee.findOne({
-      email: req.user.email,
+      email: user?.email,
     })
 
     if (!employee) {
       return res.status(404).json({
-        message: "Employee profile not found.",
+        message: "Employee profile not found",
       })
     }
 
@@ -34,26 +45,27 @@ const getTasks = async (req, res) => {
         "assignedTo",
         "firstName lastName email position"
       )
-      .populate(
-        "projectId",
-        "name status"
-      )
+      .sort({ createdAt: -1 })
 
-    return res.json(tasks)
+    return res.status(200).json(tasks)
   } catch (error) {
     console.error(
       "Get tasks error:",
       error
     )
 
-    res.status(500).json({
-      message: "Failed to get tasks",
+    return res.status(500).json({
+      message: "Failed to load tasks",
       error: error.message,
     })
   }
 }
 
-const postTask = async (req, res) => {
+// =========================================================
+// CREATE TASK
+// =========================================================
+
+async function postTask(req, res) {
   try {
     const {
       title,
@@ -61,25 +73,33 @@ const postTask = async (req, res) => {
       status,
       priority,
       assignedTo,
-      projectId,
       dueDate,
     } = req.body
+
+    // -------------------------------------------------------
+    // VALIDATION
+    // -------------------------------------------------------
 
     if (
       !title ||
       !description ||
       !assignedTo ||
-      !projectId ||
       !dueDate
     ) {
       return res.status(400).json({
         message:
-          "Please provide all required task fields.",
+          "Title, description, assigned employee, and due date are required.",
       })
     }
 
+    // -------------------------------------------------------
+    // CHECK EMPLOYEE
+    // -------------------------------------------------------
+
     const employee =
-      await Employee.findById(assignedTo)
+      await Employee.findById(
+        assignedTo
+      )
 
     if (!employee) {
       return res.status(404).json({
@@ -88,156 +108,174 @@ const postTask = async (req, res) => {
       })
     }
 
-    const newTask = new Task({
-      title,
-      description,
-      status,
-      priority,
-      assignedTo,
-      projectId,
-      dueDate,
-    })
+    // -------------------------------------------------------
+    // CREATE TASK
+    // -------------------------------------------------------
 
-    await newTask.save()
+    const task =
+      new Task({
+        title: title.trim(),
 
-    const populatedTask =
-      await Task.findById(
-        newTask._id
-      )
-        .populate(
-          "assignedTo",
-          "firstName lastName email position"
-        )
-        .populate(
-          "projectId",
-          "name status"
-        )
+        description:
+          description.trim(),
 
-    res.status(201).json(
-      populatedTask
+        status:
+          status || "Pending",
+
+        priority:
+          priority || "Medium",
+
+        assignedTo,
+
+        dueDate,
+      })
+
+    const savedTask =
+      await task.save()
+
+    // -------------------------------------------------------
+    // POPULATE EMPLOYEE
+    // -------------------------------------------------------
+
+    await savedTask.populate(
+      "assignedTo",
+      "firstName lastName email position"
+    )
+
+    return res.status(201).json(
+      savedTask
     )
   } catch (error) {
     console.error(
-      "Save task error:",
+      "Create task error:",
       error
     )
 
-    res.status(500).json({
-      message: "Failed to save task",
+    return res.status(500).json({
+      message:
+        "Failed to create task",
       error: error.message,
     })
   }
 }
 
-const updateTask = async (req, res) => {
+// =========================================================
+// UPDATE TASK
+// =========================================================
+
+async function updateTask(req, res) {
   try {
+    const { id } = req.params
+
+    const {
+      title,
+      description,
+      status,
+      priority,
+      assignedTo,
+      dueDate,
+    } = req.body
+
+    const user = req.user
+
     const task =
-      await Task.findById(
-        req.params.id
-      )
+      await Task.findById(id)
 
     if (!task) {
       return res.status(404).json({
-        message: "Task not found.",
+        message:
+          "Task not found",
       })
     }
 
-    if (req.user.role === "Admin") {
-      const updatedTask =
-        await Task.findByIdAndUpdate(
-          req.params.id,
-          req.body,
-          {
-            new: true,
-            runValidators: true,
-          }
-        )
-          .populate(
-            "assignedTo",
-            "firstName lastName email position"
-          )
-          .populate(
-            "projectId",
-            "name status"
-          )
+    // -------------------------------------------------------
+    // ADMIN
+    // -------------------------------------------------------
 
-      return res.json(
+    if (user?.role === "Admin") {
+      task.title =
+        title !== undefined
+          ? title.trim()
+          : task.title
+
+      task.description =
+        description !== undefined
+          ? description.trim()
+          : task.description
+
+      task.status =
+        status !== undefined
+          ? status
+          : task.status
+
+      task.priority =
+        priority !== undefined
+          ? priority
+          : task.priority
+
+      task.assignedTo =
+        assignedTo !== undefined
+          ? assignedTo
+          : task.assignedTo
+
+      task.dueDate =
+        dueDate !== undefined
+          ? dueDate
+          : task.dueDate
+
+      const updatedTask =
+        await task.save()
+
+      await updatedTask.populate(
+        "assignedTo",
+        "firstName lastName email position"
+      )
+
+      return res.status(200).json(
         updatedTask
       )
     }
 
+    // -------------------------------------------------------
+    // EMPLOYEE
+    // -------------------------------------------------------
+
     const employee =
       await Employee.findOne({
-        email: req.user.email,
+        email: user?.email,
       })
 
     if (!employee) {
       return res.status(404).json({
         message:
-          "Employee profile not found.",
+          "Employee profile not found",
       })
     }
 
     if (
-      task.assignedTo.toString() !==
-      employee._id.toString()
+      String(task.assignedTo) !==
+      String(employee._id)
     ) {
       return res.status(403).json({
         message:
-          "You can only update your own tasks.",
+          "You are not allowed to update this task.",
       })
     }
 
-    const allowedStatuses = [
-      "Pending",
-      "In Progress",
-      "Completed",
-    ]
-
-    const requestedFields =
-      Object.keys(req.body)
-
-    const onlyStatus =
-      requestedFields.length === 1 &&
-      requestedFields[0] === "status"
-
-    if (!onlyStatus) {
-      return res.status(403).json({
-        message:
-          "Employees can only update task status.",
-      })
+    // Employee can only update status
+    if (status !== undefined) {
+      task.status = status
     }
-
-    if (
-      !allowedStatuses.includes(
-        req.body.status
-      )
-    ) {
-      return res.status(400).json({
-        message:
-          "Invalid task status.",
-      })
-    }
-
-    task.status =
-      req.body.status
-
-    await task.save()
 
     const updatedTask =
-      await Task.findById(
-        task._id
-      )
-        .populate(
-          "assignedTo",
-          "firstName lastName email position"
-        )
-        .populate(
-          "projectId",
-          "name status"
-        )
+      await task.save()
 
-    return res.json(
+    await updatedTask.populate(
+      "assignedTo",
+      "firstName lastName email position"
+    )
+
+    return res.status(200).json(
       updatedTask
     )
   } catch (error) {
@@ -246,35 +284,37 @@ const updateTask = async (req, res) => {
       error
     )
 
-    res.status(500).json({
-      message: "Failed to update task",
+    return res.status(500).json({
+      message:
+        "Failed to update task",
       error: error.message,
     })
   }
 }
 
-const deleteTask = async (req, res) => {
+// =========================================================
+// DELETE TASK
+// =========================================================
+
+async function deleteTask(req, res) {
   try {
+    const { id } = req.params
+
     const task =
-      await Task.findById(
-        req.params.id
-      )
+      await Task.findById(id)
 
     if (!task) {
       return res.status(404).json({
-        message: "Task not found.",
+        message:
+          "Task not found",
       })
     }
 
-    const deletedTask =
-      await Task.findByIdAndDelete(
-        req.params.id
-      )
+    await Task.findByIdAndDelete(id)
 
-    res.json({
+    return res.status(200).json({
       message:
-        "Task deleted successfully.",
-      task: deletedTask,
+        "Task deleted successfully",
     })
   } catch (error) {
     console.error(
@@ -282,8 +322,9 @@ const deleteTask = async (req, res) => {
       error
     )
 
-    res.status(500).json({
-      message: "Failed to delete task",
+    return res.status(500).json({
+      message:
+        "Failed to delete task",
       error: error.message,
     })
   }
