@@ -183,134 +183,20 @@
         both;
 }
 
-.nexora-logo-ring {
-    position: relative;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
+.nexora-logo-image {
     width: 108px;
     height: 108px;
+    object-fit: contain;
 
-    border: 1px solid rgba(255, 255, 255, 0.16);
-
-    border-radius: 28px;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.11),
-            rgba(255, 255, 255, 0.025)
-        );
-
-    box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.025),
-        0 18px 50px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.09);
-
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-
-    transform: rotate(45deg);
+    filter:
+        drop-shadow(0 0 18px rgba(255, 255, 255, 0.18))
+        drop-shadow(0 18px 50px rgba(0, 0, 0, 0.5));
 
     animation:
         nexora-mark-enter
         1s
         cubic-bezier(0.16, 1, 0.3, 1)
         both;
-}
-
-.nexora-logo-inner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 76px;
-    height: 76px;
-
-    border: 1px solid rgba(255, 255, 255, 0.13);
-
-    border-radius: 20px;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.12),
-            rgba(255, 255, 255, 0.035)
-        );
-
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        0 8px 30px rgba(0, 0, 0, 0.3);
-
-    transform: rotate(-45deg);
-}
-
-.nexora-logo-letter {
-    position: relative;
-
-    font-family:
-        Inter,
-        "Segoe UI",
-        Arial,
-        sans-serif;
-
-    font-size: 38px;
-    font-weight: 800;
-
-    line-height: 1;
-
-    letter-spacing: -0.07em;
-
-    color: #ffffff;
-
-    text-shadow:
-        0 0 18px rgba(255, 255, 255, 0.18),
-        0 0 40px rgba(255, 255, 255, 0.08);
-
-    animation:
-        nexora-letter-glow
-        2s
-        ease-in-out
-        infinite;
-}
-
-.nexora-logo-ring::after {
-    content: "";
-
-    position: absolute;
-
-    top: -1px;
-    left: -1px;
-
-    width: 45%;
-    height: 2px;
-
-    border-radius: 999px;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.75),
-            transparent
-        );
-
-    filter: blur(0.5px);
-
-    opacity: 0;
-
-    transform:
-        translateX(-20px)
-        rotate(-45deg);
-
-    animation:
-        nexora-shimmer
-        2.1s
-        ease-in-out
-        0.55s
-        infinite;
 }
 
 
@@ -486,7 +372,6 @@
         opacity: 0;
 
         transform:
-            rotate(45deg)
             scale(0.72);
     }
 
@@ -494,7 +379,6 @@
         opacity: 1;
 
         transform:
-            rotate(45deg)
             scale(1.04);
     }
 
@@ -502,25 +386,7 @@
         opacity: 1;
 
         transform:
-            rotate(45deg)
             scale(1);
-    }
-}
-
-@keyframes nexora-letter-glow {
-    0%,
-    100% {
-        opacity: 0.82;
-
-        transform:
-            scale(1);
-    }
-
-    50% {
-        opacity: 1;
-
-        transform:
-            scale(1.04);
     }
 }
 
@@ -557,29 +423,6 @@
 
     100% {
         background-position: 0% 50%;
-    }
-}
-
-@keyframes nexora-shimmer {
-    0% {
-        opacity: 0;
-
-        transform:
-            translateX(-35px)
-            rotate(-45deg);
-    }
-
-    25% {
-        opacity: 0.85;
-    }
-
-    55%,
-    100% {
-        opacity: 0;
-
-        transform:
-            translateX(170px)
-            rotate(-45deg);
     }
 }
 
@@ -682,22 +525,9 @@
         transform: translateY(-3%);
     }
 
-    .nexora-logo-ring {
+    .nexora-logo-image {
         width: 94px;
         height: 94px;
-
-        border-radius: 25px;
-    }
-
-    .nexora-logo-inner {
-        width: 67px;
-        height: 67px;
-
-        border-radius: 18px;
-    }
-
-    .nexora-logo-letter {
-        font-size: 33px;
     }
 
     .nexora-logo-word {
@@ -727,22 +557,9 @@
         padding: 0 24px;
     }
 
-    .nexora-logo-ring {
+    .nexora-logo-image {
         width: 82px;
         height: 82px;
-
-        border-radius: 22px;
-    }
-
-    .nexora-logo-inner {
-        width: 59px;
-        height: 59px;
-
-        border-radius: 16px;
-    }
-
-    .nexora-logo-letter {
-        font-size: 29px;
     }
 
     .nexora-logo-word {
@@ -781,13 +598,11 @@
     .nexora-loading-screen,
     .nexora-loading-content,
     .nexora-logo-loader,
-    .nexora-logo-ring,
-    .nexora-logo-letter,
+    .nexora-logo-image,
     .nexora-logo-word,
     .nexora-loading-dots,
     .nexora-loading-dots span,
-    .nexora-loading-glow,
-    .nexora-logo-ring::after {
+    .nexora-loading-glow {
         animation: none !important;
     }
 
@@ -799,9 +614,5 @@
         opacity: 1;
 
         transform: none;
-    }
-
-    .nexora-logo-ring {
-        transform: rotate(45deg);
     }
 }

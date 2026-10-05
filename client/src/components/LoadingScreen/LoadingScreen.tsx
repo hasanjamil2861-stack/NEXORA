@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react"
 
 export default function LoadingScreen() {
-    const [isVisible, setIsVisible] =
-        useState(true)
+    const [isVisible, setIsVisible] = useState(true)
 
     useEffect(() => {
-     const timer = window.setTimeout(() => {
-    setIsVisible(false)
-}, 5500)
+        const timer = window.setTimeout(() => {
+            setIsVisible(false)
+        }, 6000)
 
         return () => {
             window.clearTimeout(timer)
@@ -29,13 +28,11 @@ export default function LoadingScreen() {
 
                 <div className="nexora-logo-loader">
 
-                    <div className="nexora-logo-ring">
-                        <div className="nexora-logo-inner">
-                            <span className="nexora-logo-letter">
-                                N
-                            </span>
-                        </div>
-                    </div>
+                    <img 
+                        src="/logo.png" 
+                        alt="Nexora Logo" 
+                        className="nexora-logo-image" 
+                    />
 
                     <div className="nexora-logo-word">
                         NEXORA
