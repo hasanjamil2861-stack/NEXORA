@@ -21,8 +21,7 @@ export default function AttendanceCard({
 }: AttendanceCardProps) {
   const { user } = useAuth()
 
-  const isAdmin =
-    user?.role === "Admin"
+  const isAdmin = user?.role === "Admin"
 
   return (
     <article className="attendance-card">
@@ -52,7 +51,9 @@ export default function AttendanceCard({
         </div>
 
         <div>
-          <strong>Check In</strong>
+          <strong>
+            Check In
+          </strong>
 
           <span>
             {attendance.checkIn || "-"}
@@ -60,7 +61,9 @@ export default function AttendanceCard({
         </div>
 
         <div>
-          <strong>Check Out</strong>
+          <strong>
+            Check Out
+          </strong>
 
           <span>
             {attendance.checkOut || "-"}
@@ -71,9 +74,7 @@ export default function AttendanceCard({
       <div className="attendance-card-actions">
         <button
           type="button"
-          onClick={() =>
-            onEdit(attendance)
-          }
+          onClick={() => onEdit(attendance)}
         >
           <Pencil size={15} />
           Edit

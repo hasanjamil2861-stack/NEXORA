@@ -4,6 +4,7 @@ const Attendance =
 const Employee =
   require("../models/Employee")
 
+// Get attendance records
 const getAttendance = async (
   req,
   res
@@ -16,10 +17,15 @@ const getAttendance = async (
             "employeeId",
             "firstName lastName email position"
           )
+          .sort({
+            date: -1,
+            createdAt: -1,
+          })
 
       return res.json(attendance)
     }
 
+    // Employee can only access their own employee profile
     const employee =
       await Employee.findOne({
         email:
@@ -39,10 +45,15 @@ const getAttendance = async (
       await Attendance.find({
         employeeId:
           employee._id,
-      }).populate(
-        "employeeId",
-        "firstName lastName email position"
-      )
+      })
+        .populate(
+          "employeeId",
+          "firstName lastName email position"
+        )
+        .sort({
+          date: -1,
+          createdAt: -1,
+        })
 
     return res.json(attendance)
   } catch (error) {
@@ -59,6 +70,7 @@ const getAttendance = async (
   }
 }
 
+// Create attendance record
 const postAttendance = async (
   req,
   res
@@ -74,6 +86,7 @@ const postAttendance = async (
 
     let finalEmployee = null
 
+    // Employee identity comes from the authenticated user
     if (req.user.role === "Employee") {
       finalEmployee =
         await Employee.findOne({
@@ -89,7 +102,10 @@ const postAttendance = async (
             "Employee profile not found.",
         })
       }
-    } else {
+    }
+
+    // Admin chooses which employee the record belongs to
+    if (req.user.role === "Admin") {
       if (!employeeId) {
         return res.status(400).json({
           message:
@@ -124,13 +140,15 @@ const postAttendance = async (
       })
     }
 
+    const employeeName =
+      `${finalEmployee.firstName} ${finalEmployee.lastName}`
+
     const newAttendance =
       new Attendance({
         employeeId:
           finalEmployee._id,
 
-        employeeName:
-          `${finalEmployee.firstName} ${finalEmployee.lastName}`,
+        employeeName,
 
         date,
 
@@ -162,6 +180,7 @@ const postAttendance = async (
   }
 }
 
+// Update attendance record
 const updateAttendance = async (
   req,
   res
@@ -179,6 +198,7 @@ const updateAttendance = async (
       })
     }
 
+    // Employee can only edit their own record
     if (req.user.role === "Employee") {
       const employee =
         await Employee.findOne({
@@ -225,6 +245,9 @@ const updateAttendance = async (
     attendance.status =
       status ?? attendance.status
 
+    // Do not allow employeeId or employeeName
+    // to be changed from the frontend.
+
     await attendance.save()
 
     return res.json(
@@ -244,6 +267,8 @@ const updateAttendance = async (
   }
 }
 
+// Delete attendance record
+// Admin only because the route uses adminOnly middleware
 const deleteAttendance = async (
   req,
   res
@@ -264,6 +289,7 @@ const deleteAttendance = async (
     return res.json({
       message:
         "Attendance record deleted successfully.",
+
       attendance:
         deletedAttendance,
     })

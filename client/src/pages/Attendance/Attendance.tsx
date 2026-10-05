@@ -15,6 +15,7 @@ import {
   Activity,
   Plus,
   Pencil,
+  UserRound,
 } from "lucide-react"
 
 import AttendanceCard from "../../components/AttendanceCard/AttendanceCard"
@@ -35,6 +36,7 @@ import type { Attendance } from "../../types/Attendance"
 
 type AttendanceApiRecord = {
   _id: string
+
   employeeId:
     | string
     | {
@@ -42,10 +44,12 @@ type AttendanceApiRecord = {
         firstName?: string
         lastName?: string
       }
+
   employeeName?: string
   date?: string
   checkIn?: string
   checkOut?: string
+
   status?:
     | "Present"
     | "Absent"
@@ -139,16 +143,22 @@ export default function Attendance() {
 
           return {
             id: String(record._id),
+
             employeeId:
               employeeId ?? "",
+
             employeeName:
               record.employeeName ?? "",
+
             date:
               record.date ?? "",
+
             checkIn:
               record.checkIn ?? "",
+
             checkOut:
               record.checkOut ?? "",
+
             status:
               record.status ?? "Present",
           }
@@ -226,11 +236,16 @@ export default function Attendance() {
     setFormData({
       employeeId:
         attendance.employeeId,
-      date: attendance.date,
+
+      date:
+        attendance.date,
+
       checkIn:
         attendance.checkIn,
+
       checkOut:
         attendance.checkOut,
+
       status:
         attendance.status,
     })
@@ -248,6 +263,7 @@ export default function Attendance() {
         "Date is required",
         "error"
       )
+
       return
     }
 
@@ -260,20 +276,26 @@ export default function Attendance() {
         "Employee ID is required",
         "error"
       )
+
       return
     }
 
     try {
+      // UPDATE
       if (editingAttendance) {
         const updated =
           (await updateAttendance(
             editingAttendance.id,
             {
-              date: formData.date,
+              date:
+                formData.date,
+
               checkIn:
                 formData.checkIn,
+
               checkOut:
                 formData.checkOut,
+
               status:
                 formData.status,
             }
@@ -293,21 +315,27 @@ export default function Attendance() {
                 editingAttendance.id
                   ? {
                       ...item,
+
                       employeeId:
                         updatedEmployeeId ??
                         item.employeeId,
+
                       employeeName:
                         updated.employeeName ??
                         item.employeeName,
+
                       date:
                         updated.date ??
                         formData.date,
+
                       checkIn:
                         updated.checkIn ??
                         formData.checkIn,
+
                       checkOut:
                         updated.checkOut ??
                         formData.checkOut,
+
                       status:
                         updated.status ??
                         formData.status,
@@ -326,17 +354,27 @@ export default function Attendance() {
         return
       }
 
+      // CREATE
       const created =
         (await createAttendance({
-          employeeId:
-            isAdmin
-              ? formData.employeeId
-              : undefined,
-          date: formData.date,
+          // Only Admin sends employeeId.
+          // Employee identity is resolved by backend.
+          ...(isAdmin
+            ? {
+                employeeId:
+                  formData.employeeId,
+              }
+            : {}),
+
+          date:
+            formData.date,
+
           checkIn:
             formData.checkIn,
+
           checkOut:
             formData.checkOut,
+
           status:
             formData.status,
         })) as AttendanceApiRecord
@@ -348,20 +386,29 @@ export default function Attendance() {
           : created.employeeId?._id
 
       const newRecord: Attendance = {
-        id: String(created._id),
+        id:
+          String(created._id),
+
         employeeId:
           createdEmployeeId ?? "",
+
         employeeName:
-          created.employeeName ?? "",
+          created.employeeName ??
+          user?.name ??
+          "",
+
         date:
           created.date ??
           formData.date,
+
         checkIn:
           created.checkIn ??
           formData.checkIn,
+
         checkOut:
           created.checkOut ??
           formData.checkOut,
+
         status:
           created.status ??
           formData.status,
@@ -427,16 +474,24 @@ export default function Attendance() {
         string,
         unknown
       > = {
-        id: attendanceRecord.id,
+        id:
+          attendanceRecord.id,
+
         employeeId:
           attendanceRecord.employeeId,
+
         employeeName:
           attendanceRecord.employeeName,
-        date: attendanceRecord.date,
+
+        date:
+          attendanceRecord.date,
+
         checkIn:
           attendanceRecord.checkIn,
+
         checkOut:
           attendanceRecord.checkOut,
+
         status:
           attendanceRecord.status,
       }
@@ -598,7 +653,9 @@ export default function Attendance() {
                   {presentCount}
                 </strong>
 
-                <span>Present</span>
+                <span>
+                  Present
+                </span>
               </div>
             </div>
 
@@ -614,7 +671,9 @@ export default function Attendance() {
                   {lateCount}
                 </strong>
 
-                <span>Late</span>
+                <span>
+                  Late
+                </span>
               </div>
             </div>
           </div>
@@ -636,7 +695,9 @@ export default function Attendance() {
           </div>
 
           <div>
-            <span>Total Records</span>
+            <span>
+              Total Records
+            </span>
 
             <strong>
               {totalAttendance}
@@ -702,7 +763,9 @@ export default function Attendance() {
               {lateCount}
             </strong>
 
-            <small>Late arrivals</small>
+            <small>
+              Late arrivals
+            </small>
           </div>
         </article>
       </section>
@@ -719,7 +782,9 @@ export default function Attendance() {
                 WORKFORCE OVERVIEW
               </span>
 
-              <h2>Attendance Rate</h2>
+              <h2>
+                Attendance Rate
+              </h2>
             </div>
           </div>
 
@@ -897,6 +962,7 @@ export default function Attendance() {
           </div>
 
           <form onSubmit={handleSubmit}>
+            {/* Employee identity */}
             {isAdmin &&
               !editingAttendance && (
                 <div className="attendance-filter-control">
@@ -925,6 +991,50 @@ export default function Attendance() {
                 </div>
               )}
 
+            {/* Employee sees their authenticated name */}
+            {!isAdmin && (
+              <div className="attendance-filter-control">
+                <label htmlFor="attendance-employee-name">
+                  Employee
+                </label>
+
+                <div
+                  style={{
+                    position:
+                      "relative",
+                  }}
+                >
+                  <UserRound
+                    size={16}
+                    style={{
+                      position:
+                        "absolute",
+                      left: "12px",
+                      top: "50%",
+                      transform:
+                        "translateY(-50%)",
+                      pointerEvents:
+                        "none",
+                      opacity: 0.6,
+                    }}
+                  />
+
+                  <input
+                    id="attendance-employee-name"
+                    type="text"
+                    value={
+                      user?.name ?? ""
+                    }
+                    readOnly
+                    style={{
+                      paddingLeft:
+                        "38px",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="attendance-filter-control">
               <label htmlFor="attendance-form-date">
                 Date
@@ -934,7 +1044,9 @@ export default function Attendance() {
                 id="attendance-form-date"
                 type="date"
                 required
-                value={formData.date}
+                value={
+                  formData.date
+                }
                 onChange={(e) =>
                   setFormData(
                     (current) => ({
@@ -955,7 +1067,9 @@ export default function Attendance() {
               <input
                 id="attendance-check-in"
                 type="time"
-                value={formData.checkIn}
+                value={
+                  formData.checkIn
+                }
                 onChange={(e) =>
                   setFormData(
                     (current) => ({
@@ -976,7 +1090,9 @@ export default function Attendance() {
               <input
                 id="attendance-check-out"
                 type="time"
-                value={formData.checkOut}
+                value={
+                  formData.checkOut
+                }
                 onChange={(e) =>
                   setFormData(
                     (current) => ({
@@ -996,7 +1112,9 @@ export default function Attendance() {
 
               <select
                 id="attendance-form-status"
-                value={formData.status}
+                value={
+                  formData.status
+                }
                 onChange={(e) =>
                   setFormData(
                     (current) => ({
@@ -1071,17 +1189,17 @@ export default function Attendance() {
       </div>
 
       <div className="attendance-grid">
-        {filteredAttendance.length > 0 ? (
+        {filteredAttendance.length >
+        0 ? (
           filteredAttendance.map(
             (record) => (
               <AttendanceCard
-                key={record.id}
-                attendance={record}
-                onDelete={
-                  handleDeleteAttendance
-                }
-                onEdit={handleEdit}
-              />
+  key={record.id}
+  attendance={record}
+  onDelete={handleDeleteAttendance}
+  onEdit={handleEdit}
+/>
+              
             )
           )
         ) : (
