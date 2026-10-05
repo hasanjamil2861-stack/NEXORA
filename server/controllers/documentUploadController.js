@@ -62,6 +62,7 @@ const uploadDocument =
       const {
         name,
         category,
+        employeeId,
         projectId,
         taskId,
       } = req.body
@@ -92,13 +93,14 @@ const uploadDocument =
         })
       }
 
-      let employee = null
+      let finalEmployeeId = null
 
+      // Employee uploads
       if (
         req.user.role ===
         "Employee"
       ) {
-        employee =
+        const employee =
           await Employee.findOne({
             email:
               req.user.email
@@ -112,6 +114,9 @@ const uploadDocument =
               "Employee profile not found.",
           })
         }
+
+        finalEmployeeId =
+          employee._id
 
         if (taskId) {
           const task =
@@ -166,6 +171,57 @@ const uploadDocument =
         }
       }
 
+      // Admin uploads
+      if (
+        req.user.role ===
+        "Admin"
+      ) {
+        if (employeeId) {
+          const employee =
+            await Employee.findById(
+              employeeId
+            )
+
+          if (!employee) {
+            return res.status(404).json({
+              message:
+                "Employee not found.",
+            })
+          }
+
+          finalEmployeeId =
+            employee._id
+        }
+
+        if (taskId) {
+          const task =
+            await Task.findById(
+              taskId
+            )
+
+          if (!task) {
+            return res.status(404).json({
+              message:
+                "Task not found.",
+            })
+          }
+        }
+
+        if (projectId) {
+          const project =
+            await Project.findById(
+              projectId
+            )
+
+          if (!project) {
+            return res.status(404).json({
+              message:
+                "Project not found.",
+            })
+          }
+        }
+      }
+
       const newDocument =
         new Document({
           name:
@@ -177,10 +233,7 @@ const uploadDocument =
           category,
 
           employeeId:
-            req.user.role ===
-            "Employee"
-              ? employee._id
-              : null,
+            finalEmployeeId,
 
           projectId:
             projectId || null,
@@ -275,6 +328,8 @@ const getDocumentFile =
         })
       }
 
+      // Employees can only view
+      // documents they have access to
       if (
         req.user.role ===
         "Employee"
