@@ -37,7 +37,7 @@ type EmployeeApiRecord = {
     email?: string
     phone?: string
     position?: string
-    departmentId?: string
+    departmentId?: string | number
     salary?: number
     hireDate?: string
     status?: Employee["status"]
@@ -65,17 +65,25 @@ function formatEmployee(
         email: employee.email ?? "",
         phone: employee.phone ?? "",
         position: employee.position ?? "",
-        departmentId: employee.departmentId ?? "",
+        departmentId:
+            employee.departmentId !==
+            undefined
+                ? String(
+                      employee.departmentId
+                  )
+                : "",
         salary: employee.salary ?? 0,
         hireDate: employee.hireDate ?? "",
-        status: employee.status ?? "Active",
+        status:
+            employee.status ?? "Active",
     }
 }
 
 export default function Employees() {
     const { user } = useAuth()
 
-    const isAdmin = user?.role === "Admin"
+    const isAdmin =
+        user?.role === "Admin"
 
     const [showForm, setShowForm] =
         useState(false)
@@ -95,6 +103,9 @@ export default function Employees() {
     const [position, setPosition] =
         useState("")
 
+    const [departmentId, setDepartmentId] =
+        useState("")
+
     const [salary, setSalary] =
         useState("")
 
@@ -102,7 +113,9 @@ export default function Employees() {
         useState("")
 
     const [status, setStatus] =
-        useState<Employee["status"]>("Active")
+        useState<Employee["status"]>(
+            "Active"
+        )
 
     const [employeeList, setEmployeeList] =
         useState<Employee[]>([])
@@ -115,17 +128,23 @@ export default function Employees() {
             "All" | Employee["status"]
         >("All")
 
-    const [departmentFilter, setDepartmentFilter] =
-        useState<string>("All")
+    const [
+        departmentFilter,
+        setDepartmentFilter,
+    ] = useState<string>("All")
 
     const [sortBy, setSortBy] =
         useState("None")
 
-    const [editingEmployee, setEditingEmployee] =
-        useState<string | null>(null)
+    const [
+        editingEmployee,
+        setEditingEmployee,
+    ] = useState<string | null>(null)
 
-    const [employeeToDelete, setEmployeeToDelete] =
-        useState<string | null>(null)
+    const [
+        employeeToDelete,
+        setEmployeeToDelete,
+    ] = useState<string | null>(null)
 
     const [formError, setFormError] =
         useState("")
@@ -144,21 +163,25 @@ export default function Employees() {
             return
         }
 
-        const frame = requestAnimationFrame(() => {
-            const newEmployee =
-                document.getElementById(
-                    `employee-${newEmployeeId}`
-                )
+        const frame =
+            requestAnimationFrame(() => {
+                const newEmployee =
+                    document.getElementById(
+                        `employee-${newEmployeeId}`
+                    )
 
-            if (newEmployee) {
-                newEmployee.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center",
-                })
-            }
+                if (newEmployee) {
+                    newEmployee.scrollIntoView(
+                        {
+                            behavior:
+                                "smooth",
+                            block: "center",
+                        }
+                    )
+                }
 
-            setNewEmployeeId(null)
-        })
+                setNewEmployeeId(null)
+            })
 
         return () =>
             cancelAnimationFrame(frame)
@@ -173,7 +196,12 @@ export default function Employees() {
                 setEmployeeList(
                     data.map(formatEmployee)
                 )
-            } catch {
+            } catch (error) {
+                console.error(
+                    "Failed to fetch employees:",
+                    error
+                )
+
                 setEmployeeList([])
             }
         }
@@ -187,20 +215,26 @@ export default function Employees() {
     const activeEmployees =
         employeeList.filter(
             (employee) =>
-                employee.status === "Active"
+                employee.status ===
+                "Active"
         ).length
 
     const inactiveEmployees =
         employeeList.filter(
             (employee) =>
-                employee.status === "Inactive"
+                employee.status ===
+                "Inactive"
         ).length
 
     const averageSalary =
         totalEmployees > 0
             ? employeeList.reduce(
-                  (total, employee) =>
-                      total + employee.salary,
+                  (
+                      total,
+                      employee
+                  ) =>
+                      total +
+                      employee.salary,
                   0
               ) / totalEmployees
             : 0
@@ -220,6 +254,7 @@ export default function Employees() {
         setEmail("")
         setPhone("")
         setPosition("")
+        setDepartmentId("")
         setSalary("")
         setHireDate("")
         setStatus("Active")
@@ -238,10 +273,12 @@ export default function Employees() {
         setFormError("")
 
         requestAnimationFrame(() => {
-            employeeFormRef.current?.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-            })
+            employeeFormRef.current?.scrollIntoView(
+                {
+                    behavior: "smooth",
+                    block: "start",
+                }
+            )
         })
     }
 
@@ -281,7 +318,10 @@ export default function Employees() {
             return false
         }
 
-        if (!salary) {
+        if (
+            salary === "" ||
+            Number.isNaN(Number(salary))
+        ) {
             setFormError(
                 "Salary is required"
             )
@@ -374,7 +414,12 @@ export default function Employees() {
             showToast(
                 "Employee deleted successfully"
             )
-        } catch {
+        } catch (error) {
+            console.error(
+                "Delete employee error:",
+                error
+            )
+
             showToast(
                 "Failed to delete employee",
                 "error"
@@ -400,35 +445,42 @@ export default function Employees() {
         }
 
         setFirstName(
-            employee.firstName
+            employee.firstName ?? ""
         )
 
         setLastName(
-            employee.lastName
+            employee.lastName ?? ""
         )
 
         setEmail(
-            employee.email
+            employee.email ?? ""
         )
 
         setPhone(
-            employee.phone
+            employee.phone ?? ""
         )
 
         setPosition(
-            employee.position
+            employee.position ?? ""
+        )
+
+        // Keep the employee's existing department
+        setDepartmentId(
+            employee.departmentId ?? ""
         )
 
         setSalary(
-            String(employee.salary)
+            String(
+                employee.salary ?? 0
+            )
         )
 
         setHireDate(
-            employee.hireDate
+            employee.hireDate ?? ""
         )
 
         setStatus(
-            employee.status
+            employee.status ?? "Active"
         )
 
         setEditingEmployee(
@@ -439,10 +491,12 @@ export default function Employees() {
         setFormError("")
 
         requestAnimationFrame(() => {
-            employeeFormRef.current?.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-            })
+            employeeFormRef.current?.scrollIntoView(
+                {
+                    behavior: "smooth",
+                    block: "start",
+                }
+            )
         })
     }
 
@@ -455,17 +509,33 @@ export default function Employees() {
             return
         }
 
-        const employeeData: EmployeeFormData = {
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
-            email: email.trim(),
-            phone: phone.trim(),
-            position: position.trim(),
-            departmentId: "1",
-            salary: Number(salary),
-            hireDate,
-            status,
-        }
+        const employeeData: EmployeeFormData =
+            {
+                firstName:
+                    firstName.trim(),
+
+                lastName:
+                    lastName.trim(),
+
+                email:
+                    email.trim().toLowerCase(),
+
+                phone:
+                    phone.trim(),
+
+                position:
+                    position.trim(),
+
+                departmentId:
+                    departmentId.trim(),
+
+                salary:
+                    Number(salary),
+
+                hireDate,
+
+                status,
+            }
 
         if (editingEmployee !== null) {
             try {
@@ -479,7 +549,9 @@ export default function Employees() {
                     formatEmployee(data)
 
                 setEmployeeList(
-                    (currentEmployees) =>
+                    (
+                        currentEmployees
+                    ) =>
                         currentEmployees.map(
                             (employee) =>
                                 employee.id ===
@@ -495,6 +567,11 @@ export default function Employees() {
 
                 resetForm()
             } catch (error) {
+                console.error(
+                    "Update employee error:",
+                    error
+                )
+
                 setFormError(
                     error instanceof Error
                         ? error.message
@@ -531,6 +608,11 @@ export default function Employees() {
 
             resetForm()
         } catch (error) {
+            console.error(
+                "Create employee error:",
+                error
+            )
+
             setFormError(
                 error instanceof Error
                     ? error.message
@@ -550,24 +632,34 @@ export default function Employees() {
                 const matchesSearch =
                     employee.firstName
                         .toLowerCase()
-                        .includes(searchValue) ||
+                        .includes(
+                            searchValue
+                        ) ||
                     employee.lastName
                         .toLowerCase()
-                        .includes(searchValue) ||
+                        .includes(
+                            searchValue
+                        ) ||
                     employee.email
                         .toLowerCase()
-                        .includes(searchValue) ||
+                        .includes(
+                            searchValue
+                        ) ||
                     employee.position
                         .toLowerCase()
-                        .includes(searchValue)
+                        .includes(
+                            searchValue
+                        )
 
                 const matchesStatus =
-                    statusFilter === "All" ||
+                    statusFilter ===
+                        "All" ||
                     employee.status ===
                         statusFilter
 
                 const matchesDepartment =
-                    departmentFilter === "All" ||
+                    departmentFilter ===
+                        "All" ||
                     employee.departmentId ===
                         departmentFilter
 
@@ -589,7 +681,10 @@ export default function Employees() {
         }
 
         if (sortBy === "Salary") {
-            return b.salary - a.salary
+            return (
+                b.salary -
+                a.salary
+            )
         }
 
         if (sortBy === "Hire Date") {
@@ -610,12 +705,17 @@ export default function Employees() {
         <main className="employees-page">
             <header className="employees-header">
                 <div>
-                    <h1>Employees</h1>
+                    <h1>
+                        Employees
+                    </h1>
 
                     <p>
-                        Manage your workforce,
-                        employee information,
-                        and employment status.
+                        Manage your
+                        workforce,
+                        employee
+                        information,
+                        and employment
+                        status.
                     </p>
                 </div>
 
@@ -624,7 +724,9 @@ export default function Employees() {
                         type="button"
                         className="add-employee-btn"
                         onClick={() => {
-                            if (showForm) {
+                            if (
+                                showForm
+                            ) {
                                 resetForm()
                             } else {
                                 openEmployeeForm()
@@ -646,36 +748,48 @@ export default function Employees() {
 
                     <div className="employee-stat-content">
                         <span>
-                            Total Employees
+                            Total
+                            Employees
                         </span>
 
                         <strong>
-                            {totalEmployees}
+                            {
+                                totalEmployees
+                            }
                         </strong>
 
                         <small>
-                            Current workforce
+                            Current
+                            workforce
                         </small>
                     </div>
                 </div>
 
                 <div className="employee-stat-card">
                     <div className="employee-stat-icon active">
-                        <UserCheck size={20} />
+                        <UserCheck
+                            size={20}
+                        />
                     </div>
 
                     <div className="employee-stat-content">
                         <span>
-                            Active Employees
+                            Active
+                            Employees
                         </span>
 
                         <strong>
-                            {activeEmployees}
+                            {
+                                activeEmployees
+                            }
                         </strong>
 
                         <small>
-                            {activePercentage}%
-                            of workforce
+                            {
+                                activePercentage
+                            }
+                            % of
+                            workforce
                         </small>
                     </div>
                 </div>
@@ -687,27 +801,34 @@ export default function Employees() {
 
                     <div className="employee-stat-content">
                         <span>
-                            Inactive Employees
+                            Inactive
+                            Employees
                         </span>
 
                         <strong>
-                            {inactiveEmployees}
+                            {
+                                inactiveEmployees
+                            }
                         </strong>
 
                         <small>
-                            Currently inactive
+                            Currently
+                            inactive
                         </small>
                     </div>
                 </div>
 
                 <div className="employee-stat-card">
                     <div className="employee-stat-icon salary">
-                        <WalletCards size={20} />
+                        <WalletCards
+                            size={20}
+                        />
                     </div>
 
                     <div className="employee-stat-content">
                         <span>
-                            Average Salary
+                            Average
+                            Salary
                         </span>
 
                         <strong>
@@ -722,7 +843,8 @@ export default function Employees() {
                         </strong>
 
                         <small>
-                            Average per employee
+                            Average per
+                            employee
                         </small>
                     </div>
                 </div>
@@ -749,7 +871,9 @@ export default function Employees() {
 
                 <div className="employee-filter">
                     <select
-                        value={statusFilter}
+                        value={
+                            statusFilter
+                        }
                         onChange={(e) =>
                             setStatusFilter(
                                 e.target.value as
@@ -774,7 +898,9 @@ export default function Employees() {
 
                 <div className="employee-filter">
                     <select
-                        value={departmentFilter}
+                        value={
+                            departmentFilter
+                        }
                         onChange={(e) =>
                             setDepartmentFilter(
                                 e.target.value
@@ -786,7 +912,9 @@ export default function Employees() {
                         </option>
 
                         {departments.map(
-                            (department) => (
+                            (
+                                department
+                            ) => (
                                 <option
                                     key={
                                         department.id
@@ -840,250 +968,323 @@ export default function Employees() {
                             sortedEmployees.length
                         }
                     </strong>{" "}
-                    {
-                        sortedEmployees.length ===
-                        1
-                            ? "employee"
-                            : "employees"
-                    }
+                    {sortedEmployees.length ===
+                    1
+                        ? "employee"
+                        : "employees"}
                 </span>
             </div>
 
-            {showForm && isAdmin && (
-                <section
-                    ref={employeeFormRef}
-                    className="employee-form"
-                >
-                    <div className="employee-form-header">
-                        <div>
-                            <h2>
+            {showForm &&
+                isAdmin && (
+                    <section
+                        ref={
+                            employeeFormRef
+                        }
+                        className="employee-form"
+                    >
+                        <div className="employee-form-header">
+                            <div>
+                                <h2>
+                                    {
+                                        editingEmployee !==
+                                        null
+                                            ? "Edit Employee"
+                                            : "Add New Employee"
+                                    }
+                                </h2>
+
+                                <p>
+                                    Enter the
+                                    employee
+                                    information
+                                    below.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="form-error-container">
+                            {formError && (
+                                <p className="form-error">
+                                    {
+                                        formError
+                                    }
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="employee-form-grid">
+                            <div className="employee-form-field">
+                                <label htmlFor="employee-first-name">
+                                    First Name
+                                </label>
+
+                                <input
+                                    id="employee-first-name"
+                                    type="text"
+                                    placeholder="Enter first name"
+                                    value={
+                                        firstName
+                                    }
+                                    onChange={(
+                                        e
+                                    ) => {
+                                        setFirstName(
+                                            e
+                                                .target
+                                                .value
+                                        )
+                                        setFormError(
+                                            ""
+                                        )
+                                    }}
+                                    required
+                                />
+                            </div>
+
+                            <div className="employee-form-field">
+                                <label htmlFor="employee-last-name">
+                                    Last Name
+                                </label>
+
+                                <input
+                                    id="employee-last-name"
+                                    type="text"
+                                    placeholder="Enter last name"
+                                    value={
+                                        lastName
+                                    }
+                                    onChange={(
+                                        e
+                                    ) => {
+                                        setLastName(
+                                            e
+                                                .target
+                                                .value
+                                        )
+                                        setFormError(
+                                            ""
+                                        )
+                                    }}
+                                    required
+                                />
+                            </div>
+
+                            <div className="employee-form-field">
+                                <label htmlFor="employee-email">
+                                    Email
+                                </label>
+
+                                <input
+                                    id="employee-email"
+                                    type="email"
+                                    placeholder="employee@example.com"
+                                    value={
+                                        email
+                                    }
+                                    onChange={(
+                                        e
+                                    ) => {
+                                        setEmail(
+                                            e
+                                                .target
+                                                .value
+                                        )
+                                        setFormError(
+                                            ""
+                                        )
+                                    }}
+                                    required
+                                />
+                            </div>
+
+                            <div className="employee-form-field">
+                                <label htmlFor="employee-phone">
+                                    Phone
+                                </label>
+
+                                <input
+                                    id="employee-phone"
+                                    type="tel"
+                                    placeholder="Enter phone number"
+                                    value={
+                                        phone
+                                    }
+                                    onChange={(
+                                        e
+                                    ) => {
+                                        setPhone(
+                                            e
+                                                .target
+                                                .value
+                                        )
+                                        setFormError(
+                                            ""
+                                        )
+                                    }}
+                                    required
+                                />
+                            </div>
+
+                            <div className="employee-form-field">
+                                <label htmlFor="employee-position">
+                                    Position
+                                </label>
+
+                                <input
+                                    id="employee-position"
+                                    type="text"
+                                    placeholder="e.g. Software Developer"
+                                    value={
+                                        position
+                                    }
+                                    onChange={(
+                                        e
+                                    ) => {
+                                        setPosition(
+                                            e
+                                                .target
+                                                .value
+                                        )
+                                        setFormError(
+                                            ""
+                                        )
+                                    }}
+                                    required
+                                />
+                            </div>
+
+                            <div className="employee-form-field">
+                                <label htmlFor="employee-salary">
+                                    Salary
+                                </label>
+
+                                <input
+                                    id="employee-salary"
+                                    type="number"
+                                    placeholder="Enter salary"
+                                    value={
+                                        salary
+                                    }
+                                    min="0"
+                                    onChange={(
+                                        e
+                                    ) => {
+                                        setSalary(
+                                            e
+                                                .target
+                                                .value
+                                        )
+                                        setFormError(
+                                            ""
+                                        )
+                                    }}
+                                    required
+                                />
+                            </div>
+
+                            <div className="employee-form-field">
+                                <label htmlFor="employee-hire-date">
+                                    Hire Date
+                                </label>
+
+                                <input
+                                    id="employee-hire-date"
+                                    type="date"
+                                    value={
+                                        hireDate
+                                    }
+                                    onChange={(
+                                        e
+                                    ) => {
+                                        setHireDate(
+                                            e
+                                                .target
+                                                .value
+                                        )
+                                        setFormError(
+                                            ""
+                                        )
+                                    }}
+                                    required
+                                />
+                            </div>
+
+                            <div className="employee-form-field">
+                                <label htmlFor="employee-status">
+                                    Status
+                                </label>
+
+                                <select
+                                    id="employee-status"
+                                    value={
+                                        status
+                                    }
+                                    onChange={(
+                                        e
+                                    ) => {
+                                        setStatus(
+                                            e
+                                                .target
+                                                .value as Employee["status"]
+                                        )
+                                        setFormError(
+                                            ""
+                                        )
+                                    }}
+                                    required
+                                >
+                                    <option value="Active">
+                                        Active
+                                    </option>
+
+                                    <option value="Inactive">
+                                        Inactive
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="employee-form-actions">
+                            <button
+                                type="button"
+                                className="create-employee-btn"
+                                onClick={
+                                    handleCreateEmployee
+                                }
+                            >
                                 {
                                     editingEmployee !==
                                     null
-                                        ? "Edit Employee"
-                                        : "Add New Employee"
+                                        ? "Update Employee"
+                                        : "Create Employee"
                                 }
-                            </h2>
+                            </button>
 
-                            <p>
-                                Enter the employee
-                                information below.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="form-error-container">
-                        {formError && (
-                            <p className="form-error">
-                                {formError}
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="employee-form-grid">
-                        <div className="employee-form-field">
-                            <label htmlFor="employee-first-name">
-                                First Name
-                            </label>
-
-                            <input
-                                id="employee-first-name"
-                                type="text"
-                                placeholder="Enter first name"
-                                value={firstName}
-                                onChange={(e) => {
-                                    setFirstName(
-                                        e.target.value
-                                    )
-                                    setFormError("")
-                                }}
-                                required
-                            />
-                        </div>
-
-                        <div className="employee-form-field">
-                            <label htmlFor="employee-last-name">
-                                Last Name
-                            </label>
-
-                            <input
-                                id="employee-last-name"
-                                type="text"
-                                placeholder="Enter last name"
-                                value={lastName}
-                                onChange={(e) => {
-                                    setLastName(
-                                        e.target.value
-                                    )
-                                    setFormError("")
-                                }}
-                                required
-                            />
-                        </div>
-
-                        <div className="employee-form-field">
-                            <label htmlFor="employee-email">
-                                Email
-                            </label>
-
-                            <input
-                                id="employee-email"
-                                type="email"
-                                placeholder="employee@example.com"
-                                value={email}
-                                onChange={(e) => {
-                                    setEmail(
-                                        e.target.value
-                                    )
-                                    setFormError("")
-                                }}
-                                required
-                            />
-                        </div>
-
-                        <div className="employee-form-field">
-                            <label htmlFor="employee-phone">
-                                Phone
-                            </label>
-
-                            <input
-                                id="employee-phone"
-                                type="tel"
-                                placeholder="Enter phone number"
-                                value={phone}
-                                onChange={(e) => {
-                                    setPhone(
-                                        e.target.value
-                                    )
-                                    setFormError("")
-                                }}
-                                required
-                            />
-                        </div>
-
-                        <div className="employee-form-field">
-                            <label htmlFor="employee-position">
-                                Position
-                            </label>
-
-                            <input
-                                id="employee-position"
-                                type="text"
-                                placeholder="e.g. Software Developer"
-                                value={position}
-                                onChange={(e) => {
-                                    setPosition(
-                                        e.target.value
-                                    )
-                                    setFormError("")
-                                }}
-                                required
-                            />
-                        </div>
-
-                        <div className="employee-form-field">
-                            <label htmlFor="employee-salary">
-                                Salary
-                            </label>
-
-                            <input
-                                id="employee-salary"
-                                type="number"
-                                placeholder="Enter salary"
-                                value={salary}
-                                min="0"
-                                onChange={(e) => {
-                                    setSalary(
-                                        e.target.value
-                                    )
-                                    setFormError("")
-                                }}
-                                required
-                            />
-                        </div>
-
-                        <div className="employee-form-field">
-                            <label htmlFor="employee-hire-date">
-                                Hire Date
-                            </label>
-
-                            <input
-                                id="employee-hire-date"
-                                type="date"
-                                value={hireDate}
-                                onChange={(e) => {
-                                    setHireDate(
-                                        e.target.value
-                                    )
-                                    setFormError("")
-                                }}
-                                required
-                            />
-                        </div>
-
-                        <div className="employee-form-field">
-                            <label htmlFor="employee-status">
-                                Status
-                            </label>
-
-                            <select
-                                id="employee-status"
-                                value={status}
-                                onChange={(e) => {
-                                    setStatus(
-                                        e.target.value as
-                                            Employee["status"]
-                                    )
-                                    setFormError("")
-                                }}
-                                required
+                            <button
+                                type="button"
+                                className="employee-cancel-btn"
+                                onClick={
+                                    resetForm
+                                }
                             >
-                                <option value="Active">
-                                    Active
-                                </option>
-
-                                <option value="Inactive">
-                                    Inactive
-                                </option>
-                            </select>
+                                Cancel
+                            </button>
                         </div>
-                    </div>
-
-                    <div className="employee-form-actions">
-                        <button
-                            type="button"
-                            className="create-employee-btn"
-                            onClick={
-                                handleCreateEmployee
-                            }
-                        >
-                            {
-                                editingEmployee !==
-                                null
-                                    ? "Update Employee"
-                                    : "Create Employee"
-                            }
-                        </button>
-
-                        <button
-                            type="button"
-                            className="employee-cancel-btn"
-                            onClick={
-                                resetForm
-                            }
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </section>
-            )}
+                    </section>
+                )}
 
             <section className="employees-grid">
-                {sortedEmployees.length > 0 ? (
+                {sortedEmployees.length >
+                0 ? (
                     sortedEmployees.map(
-                        (employee) => (
+                        (
+                            employee
+                        ) => (
                             <div
-                                key={employee.id}
+                                key={
+                                    employee.id
+                                }
                                 id={`employee-${employee.id}`}
                             >
                                 <EmployeeCard
@@ -1103,23 +1304,30 @@ export default function Employees() {
                 ) : (
                     <div className="employee-empty-state">
                         <div className="employee-empty-icon">
-                            <Search size={26} />
+                            <Search
+                                size={26}
+                            />
                         </div>
 
                         <h2>
-                            No Employees Found
+                            No Employees
+                            Found
                         </h2>
 
                         <p>
-                            No employees match your
-                            current search or filters.
+                            No employees
+                            match your
+                            current search
+                            or filters.
                         </p>
 
                         <button
                             type="button"
                             className="clear-employee-search-btn"
                             onClick={() => {
-                                setSearch("")
+                                setSearch(
+                                    ""
+                                )
                                 setStatusFilter(
                                     "All"
                                 )
@@ -1137,7 +1345,8 @@ export default function Employees() {
                 )}
             </section>
 
-            {employeeToDelete !== null &&
+            {employeeToDelete !==
+                null &&
                 isAdmin && (
                     <Modal
                         title="Delete Employee"
