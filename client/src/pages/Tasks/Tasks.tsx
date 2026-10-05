@@ -42,7 +42,6 @@ import {
 } from "../../services/api/taskApi"
 
 import { getEmployees } from "../../services/api/employeeApi"
-import { getProjects } from "../../services/api/projectApi"
 
 type TaskApiRecord = {
   _id: string
@@ -65,12 +64,6 @@ type EmployeeOption = {
   lastName: string
   email: string
   position: string
-}
-
-type ProjectOption = {
-  _id: string
-  name: string
-  status: string
 }
 
 export default function Tasks() {
@@ -109,9 +102,6 @@ export default function Tasks() {
   const [assignedTo, setAssignedTo] =
     useState("")
 
-  const [projectId, setProjectId] =
-    useState("")
-
   // =========================================================
   // TASK DATA
   // =========================================================
@@ -134,9 +124,6 @@ export default function Tasks() {
 
   const [employees, setEmployees] =
     useState<EmployeeOption[]>([])
-
-  const [projects, setProjects] =
-    useState<ProjectOption[]>([])
 
   // =========================================================
   // SEARCH / FILTER
@@ -275,7 +262,7 @@ export default function Tasks() {
   }, [showToast])
 
   // =========================================================
-  // FETCH EMPLOYEES + PROJECTS FOR ADMIN
+  // FETCH EMPLOYEES FOR ADMIN
   // =========================================================
 
   useEffect(() => {
@@ -285,20 +272,11 @@ export default function Tasks() {
 
     async function fetchFormOptions() {
       try {
-        const [
-          employeeData,
-          projectData,
-        ] = await Promise.all([
-          getEmployees(),
-          getProjects(),
-        ])
+        const employeeData =
+          await getEmployees()
 
         setEmployees(
           employeeData as EmployeeOption[]
-        )
-
-        setProjects(
-          projectData as ProjectOption[]
         )
       } catch (error) {
         console.error(
@@ -307,7 +285,7 @@ export default function Tasks() {
         )
 
         showToast(
-          "Failed to load employees or projects",
+          "Failed to load employees",
           "error"
         )
       }
@@ -398,7 +376,6 @@ export default function Tasks() {
     setPriority("Medium")
     setDueDate("")
     setAssignedTo("")
-    setProjectId("")
     setEditingTask(null)
     setFormError("")
     setShowForm(false)
@@ -471,14 +448,8 @@ export default function Tasks() {
       return "Task priority is required."
     }
 
-    // Admin must select Employee + Project
-    // on both CREATE and EDIT.
     if (isAdmin && !assignedTo) {
       return "Please assign the task to an employee."
-    }
-
-    if (isAdmin && !projectId) {
-      return "Please select a project."
     }
 
     return ""
@@ -526,16 +497,16 @@ export default function Tasks() {
           return
         }
 
-        // Employee should never reach
-        // an edit form because TaskCard
-        // hides the Edit button.
         if (!isAdmin) {
           return
         }
 
-        // ---------------------------------------------------
-        // ADMIN UPDATE
-        // ---------------------------------------------------
+        // Keep the existing projectId
+        // without showing it in the form.
+        const existingProjectId =
+          getProjectId(
+            existingTask.projectId
+          )
 
         const taskData = {
           title:
@@ -550,7 +521,8 @@ export default function Tasks() {
 
           assignedTo,
 
-          projectId,
+          projectId:
+            existingProjectId,
 
           dueDate,
         }
@@ -588,7 +560,7 @@ export default function Tasks() {
 
           projectId:
             updatedTask.projectId ??
-            projectId,
+            existingProjectId,
 
           dueDate:
             updatedTask.dueDate ??
@@ -630,8 +602,6 @@ export default function Tasks() {
 
           assignedTo,
 
-          projectId,
-
           dueDate,
         }
 
@@ -667,7 +637,7 @@ export default function Tasks() {
 
           projectId:
             createdTask.projectId ??
-            projectId,
+            "",
 
           dueDate:
             createdTask.dueDate ??
@@ -793,7 +763,6 @@ export default function Tasks() {
   function handleEditTask(
     id: string
   ) {
-    // Employees cannot edit tasks.
     if (!isAdmin) {
       return
     }
@@ -831,12 +800,6 @@ export default function Tasks() {
     setAssignedTo(
       getAssignedEmployeeId(
         task.assignedTo
-      )
-    )
-
-    setProjectId(
-      getProjectId(
-        task.projectId
       )
     )
 
@@ -1576,98 +1539,53 @@ export default function Tasks() {
 
             {/* =================================================
                 ADMIN ONLY
-                Show Employee + Project on BOTH CREATE & EDIT
+                Employee assignment only
                 ================================================= */}
 
             {isAdmin && (
-              <>
-                <div className="task-form-field">
+              <div className="task-form-field">
 
-                  <label htmlFor="task-assigned-to">
-                    <ClipboardList size={15} />
-                    Assign Employee
-                  </label>
+                <label htmlFor="task-assigned-to">
+                  <ClipboardList size={15} />
+                  Assign Employee
+                </label>
 
-                  <select
-                    id="task-assigned-to"
-                    value={assignedTo}
-                    required
-                    onChange={(e) => {
-                      setAssignedTo(
-                        e.target.value
-                      )
+                <select
+                  id="task-assigned-to"
+                  value={assignedTo}
+                  required
+                  onChange={(e) => {
+                    setAssignedTo(
+                      e.target.value
+                    )
 
-                      setFormError("")
-                    }}
-                  >
+                    setFormError("")
+                  }}
+                >
 
-                    <option value="">
-                      Select employee
-                    </option>
+                  <option value="">
+                    Select employee
+                  </option>
 
-                    {employees.map(
-                      (employee) => (
-                        <option
-                          key={
-                            employee._id
-                          }
-                          value={
-                            employee._id
-                          }
-                        >
-                          {employee.firstName}{" "}
-                          {employee.lastName}
-                        </option>
-                      )
-                    )}
+                  {employees.map(
+                    (employee) => (
+                      <option
+                        key={
+                          employee._id
+                        }
+                        value={
+                          employee._id
+                        }
+                      >
+                        {employee.firstName}{" "}
+                        {employee.lastName}
+                      </option>
+                    )
+                  )}
 
-                  </select>
+                </select>
 
-                </div>
-
-                <div className="task-form-field">
-
-                  <label htmlFor="task-project">
-                    <ClipboardList size={15} />
-                    Project
-                  </label>
-
-                  <select
-                    id="task-project"
-                    value={projectId}
-                    required
-                    onChange={(e) => {
-                      setProjectId(
-                        e.target.value
-                      )
-
-                      setFormError("")
-                    }}
-                  >
-
-                    <option value="">
-                      Select project
-                    </option>
-
-                    {projects.map(
-                      (project) => (
-                        <option
-                          key={
-                            project._id
-                          }
-                          value={
-                            project._id
-                          }
-                        >
-                          {project.name}
-                        </option>
-                      )
-                    )}
-
-                  </select>
-
-                </div>
-              </>
+              </div>
             )}
 
           </div>
