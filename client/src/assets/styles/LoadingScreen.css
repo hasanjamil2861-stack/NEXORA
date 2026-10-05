@@ -30,13 +30,19 @@
             #06080c 100%
         );
 
+    /*
+        Loading duration:
+        ~5.5 seconds visible
+        + 0.65s smooth exit
+    */
     animation:
         nexora-loading-exit
         0.65s
         ease
-        1.55s
+        5.05s
         forwards;
 }
+
 
 /* =========================================================
    Background
@@ -45,6 +51,7 @@
 .nexora-loading-background {
     position: absolute;
     inset: 0;
+
     pointer-events: none;
 }
 
@@ -131,6 +138,7 @@
         infinite;
 }
 
+
 /* =========================================================
    Main Content
    ========================================================= */
@@ -152,6 +160,7 @@
         cubic-bezier(0.22, 1, 0.36, 1)
         both;
 }
+
 
 /* =========================================================
    NEXORA Logo
@@ -304,6 +313,7 @@
         infinite;
 }
 
+
 /* =========================================================
    NEXORA Word
    ========================================================= */
@@ -371,6 +381,7 @@
         infinite;
 }
 
+
 /* =========================================================
    Loading Dots
    ========================================================= */
@@ -431,6 +442,7 @@
     animation-delay: 0.36s;
 }
 
+
 /* =========================================================
    Animations
    ========================================================= */
@@ -438,6 +450,7 @@
 @keyframes nexora-content-enter {
     from {
         opacity: 0;
+
         transform:
             translateY(12px)
             scale(0.97);
@@ -445,6 +458,7 @@
 
     to {
         opacity: 1;
+
         transform:
             translateY(-2%)
             scale(1);
@@ -454,18 +468,23 @@
 @keyframes nexora-logo-enter {
     from {
         opacity: 0;
-        transform: translateY(18px);
+
+        transform:
+            translateY(18px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+
+        transform:
+            translateY(0);
     }
 }
 
 @keyframes nexora-mark-enter {
     0% {
         opacity: 0;
+
         transform:
             rotate(45deg)
             scale(0.72);
@@ -473,6 +492,7 @@
 
     60% {
         opacity: 1;
+
         transform:
             rotate(45deg)
             scale(1.04);
@@ -480,6 +500,7 @@
 
     100% {
         opacity: 1;
+
         transform:
             rotate(45deg)
             scale(1);
@@ -490,19 +511,25 @@
     0%,
     100% {
         opacity: 0.82;
-        transform: scale(1);
+
+        transform:
+            scale(1);
     }
 
     50% {
         opacity: 1;
-        transform: scale(1.04);
+
+        transform:
+            scale(1.04);
     }
 }
 
 @keyframes nexora-word-enter {
     from {
         opacity: 0;
+
         letter-spacing: 0.3em;
+
         transform:
             translateY(10px)
             scale(0.96);
@@ -510,7 +537,9 @@
 
     to {
         opacity: 1;
+
         letter-spacing: 0.18em;
+
         transform:
             translateY(0)
             scale(1);
@@ -534,6 +563,7 @@
 @keyframes nexora-shimmer {
     0% {
         opacity: 0;
+
         transform:
             translateX(-35px)
             rotate(-45deg);
@@ -546,6 +576,7 @@
     55%,
     100% {
         opacity: 0;
+
         transform:
             translateX(170px)
             rotate(-45deg);
@@ -556,29 +587,39 @@
     0%,
     100% {
         opacity: 0.25;
-        transform: scale(0.72);
+
+        transform:
+            scale(0.72);
     }
 
     45% {
         opacity: 1;
-        transform: scale(1.2);
+
+        transform:
+            scale(1.2);
     }
 
     65% {
         opacity: 0.45;
-        transform: scale(0.9);
+
+        transform:
+            scale(0.9);
     }
 }
 
 @keyframes nexora-dots-enter {
     from {
         opacity: 0;
-        transform: translateY(7px);
+
+        transform:
+            translateY(7px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+
+        transform:
+            translateY(0);
     }
 }
 
@@ -586,6 +627,7 @@
     0%,
     100% {
         opacity: 0.08;
+
         transform:
             translate(-50%, -50%)
             scale(0.65);
@@ -593,6 +635,7 @@
 
     50% {
         opacity: 0.16;
+
         transform:
             translate(-50%, -50%)
             scale(0.85);
@@ -603,12 +646,16 @@
     0%,
     100% {
         opacity: 0.04;
-        transform: scale(0.8);
+
+        transform:
+            scale(0.8);
     }
 
     50% {
         opacity: 0.09;
-        transform: scale(1);
+
+        transform:
+            scale(1);
     }
 }
 
@@ -624,6 +671,7 @@
         pointer-events: none;
     }
 }
+
 
 /* =========================================================
    Responsive
@@ -675,6 +723,7 @@
 @media (max-width: 480px) {
     .nexora-loading-content {
         width: 100%;
+
         padding: 0 24px;
     }
 
@@ -706,6 +755,7 @@
 
     .nexora-loading-dots {
         gap: 6px;
+
         margin-top: 24px;
     }
 
@@ -721,6 +771,7 @@
         filter: blur(55px);
     }
 }
+
 
 /* =========================================================
    Reduced Motion
@@ -746,6 +797,7 @@
 
     .nexora-loading-content {
         opacity: 1;
+
         transform: none;
     }
 
