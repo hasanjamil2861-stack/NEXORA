@@ -35,25 +35,36 @@ export async function apiRequest(
   )
 
   if (!response.ok) {
-    if (
-      response.status === 401
-    ) {
+    let errorMessage = `API Error: ${response.status}`
+
+    try {
+      const errorData = await response.json()
+
+      if (
+        errorData?.message &&
+        typeof errorData.message === "string"
+      ) {
+        errorMessage = errorData.message
+      }
+    } catch {
+      // Keep the default error message
+    }
+
+    if (response.status === 401) {
       throw new Error(
-        "Unauthorized. Please login again."
+        errorMessage ||
+          "Unauthorized. Please login again."
       )
     }
 
-    if (
-      response.status === 403
-    ) {
+    if (response.status === 403) {
       throw new Error(
-        "You do not have permission to perform this action."
+        errorMessage ||
+          "You do not have permission to perform this action."
       )
     }
 
-    throw new Error(
-      `API Error: ${response.status}`
-    )
+    throw new Error(errorMessage)
   }
 
   return response.json()
