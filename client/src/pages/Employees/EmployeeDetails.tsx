@@ -11,6 +11,7 @@ import {
     UserRound,
     UsersRound,
     WalletCards,
+    X,
 } from "lucide-react"
 
 import {
@@ -64,6 +65,9 @@ export default function EmployeeDetails() {
 
     const [loading, setLoading] =
         useState(true)
+
+    const [showProfileImage, setShowProfileImage] =
+        useState(false)
 
     useEffect(() => {
         const fetchEmployee = async () => {
@@ -142,17 +146,6 @@ export default function EmployeeDetails() {
                         null
                 )
 
-                /*
-                 * userId can be:
-                 *
-                 * 1. A populated User object
-                 * 2. A MongoDB ObjectId string
-                 * 3. null / undefined
-                 *
-                 * EmployeeDetails only needs the
-                 * populated user information here.
-                 */
-
                 if (
                     foundEmployee.userId &&
                     typeof foundEmployee.userId ===
@@ -180,6 +173,36 @@ export default function EmployeeDetails() {
 
         fetchEmployee()
     }, [id])
+
+    useEffect(() => {
+        if (!showProfileImage) {
+            return
+        }
+
+        const handleEscape = (
+            event: KeyboardEvent
+        ) => {
+            if (event.key === "Escape") {
+                setShowProfileImage(false)
+            }
+        }
+
+        document.addEventListener(
+            "keydown",
+            handleEscape
+        )
+
+        document.body.style.overflow = "hidden"
+
+        return () => {
+            document.removeEventListener(
+                "keydown",
+                handleEscape
+            )
+
+            document.body.style.overflow = ""
+        }
+    }, [showProfileImage])
 
     if (loading) {
         return (
@@ -337,9 +360,17 @@ export default function EmployeeDetails() {
 
                 <div className="employee-profile-main">
 
-                    <div className="employee-details-avatar">
-
-                        {profileImage ? (
+                    {profileImage ? (
+                        <button
+                            type="button"
+                            className="employee-details-avatar employee-details-avatar-clickable"
+                            onClick={() =>
+                                setShowProfileImage(
+                                    true
+                                )
+                            }
+                            aria-label={`View ${fullName} profile picture`}
+                        >
                             <img
                                 src={
                                     profileImage
@@ -347,11 +378,12 @@ export default function EmployeeDetails() {
                                 alt={`${fullName} profile`}
                                 className="employee-details-avatar-image"
                             />
-                        ) : (
-                            initials || "U"
-                        )}
-
-                    </div>
+                        </button>
+                    ) : (
+                        <div className="employee-details-avatar">
+                            {initials || "U"}
+                        </div>
+                    )}
 
                     <div className="employee-profile-content">
 
@@ -821,6 +853,59 @@ export default function EmployeeDetails() {
                 </span>
 
             </div>
+
+            {/* PROFILE IMAGE PREVIEW */}
+
+            {showProfileImage &&
+                profileImage && (
+                    <div
+                        className="employee-profile-image-overlay"
+                        onClick={() =>
+                            setShowProfileImage(
+                                false
+                            )
+                        }
+                    >
+                        <div
+                            className="employee-profile-image-modal"
+                            onClick={(event) =>
+                                event.stopPropagation()
+                            }
+                        >
+                            <button
+                                type="button"
+                                className="employee-profile-image-close"
+                                onClick={() =>
+                                    setShowProfileImage(
+                                        false
+                                    )
+                                }
+                                aria-label="Close profile picture"
+                            >
+                                <X size={20} />
+                            </button>
+
+                            <img
+                                src={
+                                    profileImage
+                                }
+                                alt={`${fullName} profile preview`}
+                                className="employee-profile-image-preview"
+                            />
+
+                            <div className="employee-profile-image-caption">
+                                <strong>
+                                    {fullName}
+                                </strong>
+
+                                <span>
+                                    {employee.position ||
+                                        "Employee"}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
         </main>
     )
