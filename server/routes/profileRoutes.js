@@ -7,23 +7,21 @@ const {
 
 const {
     protect,
-    adminOnly,
 } = require("../middleware/authMiddleware")
 
 const router = express.Router()
 
-// Admin + Employee can view their own profile
+// Admin + Employee
 router.get(
     "/profile",
     protect,
     getProfile
 )
 
-// Only Admin can update a profile
+// Admin + Employee
 router.put(
     "/profile",
     protect,
-    adminOnly,
     updateProfile
 )
 

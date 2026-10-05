@@ -1,5 +1,6 @@
 const Employee = require("../models/Employee")
 const User = require("../models/User")
+const Department = require("../models/Department")
 
 const getProfile = async (req, res) => {
     try {
@@ -47,7 +48,25 @@ const getProfile = async (req, res) => {
             })
         }
 
-        res.status(200).json(employee)
+        let manager = ""
+        let department = null
+
+        // Get manager from the employee's department
+        if (
+            employee.departmentId !== undefined &&
+            employee.departmentId !== null
+        ) {
+            department = await Department.findOne({
+                id: employee.departmentId,
+            })
+
+            manager = department?.manager || ""
+        }
+
+        res.status(200).json({
+            ...employee.toObject(),
+            manager,
+        })
     } catch (error) {
         console.error(
             "Get profile error:",
@@ -77,6 +96,26 @@ const updateProfile = async (req, res) => {
             status,
         } = req.body
 
+        const cleanFirstName =
+            firstName?.trim()
+
+        const cleanLastName =
+            lastName?.trim()
+
+        const cleanEmail =
+            email?.trim().toLowerCase()
+
+        if (
+            !cleanFirstName ||
+            !cleanLastName ||
+            !cleanEmail
+        ) {
+            return res.status(400).json({
+                message:
+                    "First name, last name and email are required.",
+            })
+        }
+
         let employee = await Employee.findOne({
             userId,
         })
@@ -95,41 +134,142 @@ const updateProfile = async (req, res) => {
             })
         }
 
-        // Fields that both Admin and Employee can update
-        employee.firstName = firstName
-        employee.lastName = lastName
-        employee.email = email
-        employee.phone = phone
-        employee.position = position
-        employee.departmentId =
-            departmentId || undefined
+        // Check if another employee already uses this email
+        const existingEmployee =
+            await Employee.findOne({
+                email: cleanEmail,
+                _id: {
+                    $ne: employee._id,
+                },
+            })
 
-        // Only Admin can update administrative fields
+        if (existingEmployee) {
+            return res.status(409).json({
+                message:
+                    "An employee with this email already exists.",
+            })
+        }
+
+        // Validate selected department
+        let department = null
+
+        if (
+            departmentId !== undefined &&
+            departmentId !== null &&
+            departmentId !== ""
+        ) {
+            department =
+                await Department.findOne({
+                    id: Number(departmentId),
+                })
+
+            if (!department) {
+                return res.status(400).json({
+                    message:
+                        "Selected department was not found.",
+                })
+            }
+        }
+
+        // ==========================================
+        // FIELDS BOTH ADMIN AND EMPLOYEE CAN EDIT
+        // ==========================================
+
+        employee.firstName =
+            cleanFirstName
+
+        employee.lastName =
+            cleanLastName
+
+        employee.email =
+            cleanEmail
+
+        employee.phone =
+            phone?.trim() || ""
+
+        employee.departmentId =
+            department?.id
+
+        // ==========================================
+        // ADMIN ONLY FIELDS
+        // ==========================================
+
         if (req.user.role === "Admin") {
-            employee.salary = salary
-            employee.hireDate = hireDate
-            employee.status = status
+            employee.position =
+                position?.trim() ||
+                "Administrator"
+
+            employee.salary =
+                salary ?? employee.salary
+
+            employee.hireDate =
+                hireDate ?? employee.hireDate
+
+            employee.status =
+                status || employee.status
+        } else {
+            // ======================================
+            // EMPLOYEE PROTECTION
+            // ======================================
+
+            // Employee is always an Employee.
+            // The frontend cannot change this,
+            // and neither can Postman/API requests.
+            employee.position = "Employee"
+
+            // Salary is NOT changed here.
+            // Existing salary remains untouched.
+
+            // Hire date is NOT changed here.
+            // Existing hire date remains untouched.
+
+            // Status is NOT changed here.
+            // Existing status remains untouched.
         }
 
         const updatedEmployee =
             await employee.save()
 
-        // Keep the login User account email/name
-        // synchronized with the editable profile.
+        // ==========================================
+        // UPDATE USER ACCOUNT
+        // ==========================================
+
         const user = await User.findById(userId)
 
         if (user) {
-            user.email = email
+            user.email = cleanEmail
 
             user.name =
-                `${firstName} ${lastName}`.trim()
+                `${cleanFirstName} ${cleanLastName}`.trim()
 
             await user.save()
         }
 
-        res.status(200).json(
-            updatedEmployee
-        )
+        // ==========================================
+        // GET MANAGER FROM DEPARTMENT
+        // ==========================================
+
+        let manager = ""
+
+        if (
+            updatedEmployee.departmentId !==
+                undefined &&
+            updatedEmployee.departmentId !== null
+        ) {
+            const updatedDepartment =
+                await Department.findOne({
+                    id:
+                        updatedEmployee.departmentId,
+                })
+
+            manager =
+                updatedDepartment?.manager || ""
+        }
+
+        res.status(200).json({
+            ...updatedEmployee.toObject(),
+            manager,
+        })
     } catch (error) {
         console.error(
             "Update profile error:",
