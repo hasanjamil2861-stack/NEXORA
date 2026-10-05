@@ -110,17 +110,17 @@ export default function EmployeeDetails() {
 
                     position:
                         foundEmployee.position ||
-                        "",
+                        "Employee",
 
                     departmentId:
                         String(
-                            foundEmployee.departmentId ||
+                            foundEmployee.departmentId ??
                                 ""
                         ),
 
                     salary:
                         Number(
-                            foundEmployee.salary ||
+                            foundEmployee.salary ??
                                 0
                         ),
 
@@ -141,6 +141,17 @@ export default function EmployeeDetails() {
                     foundEmployee.profileImage ||
                         null
                 )
+
+                /*
+                 * userId can be:
+                 *
+                 * 1. A populated User object
+                 * 2. A MongoDB ObjectId string
+                 * 3. null / undefined
+                 *
+                 * EmployeeDetails only needs the
+                 * populated user information here.
+                 */
 
                 if (
                     foundEmployee.userId &&
