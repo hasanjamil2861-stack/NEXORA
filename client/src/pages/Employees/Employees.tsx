@@ -60,21 +60,11 @@ function formatEmployee(
 ): Employee {
     return {
         id: String(employee._id),
-
-        firstName:
-            employee.firstName ?? "",
-
-        lastName:
-            employee.lastName ?? "",
-
-        email:
-            employee.email ?? "",
-
-        phone:
-            employee.phone ?? "",
-
-        position:
-            employee.position ?? "",
+        firstName: employee.firstName ?? "",
+        lastName: employee.lastName ?? "",
+        email: employee.email ?? "",
+        phone: employee.phone ?? "",
+        position: employee.position ?? "",
 
         departmentId:
             employee.departmentId !== undefined
@@ -82,13 +72,12 @@ function formatEmployee(
                 : "",
 
         salary:
-            Number(employee.salary) || 0,
+            typeof employee.salary === "number"
+                ? employee.salary
+                : Number(employee.salary) || 0,
 
-        hireDate:
-            employee.hireDate ?? "",
-
-        status:
-            employee.status ?? "Active",
+        hireDate: employee.hireDate ?? "",
+        status: employee.status ?? "Active",
     }
 }
 
@@ -126,9 +115,7 @@ export default function Employees() {
         useState("")
 
     const [status, setStatus] =
-        useState<Employee["status"]>(
-            "Active"
-        )
+        useState<Employee["status"]>("Active")
 
     const [employeeList, setEmployeeList] =
         useState<Employee[]>([])
@@ -144,7 +131,7 @@ export default function Employees() {
     const [
         departmentFilter,
         setDepartmentFilter,
-    ] = useState<string>("All")
+    ] = useState("All")
 
     const [sortBy, setSortBy] =
         useState("None")
@@ -203,8 +190,11 @@ export default function Employees() {
                 const data =
                     (await getEmployees()) as EmployeeApiRecord[]
 
-                setEmployeeList(
+                const formattedEmployees =
                     data.map(formatEmployee)
+
+                setEmployeeList(
+                    formattedEmployees
                 )
             } catch (error) {
                 console.error(
@@ -237,24 +227,23 @@ export default function Employees() {
     /*
      * Average Salary
      *
-     * Total of all employee salaries
-     * divided by the total number of employees.
+     * Example:
+     *
+     * $1000 + $2000 + $3000 = $6000
+     *
+     * $6000 / 3 employees = $2000
      */
     const totalSalary =
         employeeList.reduce(
-            (total, employee) => {
-                return (
-                    total +
-                    Number(employee.salary || 0)
-                )
-            },
+            (total, employee) =>
+                total + Number(employee.salary),
             0
         )
 
     const averageSalary =
-        totalEmployees > 0
-            ? totalSalary / totalEmployees
-            : 0
+        totalEmployees === 0
+            ? 0
+            : totalSalary / totalEmployees
 
     const activePercentage =
         totalEmployees > 0
@@ -460,41 +449,39 @@ export default function Employees() {
         }
 
         setFirstName(
-            employee.firstName ?? ""
+            employee.firstName
         )
 
         setLastName(
-            employee.lastName ?? ""
+            employee.lastName
         )
 
         setEmail(
-            employee.email ?? ""
+            employee.email
         )
 
         setPhone(
-            employee.phone ?? ""
+            employee.phone
         )
 
         setPosition(
-            employee.position ?? ""
+            employee.position
         )
 
         setDepartmentId(
-            employee.departmentId ?? ""
+            employee.departmentId
         )
 
         setSalary(
-            String(
-                employee.salary ?? 0
-            )
+            String(employee.salary)
         )
 
         setHireDate(
-            employee.hireDate ?? ""
+            employee.hireDate
         )
 
         setStatus(
-            employee.status ?? "Active"
+            employee.status
         )
 
         setEditingEmployee(
@@ -530,7 +517,9 @@ export default function Employees() {
                     lastName.trim(),
 
                 email:
-                    email.trim().toLowerCase(),
+                    email
+                        .trim()
+                        .toLowerCase(),
 
                 phone:
                     phone.trim(),
@@ -1169,7 +1158,9 @@ export default function Employees() {
                             <button
                                 type="button"
                                 className="employee-cancel-btn"
-                                onClick={resetForm}
+                                onClick={
+                                    resetForm
+                                }
                             >
                                 Cancel
                             </button>
